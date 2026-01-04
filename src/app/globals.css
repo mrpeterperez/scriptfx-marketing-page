@@ -1,26 +1,113 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* ScriptFX Colors (Dark default) */
+  --scriptfx-primary: #2e2e2e;
+  --scriptfx-on-primary: #ffffff;
+  --scriptfx-primary-container: #2e2e2e;
+  --scriptfx-on-primary-container: #ffffff;
+
+  --scriptfx-secondary: #bebebe;
+  --scriptfx-on-secondary: #0f0f0f;
+  --scriptfx-secondary-container: #1b1b1b;
+  --scriptfx-on-secondary-container: #ffffff;
+
+  --scriptfx-accent: #a58107;
+  --scriptfx-on-accent: #ffffff;
+  --scriptfx-accent-container: #2b2415;
+  --scriptfx-on-accent-container: #efe9d6;
+
+  --scriptfx-surface: #0f0f0f;
+  --scriptfx-on-surface: #ffffff;
+  --scriptfx-container: #2e2e2e;
+  --scriptfx-on-surface-variant: #bebebe;
+
+  --scriptfx-border: #343333;
+  --scriptfx-border-variant: #444444;
+
+  --scriptfx-inverse-surface: #ffffff;
+  --scriptfx-inverse-on-surface: #0f0f0f;
+  --scriptfx-inverse-primary: #a58107;
+
+  --scriptfx-success: #2f7d4e;
+  --scriptfx-on-success: #ffffff;
+  --scriptfx-success-container: #102015;
+  --scriptfx-on-success-container: #bee6cd;
+
+  --scriptfx-error: #b54545;
+  --scriptfx-on-error: #ffffff;
+  --scriptfx-error-container: #2a0f0f;
+  --scriptfx-on-error-container: #f4c7c7;
+
+  --scriptfx-warning: #c88a2e;
+  --scriptfx-on-warning: #0f0f0f;
+  --scriptfx-warning-container: #2a1c0a;
+  --scriptfx-on-warning-container: #f0d3a6;
+
+  /* ScriptFX Surfaces */
+  --scriptfx-glass: rgba(0, 0, 0, 0.1);
+
+  /* Typekit Fonts */
+  --scriptfx-font-display: "nocturne-serif", serif;
+  --scriptfx-font-body: "host-grotesk", var(--font-sans), system-ui, -apple-system,
+    Segoe UI, Roboto, Helvetica, Arial, sans-serif;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  /* Expose ScriptFX tokens as Tailwind colors (bg-surface, text-on-surface, etc.) */
+  --color-primary: var(--scriptfx-primary);
+  --color-on-primary: var(--scriptfx-on-primary);
+  --color-primary-container: var(--scriptfx-primary-container);
+  --color-on-primary-container: var(--scriptfx-on-primary-container);
+
+  --color-secondary: var(--scriptfx-secondary);
+  --color-on-secondary: var(--scriptfx-on-secondary);
+  --color-secondary-container: var(--scriptfx-secondary-container);
+  --color-on-secondary-container: var(--scriptfx-on-secondary-container);
+
+  --color-accent: var(--scriptfx-accent);
+  --color-on-accent: var(--scriptfx-on-accent);
+  --color-accent-container: var(--scriptfx-accent-container);
+  --color-on-accent-container: var(--scriptfx-on-accent-container);
+
+  --color-surface: var(--scriptfx-surface);
+  --color-on-surface: var(--scriptfx-on-surface);
+  --color-container: var(--scriptfx-container);
+  --color-on-surface-variant: var(--scriptfx-on-surface-variant);
+
+  --color-border: var(--scriptfx-border);
+  --color-border-variant: var(--scriptfx-border-variant);
+
+  --color-inverse-surface: var(--scriptfx-inverse-surface);
+  --color-inverse-on-surface: var(--scriptfx-inverse-on-surface);
+  --color-inverse-primary: var(--scriptfx-inverse-primary);
+
+  --color-success: var(--scriptfx-success);
+  --color-on-success: var(--scriptfx-on-success);
+  --color-success-container: var(--scriptfx-success-container);
+  --color-on-success-container: var(--scriptfx-on-success-container);
+
+  --color-error: var(--scriptfx-error);
+  --color-on-error: var(--scriptfx-on-error);
+  --color-error-container: var(--scriptfx-error-container);
+  --color-on-error-container: var(--scriptfx-on-error-container);
+
+  --color-warning: var(--scriptfx-warning);
+  --color-on-warning: var(--scriptfx-on-warning);
+  --color-warning-container: var(--scriptfx-warning-container);
+  --color-on-warning-container: var(--scriptfx-on-warning-container);
+
+  --color-glass: var(--scriptfx-glass);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-display: var(--scriptfx-font-display);
+  --font-body: var(--scriptfx-font-body);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, -apple-system, Segoe UI, Roboto,
+    Helvetica, Arial, sans-serif;
 }

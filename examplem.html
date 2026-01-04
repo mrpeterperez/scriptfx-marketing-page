@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScriptFX - A New Age of Screenwriting</title>
+    <meta name="description" content="ScriptFX is revolutionizing screenwriting with AI-powered tools that help writers craft compelling narratives.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Host+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #080808;
+            --white: #ffffff;
+            --gold: #8c5816;
+            --button-bg: #2e2e2e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: 'Host Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg);
+            color: var(--white);
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: hidden;
+        }
+
+        /* Page Wrapper */
+        .page {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow: hidden;
+        }
+
+        /* Header Bar - full width frosted glass */
+        .header-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 74px;
+            backdrop-filter: blur(7.5px);
+            -webkit-backdrop-filter: blur(7.5px);
+            background: rgba(255, 255, 255, 0.05);
+            z-index: 100;
+        }
+
+        /* Logo - centered at top */
+        .logo {
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 101;
+            height: 25px;
+        }
+
+        .logo img {
+            height: 100%;
+            width: auto;
+            display: block;
+        }
+
+        /* CTA Button */
+        .nav-cta {
+            position: fixed;
+            top: 18px;
+            right: 28px;
+            z-index: 101;
+            padding: 10px 14px;
+            background: var(--button-bg);
+            color: var(--white);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+
+        .nav-cta:hover {
+            background: #3e3e3e;
+            transform: translateY(-2px);
+        }
+
+        /* Hero Section */
+        .hero {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 55px;
+        }
+
+        /* Film Frame Container */
+        .film-frame {
+            position: relative;
+            width: calc(100% - 80px);
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* Film Strip Sides */
+        .film-strip {
+            position: absolute;
+            width: 215px;
+            height: 860px;
+            top: 70px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 0;
+            z-index: 2;
+            pointer-events: none;
+            opacity: 0.45;
+            filter: blur(5px);
+        }
+
+        .film-strip.left {
+            left: -175px;
+        }
+
+        .film-strip.right {
+            right: -170px;
+        }
+
+        .film-perf {
+            width: 100%;
+            flex: 1;
+            max-height: 23%;
+            background: #020003;
+            border: 5px solid var(--gold);
+            border-radius: 32px;
+            mix-blend-mode: multiply;
+        }
+
+        .film-perf:not(:last-child) {
+            margin-bottom: 10%;
+        }
+
+        /* Main Image Container */
+        .hero-image-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1000 / 563;
+            border-radius: 24px;
+            overflow: hidden;
+        }
+
+        .hero-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Gradient overlay for text */
+        .hero-gradient {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                0deg,
+                rgba(8, 8, 8, 0.9) 0%,
+                rgba(8, 8, 8, 0.6) 30%,
+                rgba(8, 8, 8, 0.2) 50%,
+                transparent 70%
+            );
+            pointer-events: none;
+        }
+
+        /* Content Layer */
+        .hero-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 60px;
+            text-align: center;
+            z-index: 5;
+        }
+
+        /* Typography */
+        .hero-eyebrow {
+            font-size: 16px;
+            font-weight: 400;
+            color: var(--white);
+            margin-bottom: 24px;
+            letter-spacing: 0.01em;
+        }
+
+        .hero-title {
+            font-size: 56px;
+            font-weight: 500;
+            line-height: 40px;
+            color: var(--white);
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .hero-title .line {
+            display: block;
+            margin-bottom: 18px;
+        }
+
+        .hero-title .line:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Animations */
+        .hero-image-container {
+            opacity: 0;
+            transform: scale(0.98);
+            animation: frameIn 1s ease forwards;
+            animation-delay: 0.1s;
+        }
+
+        .hero-eyebrow {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.8s ease forwards;
+            animation-delay: 0.4s;
+        }
+
+        .hero-title {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.8s ease forwards;
+            animation-delay: 0.6s;
+        }
+
+        @keyframes frameIn {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes fadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 1400px) {
+            .film-strip {
+                width: 150px;
+            }
+            .film-strip.left { left: -120px; }
+            .film-strip.right { right: -120px; }
+        }
+
+        @media (max-width: 1100px) {
+            .film-strip {
+                display: none;
+            }
+            .film-frame {
+                width: calc(100% - 40px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                padding-top: 80px;
+            }
+            .hero-title {
+                font-size: 40px;
+                line-height: 32px;
+                white-space: normal;
+            }
+            .hero-title .line {
+                margin-bottom: 14px;
+            }
+            .hero-content {
+                padding-bottom: 40px;
+            }
+            .hero-eyebrow {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-cta {
+                padding: 8px 12px;
+                font-size: 12px;
+                right: 16px;
+                top: 16px;
+            }
+            .logo {
+                top: 20px;
+            }
+            .header-bar {
+                height: 60px;
+            }
+            .hero-title {
+                font-size: 32px;
+                line-height: 28px;
+            }
+            .film-frame {
+                width: calc(100% - 24px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <!-- Header Bar - full width frosted glass -->
+        <div class="header-bar"></div>
+
+        <!-- Logo -->
+        <div class="logo">
+            <img src="https://www.figma.com/api/mcp/asset/b10900b6-daec-4bd0-8f28-b871ff8cd26e" alt="ScriptFX">
+        </div>
+
+        <!-- CTA Button -->
+        <a href="#" class="nav-cta">Get Access</a>
+
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="film-frame">
+                <!-- Film Strip - Left -->
+                <div class="film-strip left">
+                    <div class="film-perf"></div>
+                    <div class="film-perf"></div>
+                    <div class="film-perf"></div>
+                </div>
+
+                <!-- Film Strip - Right -->
+                <div class="film-strip right">
+                    <div class="film-perf"></div>
+                    <div class="film-perf"></div>
+                    <div class="film-perf"></div>
+                </div>
+
+                <!-- Main Image -->
+                <div class="hero-image-container">
+                    <img class="hero-image" 
+                         src="https://www.figma.com/api/mcp/asset/6d49e031-e3d0-4c23-9b15-4ff753a410cd" 
+                         alt="Cinematic scene from There Will Be Blood">
+                    
+                    <!-- Gradient Overlay -->
+                    <div class="hero-gradient"></div>
+
+                    <!-- Content -->
+                    <div class="hero-content">
+                        <p class="hero-eyebrow">Introducing ScriptFX</p>
+                        <h1 class="hero-title">
+                            <span class="line">A New Age of</span>
+                            <span class="line">Screenwriting</span>
+                        </h1>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>

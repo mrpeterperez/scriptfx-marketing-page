@@ -20,9 +20,18 @@ export function HomeHero() {
     const container = containerRef.current;
     if (!container) return;
 
+    const wrapper = container.querySelector<HTMLElement>(".hero-wrapper");
+
     const reduceMotion =
       typeof window !== "undefined" &&
       window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+    // Ensure correct initial visibility even before GSAP kicks in.
+    if (wrapper) {
+      const heroHeight = (slides.length + 0.5) * window.innerHeight;
+      const y = window.scrollY;
+      gsap.set(wrapper, { autoAlpha: y < heroHeight ? 1 : 0 });
+    }
 
     if (reduceMotion) return;
 
@@ -30,7 +39,6 @@ export function HomeHero() {
 
     const ctx = gsap.context(() => {
       const sections = gsap.utils.toArray<HTMLElement>(".panel");
-      const wrapper = container.querySelector<HTMLElement>(".hero-wrapper");
       const indicators = gsap.utils.toArray<HTMLElement>(".indicator-dot");
       let currentSection = sections[0];
       currentSectionRef.current = currentSection;
@@ -156,7 +164,7 @@ export function HomeHero() {
       style={{ height: `${(slides.length + 0.5) * 100}svh` }}
     >
       {/* Fixed wrapper for all panels and UI - fades out after hero */}
-      <div className="hero-wrapper fixed left-0 top-0 h-[100svh] w-full">
+      <div className="hero-wrapper fixed left-0 top-0 h-[100svh] w-full opacity-0">
         {/* Vertical progress indicator */}
         <div className="fixed right-6 top-1/2 z-50 flex -translate-y-1/2 flex-col gap-3 md:right-12">
           {slides.map((_, i) => (

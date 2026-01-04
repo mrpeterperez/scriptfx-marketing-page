@@ -38,16 +38,38 @@ export function HomeHero() {
       gsap.defaults({ overwrite: "auto" });
 
       // Set initial state - first panel visible, others hidden
+      // CSS already handles initial opacity to prevent flicker
       sections.forEach((section, i) => {
         if (i === 0) {
-          gsap.set(section, { autoAlpha: 1, scale: 1, rotationY: 0, filter: "blur(0px)" });
+          gsap.set(section, { autoAlpha: 1, scale: 1, rotationY: 0, filter: "blur(0px)", clearProps: "none" });
         } else {
-          gsap.set(section, { autoAlpha: 0, scale: 0.95, rotationY: 0, filter: "blur(0px)" });
+          gsap.set(section, { autoAlpha: 0, scale: 0.95, rotationY: 0, filter: "blur(0px)", clearProps: "none" });
         }
       });
 
       // Stretch container height for 3 sections + transition space
       gsap.set(container, { height: (sections.length + 0.5) * window.innerHeight });
+
+      // Ensure wrapper is correctly hidden/visible on first paint based on scroll
+      // (prevents headline flash when refreshing while scrolled past the hero)
+      if (wrapper) {
+        const start = (sections.length - 0.5) * window.innerHeight;
+        const end = (sections.length + 0.5) * window.innerHeight;
+        const y = window.scrollY;
+
+        if (y <= start) {
+          gsap.set(wrapper, { yPercent: 0, scale: 1, autoAlpha: 1 });
+        } else if (y >= end) {
+          gsap.set(wrapper, { yPercent: -100, scale: 0.9, autoAlpha: 0 });
+        } else {
+          const progress = (y - start) / (end - start);
+          gsap.set(wrapper, {
+            yPercent: -100 * progress,
+            scale: 1 - 0.1 * progress,
+            autoAlpha: 1 - progress,
+          });
+        }
+      }
 
       // Create ScrollTrigger for each section with fade/scale/rotate/blur effect
       sections.forEach((section, i) => {
@@ -128,7 +150,11 @@ export function HomeHero() {
   }, []);
 
   return (
-    <div ref={containerRef} className="relative -mt-28">
+    <div
+      ref={containerRef}
+      className="relative -mt-28"
+      style={{ height: `${(slides.length + 0.5) * 100}svh` }}
+    >
       {/* Fixed wrapper for all panels and UI - fades out after hero */}
       <div className="hero-wrapper fixed left-0 top-0 h-[100svh] w-full">
         {/* Vertical progress indicator */}
@@ -174,17 +200,6 @@ export function HomeHero() {
                   priority={i === 0}
                 />
 
-                {/* Film grain overlay */}
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-0 opacity-[0.08]"
-                  style={{
-                    backgroundImage: "url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMDAnIGhlaWdodD0nMzAwJz48ZmlsdGVyIGlkPSdhJyB4PScwJyB5PScwJz48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Jy43NScgc3RpdGNoVGlsZXM9J3N0aXRjaCcgdHlwZT0nZnJhY3RhbE5vaXNlJy8+PGZlQ29sb3JNYXRyaXggdHlwZT0nc2F0dXJhdGUnIHZhbHVlcz0nMCcvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPScxMDAlJyBoZWlnaHQ9JzEwMCUnIGZpbHRlcj0ndXJsKCNhKScvPjwvc3ZnPg==')",
-                    backgroundRepeat: "repeat",
-                    animation: "grain 8s steps(10) infinite",
-                  }}
-                />
-
                 {/* Gradient overlay */}
                 <div
                   aria-hidden="true"
@@ -194,10 +209,6 @@ export function HomeHero() {
                       "linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.25) 65.968%, rgba(0, 0, 0, 0.75) 79.979%, rgba(0, 0, 0, 0.8) 100%)",
                   }}
                 />
-
-                {/* Film matte bars */}
-                <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 z-10 h-10 bg-black/25" />
-                <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-10 bg-black/35" />
               </div>
             </div>
           </section>

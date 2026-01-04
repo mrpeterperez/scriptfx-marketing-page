@@ -122,7 +122,7 @@ export function TopNavMenu({
       <header className="pointer-events-none fixed left-0 right-0 top-0 z-50 mx-auto p-4 md:p-6">
         <div
           ref={panelRef}
-          className="pointer-events-auto relative mx-auto overflow-hidden rounded-xl border border-border bg-glass text-on-surface backdrop-blur-2xl transition-colors duration-200 [--menu-width-closed:100%] [--menu-width-open:100%] sm:[--menu-width-closed:330px] sm:[--menu-width-open:50vw] md:[--menu-width-open:70vw] xl:[--menu-width-open:50vw]"
+          className="pointer-events-auto relative mx-auto overflow-hidden rounded-xl border border-border bg-black/60 text-on-surface backdrop-blur-xl transition-colors duration-200 [--menu-width-closed:100%] [--menu-width-open:100%] sm:[--menu-width-closed:330px] sm:[--menu-width-open:50vw] md:[--menu-width-open:70vw] xl:[--menu-width-open:50vw]"
           style={{ width: "var(--menu-width-open)" }}
           data-theme="nav-open"
           onClick={(e) => e.stopPropagation()}

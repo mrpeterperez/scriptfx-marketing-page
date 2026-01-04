@@ -16,8 +16,8 @@ export function TopNav() {
 
   return (
     <header className="fixed left-1/2 top-5 z-50 w-full max-w-[600px] -translate-x-1/2 px-4">
-      <div className="relative flex h-14 items-center justify-between rounded-lg bg-glass px-4 backdrop-blur-[6.68px] shadow-[-11.15px_-10.392px_48px_-12px_rgba(0,0,0,0.15),-1.858px_-1.732px_12px_-8px_rgba(0,0,0,0.15)]">
-        <div className="pointer-events-none absolute inset-[-1px] rounded-[8px] shadow-[inset_2.1px_1.957px_9.04px_0px_rgba(255,255,255,0),inset_1.171px_1.091px_4.52px_0px_rgba(255,255,255,0)]" />
+      <div className="relative flex h-14 items-center justify-between rounded-lg bg-black/60 px-4 backdrop-blur-xl shadow-[-11.15px_-10.392px_48px_-12px_rgba(0,0,0,0.15),-1.858px_-1.732px_12px_-8px_rgba(0,0,0,0.15)]">
+        <div className="pointer-events-none absolute inset-[-1px] rounded-[8px] shadow-[inset_2.1px_1.957px_9.04px_0px_rgba(255,255,255,0.05),inset_1.171px_1.091px_4.52px_0px_rgba(255,255,255,0.03)]" />
 
         <NavLogo />
 

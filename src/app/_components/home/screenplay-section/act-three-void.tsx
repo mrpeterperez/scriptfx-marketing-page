@@ -19,6 +19,7 @@ export function ActThreeVoid({ timeline, grayBoxRef }: ActThreeVoidProps) {
   const dividerRef = React.useRef<HTMLDivElement>(null);
   const grainRef = React.useRef<HTMLDivElement>(null);
   const shakeRef = React.useRef<HTMLDivElement>(null);
+  const shakeTimelineRef = React.useRef<gsap.core.Timeline | null>(null);
 
   // Source text
   const leftLines = ["For decades, stories", "lived between margins."];
@@ -269,6 +270,7 @@ export function ActThreeVoid({ timeline, grayBoxRef }: ActThreeVoidProps) {
       // 9. Reveal right text words one by one with dramatic pauses
       const rightWords = ["Pitched.", "Optioned.", "Noted.", "Parked."];
       let charIdx = 0;
+      const grayBox = grayBoxRef?.current;
 
       rightWords.forEach((word, wordIdx) => {
         const wordChars = rightChars.slice(charIdx, charIdx + word.length);
@@ -288,89 +290,29 @@ export function ActThreeVoid({ timeline, grayBoxRef }: ActThreeVoidProps) {
         );
       });
 
-      // 6. Hold after all words shown
-      timeline.to({}, { duration: 1.8 });
+      // Hold so user can read all words
+      timeline.to({}, { duration: 1.2 });
+      
+      // === SHAKE ZONE START ===
+      timeline.addLabel("shakeStart");
+      
+      // Brief moment of shaking before letters fall
+      timeline.to({}, { duration: 0.5 });
 
-      // 7. Dissolve source text - THE OLD WAY CRUMBLES
+      // Dissolve - letters fall
       timeline.addLabel("dissolve");
       
-      // Fade out divider first
+      // Fade out divider
       if (divider) {
-        timeline.to(
-          divider,
-          {
-            autoAlpha: 0,
-            scaleY: 0,
-            duration: 0.4,
-            ease: "power2.in",
-          },
-          "dissolve"
-        );
+        timeline.to(divider, { autoAlpha: 0, scaleY: 0, duration: 0.3, ease: "power2.in" }, "dissolve");
       }
 
-      // EARTHQUAKE SHAKE - perfectly timed with letter fall
-      const grayBox = grayBoxRef?.current;
-      // Shake duration: ~1.2s total
-      // Letters start falling at 0.3s into shake (when it gets violent)
-      // Letters fall for ~1s
-      // Shake ends, then stillness
-      
-      timeline.call(() => {
-        if (grayBox) {
-          gsap.timeline()
-            // === PHASE 1: Subtle tremor (0.36s) ===
-            .to(grayBox, { x: -1, y: 0.5, duration: 0.06, ease: "power1.out" })
-            .to(grayBox, { x: 1, y: -0.5, duration: 0.06, ease: "power1.out" })
-            .to(grayBox, { x: -1.5, y: 0.5, duration: 0.06, ease: "power1.out" })
-            .to(grayBox, { x: 1, y: -0.5, duration: 0.06, ease: "power1.out" })
-            .to(grayBox, { x: -1, y: 0.5, duration: 0.06, ease: "power1.out" })
-            .to(grayBox, { x: 1.5, y: -0.5, duration: 0.06, ease: "power1.out" })
-            
-            // === PHASE 2: Building (0.4s) - letters START falling here ===
-            .to(grayBox, { x: -3, y: 1.5, duration: 0.05, ease: "power2.out" })
-            .to(grayBox, { x: 4, y: -1.5, duration: 0.05, ease: "power2.out" })
-            .to(grayBox, { x: -4, y: 2, duration: 0.05, ease: "power2.out" })
-            .to(grayBox, { x: 5, y: -2, duration: 0.05, ease: "power2.out" })
-            .to(grayBox, { x: -5, y: 2, duration: 0.05, ease: "power2.out" })
-            .to(grayBox, { x: 6, y: -2.5, duration: 0.05, ease: "power2.out" })
-            .to(grayBox, { x: -6, y: 2.5, duration: 0.05, ease: "power2.out" })
-            .to(grayBox, { x: 7, y: -3, duration: 0.05, ease: "power2.out" })
-            
-            // === PHASE 3: VIOLENT (0.3s) - peak chaos, letters raining down ===
-            .to(grayBox, { x: -10, y: 4, duration: 0.03, ease: "power2.out" })
-            .to(grayBox, { x: 11, y: -4, duration: 0.03, ease: "power2.out" })
-            .to(grayBox, { x: -12, y: 5, duration: 0.03, ease: "power2.out" })
-            .to(grayBox, { x: 10, y: -4, duration: 0.03, ease: "power2.out" })
-            .to(grayBox, { x: -11, y: 4, duration: 0.03, ease: "power2.out" })
-            .to(grayBox, { x: 12, y: -5, duration: 0.03, ease: "power2.out" })
-            .to(grayBox, { x: -10, y: 4, duration: 0.03, ease: "power2.out" })
-            .to(grayBox, { x: 11, y: -4, duration: 0.03, ease: "power2.out" })
-            .to(grayBox, { x: -12, y: 5, duration: 0.03, ease: "power2.out" })
-            .to(grayBox, { x: 10, y: -4, duration: 0.03, ease: "power2.out" })
-            
-            // === PHASE 4: Subsiding (0.35s) - shake fading as letters fall away ===
-            .to(grayBox, { x: -6, y: 2, duration: 0.05, ease: "power2.out" })
-            .to(grayBox, { x: 5, y: -2, duration: 0.05, ease: "power2.out" })
-            .to(grayBox, { x: -4, y: 1.5, duration: 0.05, ease: "power2.out" })
-            .to(grayBox, { x: 3, y: -1, duration: 0.06, ease: "power2.out" })
-            .to(grayBox, { x: -2, y: 1, duration: 0.07, ease: "power2.out" })
-            .to(grayBox, { x: 1, y: -0.5, duration: 0.07, ease: "power2.out" })
-            
-            // === Settle ===
-            .to(grayBox, { x: 0, y: 0, duration: 0.12, ease: "power2.out" });
-        }
-      }, [], "dissolve");
-
-      // Letters start falling 0.35s into shake (when it gets violent)
-      // They fall with stagger over 0.3s window, each taking 0.9s to fall
-      timeline.addLabel("fall", "dissolve+=0.35");
-      
+      // Letters fall
       allSourceChars.forEach((char, i) => {
-        const randomX = (Math.random() - 0.5) * 80;
-        const fallY = 500 + Math.random() * 200;
-        const randomRotate = (Math.random() - 0.5) * 150;
-        // Tight stagger window - all letters start falling within 0.3s
-        const delay = Math.random() * 0.3;
+        const randomX = (Math.random() - 0.5) * 60;
+        const fallY = 400 + Math.random() * 200;
+        const randomRotate = (Math.random() - 0.5) * 120;
+        const delay = Math.random() * 0.25;
 
         timeline.to(
           char,
@@ -380,19 +322,21 @@ export function ActThreeVoid({ timeline, grayBoxRef }: ActThreeVoidProps) {
             y: fallY,
             rotation: randomRotate,
             scale: 0.1,
-            filter: "blur(8px)",
-            duration: 0.9,
-            ease: "power2.in", // Gravity acceleration
+            filter: "blur(6px)",
+            duration: 0.7,
+            ease: "power2.in",
           },
-          `fall+=${delay}`
+          `dissolve+=${delay}`
         );
       });
 
-      // === STILLNESS - dust settles ===
-      // Wait for letters to finish falling (0.3s stagger + 0.9s fall = 1.2s from "fall")
-      timeline.to({}, { duration: 0.8 }, "fall+=1.3");
+      // === SHAKE ZONE END ===
+      timeline.addLabel("shakeEnd", "dissolve+=1");
+
+      // Stillness
+      timeline.to({}, { duration: 0.8 }, ">");
       
-      // 7. Bring in target text - AFTER letters have fallen
+      // Bring in target text
       timeline.addLabel("reveal");
       
       // Soft chime for "That era is ending."
@@ -446,10 +390,48 @@ export function ActThreeVoid({ timeline, grayBoxRef }: ActThreeVoidProps) {
 
       // 8. Hold final text
       timeline.to({}, { duration: 2.5 });
+      
+      // Get shake zone boundaries (as progress 0-1)
+      const shakeStartTime = timeline.labels["shakeStart"] / timeline.duration();
+      const shakeEndTime = timeline.labels["shakeEnd"] / timeline.duration();
+      
+      // Simple shake control via onUpdate - runs every scroll frame
+      timeline.eventCallback("onUpdate", () => {
+        const progress = timeline.progress();
+        const shouldShake = progress >= shakeStartTime && progress <= shakeEndTime;
+        
+        if (shouldShake && !shakeTimelineRef.current && grayBox) {
+          // Start shake
+          shakeTimelineRef.current = gsap.timeline({ repeat: -1 })
+            .to(grayBox, { x: -6, y: 2, duration: 0.04, ease: "none" })
+            .to(grayBox, { x: 5, y: -3, duration: 0.04, ease: "none" })
+            .to(grayBox, { x: -4, y: 3, duration: 0.04, ease: "none" })
+            .to(grayBox, { x: 6, y: -2, duration: 0.04, ease: "none" })
+            .to(grayBox, { x: -5, y: 2, duration: 0.04, ease: "none" })
+            .to(grayBox, { x: 4, y: -3, duration: 0.04, ease: "none" });
+        } else if (!shouldShake && shakeTimelineRef.current) {
+          // Stop shake
+          shakeTimelineRef.current.kill();
+          shakeTimelineRef.current = null;
+          if (grayBox) gsap.set(grayBox, { x: 0, y: 0 });
+        }
+      });
+      
     }, container);
 
-    return () => ctx.revert();
-  }, [timeline]);
+    return () => {
+      // Kill shake timeline on cleanup
+      if (shakeTimelineRef.current) {
+        shakeTimelineRef.current.kill();
+        shakeTimelineRef.current = null;
+      }
+      // Reset grayBox position
+      if (grayBoxRef?.current) {
+        gsap.set(grayBoxRef.current, { x: 0, y: 0 });
+      }
+      ctx.revert();
+    };
+  }, [timeline, grayBoxRef]);
 
   return (
     <div

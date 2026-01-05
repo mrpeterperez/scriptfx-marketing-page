@@ -330,13 +330,13 @@ export function ActThreeVoid({ timeline, grayBoxRef }: ActThreeVoidProps) {
         );
       });
 
-      // === SHAKE ZONE END ===
-      timeline.addLabel("shakeEnd", "dissolve+=1");
+      // === SHAKE ZONE END === (must end BEFORE reveal)
+      timeline.addLabel("shakeEnd", "dissolve+=0.8");
 
-      // Stillness
-      timeline.to({}, { duration: 0.8 }, ">");
+      // Stillness - shake has stopped
+      timeline.to({}, { duration: 1.0 }, ">");
       
-      // Bring in target text
+      // Bring in target text (NO SHAKE during this)
       timeline.addLabel("reveal");
       
       // Soft chime for "That era is ending."
@@ -391,14 +391,15 @@ export function ActThreeVoid({ timeline, grayBoxRef }: ActThreeVoidProps) {
       // 8. Hold final text
       timeline.to({}, { duration: 2.5 });
       
-      // Get shake zone boundaries (as progress 0-1)
-      const shakeStartTime = timeline.labels["shakeStart"] / timeline.duration();
-      const shakeEndTime = timeline.labels["shakeEnd"] / timeline.duration();
+      // Get shake zone boundaries as ABSOLUTE times (not progress-based)
+      // This way Act Four adding to timeline won't mess up the shake timing
+      const shakeStartTime = timeline.labels["shakeStart"];
+      const shakeEndTime = timeline.labels["shakeEnd"];
       
       // Simple shake control via onUpdate - runs every scroll frame
       timeline.eventCallback("onUpdate", () => {
-        const progress = timeline.progress();
-        const shouldShake = progress >= shakeStartTime && progress <= shakeEndTime;
+        const currentTime = timeline.time();
+        const shouldShake = currentTime >= shakeStartTime && currentTime <= shakeEndTime;
         
         if (shouldShake && !shakeTimelineRef.current && grayBox) {
           // Start shake

@@ -6,6 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ActOneScript } from "./act-one-script";
 import { ActTwoTagline } from "./act-two-tagline";
 import { ActThreeVoid } from "./act-three-void";
+import { ActFourSolution } from "./act-four-solution";
 
 // Register plugins
 if (typeof window !== "undefined") {
@@ -38,27 +39,32 @@ export function ScreenplaySectionV2() {
   }, []);
 
   return (
-    <section
-      ref={containerRef}
-      className="relative left-1/2 w-screen -translate-x-1/2 opacity-100"
-      style={{ height: "600svh" }}
-    >
-      {/* Sticky container */}
-      <div className="sticky top-0 h-[100svh] w-full">
-        <div className="relative h-full w-full px-6 py-6 md:px-12 md:py-12">
-          <div 
-            ref={grayBoxRef}
-            className="relative h-full w-full overflow-hidden rounded-[16px] border border-border bg-secondary-container"
-          >
-            
-            <ActOneScript timeline={timeline} />
-            <ActTwoTagline timeline={timeline} />
-            <ActThreeVoid timeline={timeline} grayBoxRef={grayBoxRef} />
+    <>
+      <section
+        ref={containerRef}
+        className="relative left-1/2 w-screen -translate-x-1/2 opacity-100"
+        style={{ height: "750svh" }}
+      >
+        {/* Sticky container */}
+        <div className="sticky top-0 h-[100svh] w-full">
+          <div className="relative h-full w-full px-6 py-6 md:px-12 md:py-12">
+            <div 
+              ref={grayBoxRef}
+              className="relative h-full w-full overflow-hidden rounded-[16px] border border-border bg-secondary-container"
+            >
+              
+              <ActOneScript timeline={timeline} />
+              <ActTwoTagline timeline={timeline} />
+              <ActThreeVoid timeline={timeline} grayBoxRef={grayBoxRef} />
 
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+      
+      {/* Full screen overlay - outside container */}
+      <ActFourSolution timeline={timeline} />
+    </>
   );
 }
 

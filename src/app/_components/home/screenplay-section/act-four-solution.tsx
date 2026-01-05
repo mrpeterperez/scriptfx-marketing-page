@@ -2,205 +2,150 @@
 
 import * as React from "react";
 import { gsap } from "gsap";
-import { sounds } from "@/lib/sounds";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-interface ActFourSolutionProps {
-  timeline: gsap.core.Timeline | null;
-}
+gsap.registerPlugin(ScrollTrigger);
 
-export function ActFourSolution({ timeline }: ActFourSolutionProps) {
+const features = [
+  {
+    id: 1,
+    title: "Write",
+    description: "Familiar. Focused. Out of your way.",
+  },
+  {
+    id: 2,
+    title: "Hear it.",
+    description: "AI-powered voice generation brings your characters to life instantly.",
+  },
+  {
+    id: 3,
+    title: "Build it.",
+    description: "Generate concept art, storyboards, and visual references from your script.",
+  },
+  {
+    id: 4,
+    title: "Direct it.",
+    description: "Control camera angles, lighting, and composition with simple commands.",
+  },
+  {
+    id: 5,
+    title: "Act it.",
+    description: "Create animated previews with AI-generated performances.",
+  },
+  {
+    id: 6,
+    title: "Watch it.",
+    description: "Export polished previsualization videos to share with your team.",
+  },
+];
+
+export function ActFourSolution() {
   const containerRef = React.useRef<HTMLDivElement>(null);
-  const svgRef = React.useRef<SVGSVGElement>(null);
-  const textRef = React.useRef<HTMLDivElement>(null);
-  const pathRef = React.useRef<SVGPathElement>(null);
-
-  // Wave animation config
-  const numPoints = 10;
-  const delayPointsMax = 0.3;
-
-  // Target text
-  const targetText = "Bring your script to life";
+  const [activeFeature, setActiveFeature] = React.useState(0);
 
   React.useLayoutEffect(() => {
-    if (!timeline || !containerRef.current || !svgRef.current || !pathRef.current) return;
-
     const container = containerRef.current;
-    const path = pathRef.current;
-    const textEl = textRef.current;
+    if (!container) return;
 
-    if (!textEl) return;
-
-    // Get all target character spans
-    const allTargetChars = Array.from(
-      textEl.querySelectorAll(".solution-char")
-    ) as HTMLSpanElement[];
-
-    // Initialize points (start at 0 = top/hidden for drip down effect)
-    const points: number[] = [];
-    for (let j = 0; j < numPoints; j++) {
-      points.push(0);
-    }
-
-    // Function to render the SVG path based on current point values
-    // Wave drips DOWN from top
-    const renderPath = () => {
-      let d = `M 0 0 V ${points[0]} C`;
-
-      for (let j = 0; j < numPoints - 1; j++) {
-        const p = ((j + 1) / (numPoints - 1)) * 100;
-        const cp = p - (1 / (numPoints - 1) * 100) / 2;
-        d += ` ${cp} ${points[j]} ${cp} ${points[j + 1]} ${p} ${points[j + 1]}`;
-      }
-
-      d += ` V 0 H 0`;
-      path.setAttribute("d", d);
-    };
-
-    // Create a cleanup context
     const ctx = gsap.context(() => {
-      // Initial states
-      gsap.set(container, { autoAlpha: 0 });
-      gsap.set(textEl, { autoAlpha: 0 });
-      gsap.set(allTargetChars, { autoAlpha: 0, y: 40, filter: "blur(10px)" });
-
-      // Initialize path to hidden state (all points at 0 - wave starts at top)
-      for (let j = 0; j < numPoints; j++) {
-        points[j] = 0;
-      }
-      renderPath();
-
-      // === ANIMATION SEQUENCE ===
-
-      // 1. Fade in container (instant - it's full screen overlay)
-      timeline.to(container, {
-        autoAlpha: 1,
-        duration: 0.01,
-      });
-
-      // 2. Wave drips DOWN from top
-      timeline.addLabel("waveDrip");
-
-      // Generate random delays for each point column for organic feel
-      const pointsDelay: number[] = [];
-      for (let i = 0; i < numPoints; i++) {
-        pointsDelay[i] = Math.random() * delayPointsMax;
-      }
-
-      // Create a sub-timeline for the wave animation with onUpdate
-      const waveTl = gsap.timeline({
-        onUpdate: renderPath,
-      });
-
-      // Animate each point from 0 to 100 (drip down to cover screen)
-      for (let j = 0; j < numPoints; j++) {
-        const delay = pointsDelay[j];
-        waveTl.to(
-          points,
-          {
-            [j]: 100,
-            duration: 1.0,
-            ease: "power2.inOut",
-          },
-          delay
-        );
-      }
-
-      // Add the wave timeline to main timeline
-      timeline.add(waveTl, "waveDrip");
-
-      // 3. Small pause with black screen
-      timeline.to({}, { duration: 0.8 });
-
-      // 4. Reveal text
-      timeline.addLabel("textReveal");
-
-      // Play reveal sound
-      timeline.call(() => sounds.softChime(), [], "textReveal");
-
-      // Show text container
-      timeline.to(
-        textEl,
-        {
-          autoAlpha: 1,
-          duration: 0.01,
+      ScrollTrigger.create({
+        trigger: container,
+        start: "top top",
+        end: `+=${features.length * 100}vh`,
+        pin: true,
+        scrub: 0.5,
+        onUpdate: (self) => {
+          const index = Math.min(
+            Math.floor(self.progress * features.length),
+            features.length - 1
+          );
+          setActiveFeature(index);
         },
-        "textReveal"
-      );
-
-      // Reveal chars with elegant stagger
-      allTargetChars.forEach((char, i) => {
-        const delay = i * 0.025;
-
-        timeline.to(
-          char,
-          {
-            autoAlpha: 1,
-            y: 0,
-            filter: "blur(0px)",
-            duration: 0.8,
-            ease: "power3.out",
-          },
-          `textReveal+=${delay}`
-        );
       });
-
-      // Add glow effect to text
-      timeline.to(
-        textEl,
-        {
-          filter:
-            "drop-shadow(0 0 30px rgba(255,255,255,0.4)) drop-shadow(0 0 60px rgba(255,255,255,0.2))",
-          duration: 1.5,
-          ease: "power2.out",
-        },
-        "textReveal+=0.3"
-      );
-
-      // 5. Hold final state
-      timeline.to({}, { duration: 2.5 });
-
     }, container);
 
-    return () => {
-      ctx.revert();
-    };
-  }, [timeline]);
+    return () => ctx.revert();
+  }, []);
 
   return (
-    <div
-      ref={containerRef}
-      className="pointer-events-none fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden"
-    >
-      {/* Single solid black wave SVG - covers entire viewport */}
-      <svg
-        ref={svgRef}
-        className="absolute inset-0 h-full w-full"
-        viewBox="0 0 100 100"
-        preserveAspectRatio="none"
-      >
-        <path
-          ref={pathRef}
-          fill="#000000"
-        />
-      </svg>
+    <>
+      {/* Meet ScriptFX - simple, scrolls normally */}
+      <section className="relative left-1/2 flex h-screen w-screen -translate-x-1/2 items-center justify-center bg-black">
+        <div className="flex flex-col items-center justify-center gap-4 px-8">
+          <p className="text-center font-body text-[18px] font-normal tracking-[0.05em] text-white/80 md:text-[22px]">
+            Meet
+          </p>
+          <img
+            src="/brand/scriptfxlogolarge.svg"
+            alt="ScriptFX"
+            className="h-auto w-full max-w-[648px]"
+          />
+        </div>
+      </section>
 
-      {/* Text reveal - on top of black */}
-      <div
-        ref={textRef}
-        className="relative z-10 flex items-center justify-center px-8"
+      {/* Features - pins and scrolls through */}
+      <section
+        ref={containerRef}
+        className="relative left-1/2 h-screen w-screen -translate-x-1/2 bg-black"
       >
-        <h2 className="text-center font-display text-[42px] font-medium leading-[1.1] tracking-[-1px] text-white md:text-[72px] md:tracking-[-2px]">
-          {targetText.split("").map((char, i) => (
-            <span
-              key={i}
-              className="solution-char inline-block"
-              style={{ whiteSpace: char === " " ? "pre" : undefined }}
-            >
-              {char}
-            </span>
-          ))}
-        </h2>
-      </div>
-    </div>
+        <div className="h-full w-full px-6 py-6 md:px-12 md:py-12">
+          <div className="flex h-full w-full overflow-hidden rounded-[16px] border border-border bg-secondary-container">
+            {/* Left Panel */}
+            <div className="flex w-[320px] flex-shrink-0 flex-col border-r border-border p-8 md:w-[387px] md:p-12">
+              {/* Completed */}
+              <div className="space-y-2">
+                {features.slice(0, activeFeature).map((f) => (
+                  <div key={f.id} className="flex items-center gap-3 opacity-50">
+                    <div className="flex h-[34px] w-[42px] items-center justify-center rounded-2xl bg-primary">
+                      <span className="font-display text-[16px] font-medium text-white">{f.id}</span>
+                    </div>
+                    <span className="font-display text-[14px] font-medium uppercase tracking-[0.05em] text-on-surface-variant">
+                      {f.title}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Active */}
+              <div className="my-6 flex-1">
+                <p className="mb-3 font-body text-[12px] italic text-on-surface-variant">Feature</p>
+                <div className="mb-4 flex h-[50px] w-[50px] items-center justify-center rounded-full bg-primary">
+                  <span className="font-display text-[20px] font-medium text-white">
+                    {features[activeFeature].id}
+                  </span>
+                </div>
+                <h2 className="mb-3 font-display text-[36px] font-medium italic leading-[1.05] tracking-[-1.5px] text-on-surface md:text-[42px]">
+                  {features[activeFeature].title}
+                </h2>
+                <p className="font-body text-[14px] font-light leading-[1.5] text-on-surface-variant md:text-[16px]">
+                  {features[activeFeature].description}
+                </p>
+              </div>
+
+              {/* Upcoming */}
+              <div className="space-y-2">
+                {features.slice(activeFeature + 1).map((f) => (
+                  <div key={f.id} className="flex items-center gap-3 opacity-50">
+                    <div className="flex h-[34px] w-[42px] items-center justify-center rounded-2xl bg-primary">
+                      <span className="font-display text-[16px] font-medium text-white">{f.id}</span>
+                    </div>
+                    <span className="font-display text-[14px] font-medium uppercase tracking-[0.05em] text-on-surface-variant">
+                      {f.title}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Panel */}
+            <div className="flex flex-1 items-center justify-center p-8">
+              <p className="font-display text-[24px] text-on-surface-variant">
+                {features[activeFeature].title} - Content
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

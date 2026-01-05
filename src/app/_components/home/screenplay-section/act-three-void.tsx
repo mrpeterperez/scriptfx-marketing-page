@@ -7,9 +7,10 @@ import { sounds } from "@/lib/sounds";
 interface ActThreeVoidProps {
   timeline: gsap.core.Timeline | null;
   grayBoxRef?: React.RefObject<HTMLDivElement | null>;
+  paddingContainerRef?: React.RefObject<HTMLDivElement | null>;
 }
 
-export function ActThreeVoid({ timeline, grayBoxRef }: ActThreeVoidProps) {
+export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActThreeVoidProps) {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const sourceTextRef = React.useRef<HTMLDivElement>(null);
   const targetTextRef = React.useRef<HTMLDivElement>(null);
@@ -20,6 +21,10 @@ export function ActThreeVoid({ timeline, grayBoxRef }: ActThreeVoidProps) {
   const grainRef = React.useRef<HTMLDivElement>(null);
   const shakeRef = React.useRef<HTMLDivElement>(null);
   const shakeTimelineRef = React.useRef<gsap.core.Timeline | null>(null);
+  
+  // Curtain refs
+  const leftCurtainRef = React.useRef<HTMLDivElement>(null);
+  const rightCurtainRef = React.useRef<HTMLDivElement>(null);
 
   // Source text
   const leftLines = ["For decades, stories", "lived between margins."];
@@ -391,6 +396,85 @@ export function ActThreeVoid({ timeline, grayBoxRef }: ActThreeVoidProps) {
       // 8. Hold final text
       timeline.to({}, { duration: 2.5 });
       
+      // Get curtain elements
+      const leftCurtain = leftCurtainRef.current;
+      const rightCurtain = rightCurtainRef.current;
+      
+      // Initial states for curtains
+      if (leftCurtain) gsap.set(leftCurtain, { xPercent: -100 });
+      if (rightCurtain) gsap.set(rightCurtain, { xPercent: 100 });
+      
+      // === CURTAIN CLOSE ===
+      timeline.addLabel("curtainClose");
+      
+      // Fade out "That era is ending." text
+      timeline.to(
+        targetTextEl,
+        {
+          autoAlpha: 0,
+          filter: "blur(8px)",
+          duration: 0.8,
+          ease: "power2.in",
+        },
+        "curtainClose"
+      );
+      
+      // Curtains slide in from edges
+      if (leftCurtain && rightCurtain) {
+        timeline.to(
+          leftCurtain,
+          {
+            xPercent: 0,
+            duration: 1.2,
+            ease: "power2.inOut",
+          },
+          "curtainClose+=0.3"
+        );
+        timeline.to(
+          rightCurtain,
+          {
+            xPercent: 0,
+            duration: 1.2,
+            ease: "power2.inOut",
+          },
+          "curtainClose+=0.3"
+        );
+      }
+      
+      // Fade out gray box border/background when curtains close
+      if (grayBox) {
+        timeline.to(
+          grayBox,
+          {
+            borderColor: "transparent",
+            backgroundColor: "black",
+            borderRadius: 0,
+            duration: 0.8,
+            ease: "power2.inOut",
+          },
+          "curtainClose+=1.0"
+        );
+      }
+      
+      // Shrink padding container to 0 padding for seamless transition
+      const paddingContainer = paddingContainerRef?.current;
+      if (paddingContainer) {
+        timeline.to(
+          paddingContainer,
+          {
+            padding: 0,
+            duration: 0.8,
+            ease: "power2.inOut",
+          },
+          "curtainClose+=1.0"
+        );
+      }
+      
+      // === MEET SCRIPTFX REVEAL === (removed - now in act-four-solution)
+      
+      // Hold on black - screenplay section ends here
+      timeline.to({}, { duration: 1.0 });
+      
       // Get shake zone boundaries as ABSOLUTE times (not progress-based)
       // This way Act Four adding to timeline won't mess up the shake timing
       const shakeStartTime = timeline.labels["shakeStart"];
@@ -515,6 +599,16 @@ export function ActThreeVoid({ timeline, grayBoxRef }: ActThreeVoidProps) {
           </h2>
         </div>
       </div>
+      
+      {/* Curtains - slide in from edges to close */}
+      <div
+        ref={leftCurtainRef}
+        className="pointer-events-none absolute inset-y-0 left-0 z-[60] w-1/2 bg-black"
+      />
+      <div
+        ref={rightCurtainRef}
+        className="pointer-events-none absolute inset-y-0 right-0 z-[60] w-1/2 bg-black"
+      />
     </div>
   );
 }

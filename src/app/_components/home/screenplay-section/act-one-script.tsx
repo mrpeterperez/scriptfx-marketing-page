@@ -19,11 +19,11 @@ export function ActOneScript({ timeline }: ActOneScriptProps) {
     const screenplayContent = screenplayContentRef.current;
     const topGradient = topGradientRef.current;
 
-    // Initial states - start slightly faded and blurry (atmospheric, not meant to be read)
-    gsap.set(screenplayContent, { autoAlpha: 0.6, scale: 1, filter: "blur(1.5px)" });
+    // Initial states - dim text, no blur (atmospheric but clean)
+    gsap.set(screenplayContent, { autoAlpha: 1, scale: 1 });
     gsap.set(topGradient, { autoAlpha: 0 });
     
-    // Hide all lines initially
+    // Hide all lines initially - they'll reveal dim
     linesRef.current.forEach((line) => {
       if (line) gsap.set(line, { autoAlpha: 0, y: 20 });
     });
@@ -31,43 +31,53 @@ export function ActOneScript({ timeline }: ActOneScriptProps) {
     // Fade in top gradient early
     timeline.to(topGradient, { autoAlpha: 1, duration: 0.1 }, 0);
 
-    // 1. Reveal lines one by one (already slightly blurred from container)
+    // 1. Reveal lines one by one - dim (55% opacity)
     linesRef.current.forEach((line, i) => {
       if (!line) return;
       
       timeline.to(line, {
-        autoAlpha: 1,
+        autoAlpha: 0.55,
         y: 0,
         duration: 0.4, 
         ease: "power2.out",
-      }, i * 0.35); // Faster stagger since they're atmospheric
+      }, i * 0.35);
     });
 
-    // Shorter pause - they're not meant to read it anyway
+    // Short pause
     timeline.to({}, { duration: 1.2 });
 
-    // 2. Focus effect: Everything dims more, blur increases - "memory fading"
-    timeline.to(screenplayContent, {
-      autoAlpha: 0.35,
-      filter: "blur(3px)",
-      duration: 0.6,
-      ease: "power2.inOut",
+    // 2. Focus effect: Dim others more, FADE TO BLACK becomes solid white hero
+    const lastLine = linesRef.current[linesRef.current.length - 1];
+    
+    // Dim all lines EXCEPT the last one
+    linesRef.current.forEach((line, i) => {
+      if (!line) return;
+      const isLastLine = i === linesRef.current.length - 1;
+      
+      if (!isLastLine) {
+        timeline.to(line, {
+          autoAlpha: 0.2,
+          duration: 0.6,
+          ease: "power2.inOut",
+        }, i === 0 ? undefined : "<");
+      }
     });
     
-    // Last line gets slight glow through the blur
-    const lastLine = linesRef.current[linesRef.current.length - 1];
+    // FADE TO BLACK becomes SOLID WHITE with glow - the hero moment
     if (lastLine) {
       timeline.to(lastLine, {
-        textShadow: "0 0 30px rgba(255,255,255,0.6)",
-        duration: 0.5,
+        autoAlpha: 1,
+        color: "#ffffff",
+        textShadow: "0 0 30px rgba(255,255,255,0.5), 0 0 60px rgba(255,255,255,0.25)",
+        duration: 0.6,
         ease: "power2.out",
       }, "<");
     }
 
-    // 3. Hold the atmospheric "FADE TO BLACK" 
+    // 3. Hold the "FADE TO BLACK" hero moment
     timeline.to({}, { duration: 2 });
 
-    // 4. Dissolve completely - blur increases as it fades
+    // 4. Dissolve completely
     timeline.to(screenplayContent, {
       autoAlpha: 0,
       scale: 0.95,

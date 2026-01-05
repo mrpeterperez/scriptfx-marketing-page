@@ -104,7 +104,7 @@ export function ScreenplaySection() {
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: container,
-          start: "top 60%",
+          start: "top 75%",
           end: "bottom bottom",
           scrub: 0.5,
           invalidateOnRefresh: true,

@@ -15,6 +15,8 @@ export function ActThreeVoid({ timeline }: ActThreeVoidProps) {
   const rightColumnRef = React.useRef<HTMLDivElement>(null);
   const leftMarginRef = React.useRef<HTMLDivElement>(null);
   const dividerRef = React.useRef<HTMLDivElement>(null);
+  const grainRef = React.useRef<HTMLDivElement>(null);
+  const shakeRef = React.useRef<HTMLDivElement>(null);
 
   // Source text
   const leftLines = ["For decades, stories", "lived between margins."];
@@ -68,9 +70,9 @@ export function ActThreeVoid({ timeline }: ActThreeVoidProps) {
         gsap.set(rightColumn, { autoAlpha: 0, x: 40 });
       }
       
-      // Hide left margin initially (will expand from center)
+      // Hide left margin initially (will draw from top like a pen)
       if (leftMargin) {
-        gsap.set(leftMargin, { autoAlpha: 0, scaleY: 0, transformOrigin: "center center" });
+        gsap.set(leftMargin, { autoAlpha: 0, scaleY: 0, transformOrigin: "top center" });
       }
       
       // Calculate offset to center the left column
@@ -94,12 +96,13 @@ export function ActThreeVoid({ timeline }: ActThreeVoidProps) {
       }
       
       // Position divider as right margin initially (next to centered left text)
+      // Will draw from top like a pen
       if (divider) {
         gsap.set(divider, { 
           autoAlpha: 0, 
           scaleY: 0, 
           x: dividerMarginOffset,
-          transformOrigin: "center center"
+          transformOrigin: "top center"
         });
       }
 
@@ -134,32 +137,48 @@ export function ActThreeVoid({ timeline }: ActThreeVoidProps) {
       // 3. Hold for reading FIRST - let them read the text
       timeline.to({}, { duration: 2.0 });
 
-      // 4. MARGIN LINES expand from center outward (left margin + divider as right margin)
+      // 4. MARGIN LINES draw in like a pen stroke (from top to bottom)
       timeline.addLabel("margins");
       
       if (leftMargin) {
+        // Quick fade in
         timeline.to(
           leftMargin,
           {
             autoAlpha: 1,
-            scaleY: 1,
-            duration: 0.8,
-            ease: "power2.out",
+            duration: 0.1,
           },
           "margins"
         );
+        // Then draw down like a pen
+        timeline.to(
+          leftMargin,
+          {
+            scaleY: 1,
+            duration: 0.6,
+            ease: "power1.out", // Linear-ish like pen drawing
+          },
+          "margins+=0.1"
+        );
       }
-      // Divider appears as RIGHT MARGIN
+      // Divider draws as RIGHT MARGIN
       if (divider) {
         timeline.to(
           divider,
           {
             autoAlpha: 1,
-            scaleY: 1,
-            duration: 0.8,
-            ease: "power2.out",
+            duration: 0.1,
           },
-          "margins"
+          "margins+=0.15" // Slight delay for staggered pen effect
+        );
+        timeline.to(
+          divider,
+          {
+            scaleY: 1,
+            duration: 0.6,
+            ease: "power1.out",
+          },
+          "margins+=0.25"
         );
       }
 
@@ -196,6 +215,48 @@ export function ActThreeVoid({ timeline }: ActThreeVoidProps) {
           );
         }
         
+        // CAMERA SHAKE on wall impact!
+        const shakeContainer = shakeRef.current;
+        if (shakeContainer) {
+          timeline.to(
+            shakeContainer,
+            {
+              x: -3,
+              y: 1,
+              duration: 0.05,
+              ease: "power2.out",
+            },
+            "shift+=0.85" // Right when it hits
+          );
+          timeline.to(
+            shakeContainer,
+            {
+              x: 2,
+              y: -1,
+              duration: 0.05,
+              ease: "power2.out",
+            }
+          );
+          timeline.to(
+            shakeContainer,
+            {
+              x: -1,
+              y: 0,
+              duration: 0.05,
+              ease: "power2.out",
+            }
+          );
+          timeline.to(
+            shakeContainer,
+            {
+              x: 0,
+              y: 0,
+              duration: 0.1,
+              ease: "power2.out",
+            }
+          );
+        }
+        
         // Then bounce back to final position
         timeline.to(
           leftColumn,
@@ -204,7 +265,8 @@ export function ActThreeVoid({ timeline }: ActThreeVoidProps) {
             textAlign: "left",
             duration: 0.8,
             ease: "elastic.out(1, 0.4)",
-          }
+          },
+          "shift+=0.9"
         );
       }
       
@@ -284,7 +346,7 @@ export function ActThreeVoid({ timeline }: ActThreeVoidProps) {
         const randomX = (Math.random() - 0.5) * 150;
         const randomY = (Math.random() - 0.5) * 100;
         const randomRotate = (Math.random() - 0.5) * 45;
-        const delay = i * 0.025; // Much slower stagger
+        const delay = i * 0.025;
 
         timeline.to(
           char,
@@ -295,7 +357,7 @@ export function ActThreeVoid({ timeline }: ActThreeVoidProps) {
             rotation: randomRotate,
             scale: 0.3,
             filter: "blur(16px)",
-            duration: 1.8, // Longer duration to really see it
+            duration: 1.8,
             ease: "power2.inOut",
           },
           `dissolve+=${delay}`
@@ -315,7 +377,7 @@ export function ActThreeVoid({ timeline }: ActThreeVoidProps) {
         "reveal"
       );
 
-      // Reveal target chars with elegant stagger
+      // Reveal target chars with elegant stagger + GLOW
       allTargetChars.forEach((char, i) => {
         const delay = i * 0.03;
 
@@ -339,6 +401,17 @@ export function ActThreeVoid({ timeline }: ActThreeVoidProps) {
           `reveal+=${delay}`
         );
       });
+      
+      // Add soft glow bloom to entire target text
+      timeline.to(
+        targetTextEl,
+        {
+          filter: "drop-shadow(0 0 20px rgba(255,255,255,0.3)) drop-shadow(0 0 40px rgba(255,255,255,0.15))",
+          duration: 1.5,
+          ease: "power2.out",
+        },
+        "reveal+=0.5"
+      );
 
       // 8. Hold final text
       timeline.to({}, { duration: 2.5 });
@@ -352,11 +425,13 @@ export function ActThreeVoid({ timeline }: ActThreeVoidProps) {
       ref={containerRef}
       className="pointer-events-none absolute inset-0 z-50 flex items-center justify-center overflow-hidden"
     >
-      {/* Source text - tighter 2 column layout */}
-      <div
-        ref={sourceTextRef}
-        className="pointer-events-auto flex w-full max-w-5xl items-center justify-center gap-12 px-8 md:gap-20 md:px-12"
-      >
+      {/* Shake wrapper for camera shake effect */}
+      <div ref={shakeRef} className="absolute inset-0 flex items-center justify-center">
+        {/* Source text - tighter 2 column layout */}
+        <div
+          ref={sourceTextRef}
+          className="pointer-events-auto flex w-full max-w-5xl items-center justify-center gap-12 px-8 md:gap-20 md:px-12"
+        >
         {/* Left column with left margin line */}
         <div ref={leftColumnRef} className="relative select-text">
           {/* Left margin line */}
@@ -408,22 +483,23 @@ export function ActThreeVoid({ timeline }: ActThreeVoidProps) {
         </div>
       </div>
 
-      {/* Target text - center italic */}
-      <div
-        ref={targetTextRef}
-        className="pointer-events-none absolute inset-0 flex items-center justify-center"
-      >
-        <h2 className="text-center font-display text-[48px] font-medium italic leading-[1.1] tracking-[-1.2px] text-on-surface md:text-[75px] md:tracking-[-2px]">
-          {targetText.split("").map((char, i) => (
-            <span
-              key={i}
-              className="target-char inline-block"
-              style={{ whiteSpace: char === " " ? "pre" : undefined }}
-            >
-              {char}
-            </span>
-          ))}
-        </h2>
+        {/* Target text - center italic with glow */}
+        <div
+          ref={targetTextRef}
+          className="pointer-events-none absolute inset-0 flex items-center justify-center"
+        >
+          <h2 className="text-center font-display text-[48px] font-medium italic leading-[1.1] tracking-[-1.2px] text-on-surface md:text-[75px] md:tracking-[-2px]">
+            {targetText.split("").map((char, i) => (
+              <span
+                key={i}
+                className="target-char inline-block"
+                style={{ whiteSpace: char === " " ? "pre" : undefined }}
+              >
+                {char}
+              </span>
+            ))}
+          </h2>
+        </div>
       </div>
     </div>
   );

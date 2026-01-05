@@ -19,68 +19,59 @@ export function ActOneScript({ timeline }: ActOneScriptProps) {
     const screenplayContent = screenplayContentRef.current;
     const topGradient = topGradientRef.current;
 
-    // Initial states
-    gsap.set(screenplayContent, { autoAlpha: 1, scale: 1 });
+    // Initial states - start slightly faded and blurry (atmospheric, not meant to be read)
+    gsap.set(screenplayContent, { autoAlpha: 0.6, scale: 1, filter: "blur(1.5px)" });
     gsap.set(topGradient, { autoAlpha: 0 });
     
     // Hide all lines initially
     linesRef.current.forEach((line) => {
-      if (line) gsap.set(line, { autoAlpha: 0, filter: "blur(8px)", y: 20 });
+      if (line) gsap.set(line, { autoAlpha: 0, y: 20 });
     });
 
     // Fade in top gradient early
     timeline.to(topGradient, { autoAlpha: 1, duration: 0.1 }, 0);
 
-    // 1. Reveal lines one by one (Fade + Blur In)
+    // 1. Reveal lines one by one (already slightly blurred from container)
     linesRef.current.forEach((line, i) => {
       if (!line) return;
       
       timeline.to(line, {
         autoAlpha: 1,
-        filter: "blur(0px)",
         y: 0,
-        duration: 0.5, 
+        duration: 0.4, 
         ease: "power2.out",
-      }, i * 0.5); 
+      }, i * 0.35); // Faster stagger since they're atmospheric
     });
 
-    // Add a pause to ensure readability of the full script
+    // Shorter pause - they're not meant to read it anyway
+    timeline.to({}, { duration: 1.2 });
+
+    // 2. Focus effect: Everything dims more, blur increases - "memory fading"
+    timeline.to(screenplayContent, {
+      autoAlpha: 0.35,
+      filter: "blur(3px)",
+      duration: 0.6,
+      ease: "power2.inOut",
+    });
+    
+    // Last line gets slight glow through the blur
+    const lastLine = linesRef.current[linesRef.current.length - 1];
+    if (lastLine) {
+      timeline.to(lastLine, {
+        textShadow: "0 0 30px rgba(255,255,255,0.6)",
+        duration: 0.5,
+        ease: "power2.out",
+      }, "<");
+    }
+
+    // 3. Hold the atmospheric "FADE TO BLACK" 
     timeline.to({}, { duration: 2 });
 
-    // 2. Focus effect: Fade out previous lines, Glow the last line
-    linesRef.current.forEach((line, i) => {
-      if (!line) return;
-      const isLastLine = i === linesRef.current.length - 1;
-      
-      // Sync all animations to start together
-      const position = i === 0 ? undefined : "<";
-
-      if (isLastLine) {
-        // Glow effect for the last line
-        timeline.to(line, {
-          textShadow: "0 0 20px rgba(255,255,255,0.8), 0 0 40px rgba(255,255,255,0.4)",
-          duration: 0.5,
-          ease: "power2.out",
-        }, position); 
-      } else {
-        // Dim others
-        timeline.to(line, {
-          opacity: 0.2,
-          filter: "blur(1px)",
-          duration: 0.5,
-          ease: "power2.inOut",
-        }, position);
-      }
-    });
-
-    // 3. Hold the "FADE TO BLACK" glow for longer
-    timeline.to({}, { duration: 3 });
-
-    // 3. Dissolve the Script Content
+    // 4. Dissolve completely - blur increases as it fades
     timeline.to(screenplayContent, {
       autoAlpha: 0,
       scale: 0.95,
-      filter: "blur(10px)",
+      filter: "blur(12px)",
       duration: 1,
       ease: "power2.inOut",
     });

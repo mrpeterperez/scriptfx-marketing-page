@@ -14,6 +14,7 @@ if (typeof window !== "undefined") {
 
 export function ScreenplaySectionV2() {
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const grayBoxRef = React.useRef<HTMLDivElement>(null);
   const [timeline, setTimeline] = React.useState<gsap.core.Timeline | null>(null);
 
   React.useLayoutEffect(() => {
@@ -45,11 +46,14 @@ export function ScreenplaySectionV2() {
       {/* Sticky container */}
       <div className="sticky top-0 h-[100svh] w-full">
         <div className="relative h-full w-full px-6 py-6 md:px-12 md:py-12">
-          <div className="relative h-full w-full overflow-hidden rounded-[16px] border border-border bg-secondary-container">
+          <div 
+            ref={grayBoxRef}
+            className="relative h-full w-full overflow-hidden rounded-[16px] border border-border bg-secondary-container"
+          >
             
             <ActOneScript timeline={timeline} />
             <ActTwoTagline timeline={timeline} />
-            <ActThreeVoid timeline={timeline} />
+            <ActThreeVoid timeline={timeline} grayBoxRef={grayBoxRef} />
 
           </div>
         </div>

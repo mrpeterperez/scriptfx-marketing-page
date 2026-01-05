@@ -3,6 +3,7 @@
 import * as React from "react";
 import { gsap } from "gsap";
 import { screenplayLines, getLineClass } from "./screenplay-data";
+import { sounds } from "@/lib/sounds";
 
 interface ActOneScriptProps {
   timeline: gsap.core.Timeline | null;
@@ -31,9 +32,12 @@ export function ActOneScript({ timeline }: ActOneScriptProps) {
     // Fade in top gradient early
     timeline.to(topGradient, { autoAlpha: 1, duration: 0.1 }, 0);
 
-    // 1. Reveal lines one by one - dim (55% opacity)
+    // 1. Reveal lines one by one - dim (55% opacity) with typewriter sound
     linesRef.current.forEach((line, i) => {
       if (!line) return;
+      
+      // Trigger typewriter click sound for each line
+      timeline.call(() => sounds.typewriterClick(), [], i * 0.35);
       
       timeline.to(line, {
         autoAlpha: 0.55,

@@ -213,12 +213,13 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
               ref={(el) => {
                 textLinesRef.current[1] = el;
               }}
-              className="block"
+              className="block relative"
             >
+              <div className="absolute inset-0 z-[-1] animate-pulse blur-[40px] opacity-40 bg-white/20 rounded-full scale-110" />
               <img
                 src="/brand/scriptfxlogolarge.svg"
                 alt="ScriptFX"
-                className="mx-auto h-auto w-full max-w-[500px]"
+                className="relative z-10 mx-auto h-auto w-full max-w-[500px] drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]"
               />
             </span>
           </h2>

@@ -119,9 +119,9 @@ export function ActFourSolution() {
       }}
     >
       <div className="relative h-full w-full px-6 py-6 md:px-12 md:py-12">
-        <div className="flex h-full w-full overflow-hidden rounded-[16px] border border-border bg-secondary-container">
+        <div className="flex h-full w-full overflow-hidden rounded-[16px] border border-white/10 bg-black/40 backdrop-blur-3xl shadow-2xl ring-1 ring-white/5">
           {/* Left Panel - Feature List */}
-          <div className="flex w-[320px] flex-shrink-0 flex-col border-r border-border p-8 md:w-[387px] md:p-12">
+          <div className="flex w-[320px] flex-shrink-0 flex-col border-r border-white/10 p-8 md:w-[387px] md:p-12">
             {/* Completed */}
             <div className="space-y-2">
               {features.slice(0, activeFeature).map((f) => {
@@ -181,10 +181,19 @@ export function ActFourSolution() {
           </div>
 
           {/* Right Panel */}
-          <div className="flex flex-1 items-center justify-center p-8">
-            <p className="font-display text-[24px] text-on-surface-variant">
-              {features[activeFeature].title} - Content
-            </p>
+          <div className="flex flex-1 items-center justify-center p-8 relative overflow-hidden group">
+            {/* Ambient background glow for right panel */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-primary/5 via-transparent to-primary/5 opacity-0 transition-opacity duration-700 group-hover:opacity-100 blur-3xl pointer-events-none" />
+            
+            <div 
+              key={activeFeature} // Key change triggers animation
+              className="animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out"
+            >
+               <p className="font-display text-[24px] text-on-surface-variant font-light tracking-wide">
+                <span className="text-primary/60 text-sm block mb-2 font-mono uppercase tracking-widest">Scene {features[activeFeature].id}</span>
+                {features[activeFeature].title} - Content Placeholder
+              </p>
+            </div>
           </div>
         </div>
       </div>

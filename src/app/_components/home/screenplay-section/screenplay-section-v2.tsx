@@ -46,7 +46,9 @@ export function ScreenplaySectionV2() {
         ref={containerRef}
         className="relative z-10 bg-black opacity-100"
         style={{ 
-          height: "450svh", // Reduced from 500svh since we shortened the end hold
+          // Add extra hold so the following features section can overlap by 100svh
+          // without shortening the overall scroll.
+          height: "550svh",
           width: "100vw", 
           marginLeft: "calc(50% - 50vw)" 
         }}

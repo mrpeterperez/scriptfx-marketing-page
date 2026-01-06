@@ -456,6 +456,10 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
           "curtainClose+=0.3"
         );
       }
+
+      // Label the exact moment the curtains are fully closed
+      // (0.3s delay + 2.5s close duration)
+      timeline.addLabel("curtainsClosed", "curtainClose+=2.8");
       
       // Fade out gray box border/background when curtains close
       if (grayBox) {
@@ -485,9 +489,8 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
           "curtainClose+=1.5"
         );
       }
-      
-      // Short hold on black before section ends
-      timeline.to({}, { duration: 0.5 });
+
+      // No extra hold on black — next act should hit immediately
       
       // Get shake zone boundaries as ABSOLUTE times (not progress-based)
       // This way Act Four adding to timeline won't mess up the shake timing

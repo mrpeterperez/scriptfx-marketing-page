@@ -65,15 +65,13 @@ export function ScreenplaySectionV2() {
               <ActOneScript timeline={timeline} />
               <ActTwoTagline timeline={timeline} />
               <ActThreeVoid timeline={timeline} grayBoxRef={grayBoxRef} paddingContainerRef={paddingContainerRef} />
+              {timeline ? <ActFiveReveal timeline={timeline} /> : null}
 
             </div>
           </div>
         </div>
       </section>
-      
-      {/* Act 5: Meet ScriptFX - Video masked in letters */}
-      <ActFiveReveal />
-      
+
       {/* Act 6: Features Section */}
       <ActFourSolution />
     </>

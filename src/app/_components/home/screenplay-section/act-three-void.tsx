@@ -26,9 +26,6 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
   const leftCurtainRef = React.useRef<HTMLDivElement>(null);
   const rightCurtainRef = React.useRef<HTMLDivElement>(null);
 
-  // Logo ref
-  const logoContainerRef = React.useRef<HTMLDivElement>(null);
-
   // Source text
   const leftLines = ["For decades, stories", "lived between margins."];
   const rightLines = ["Pitched.", "Optioned.", "Noted.", "Parked."];
@@ -121,11 +118,6 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
       allSourceChars.forEach((char) => {
         gsap.set(char, { autoAlpha: 0, y: 30, filter: "blur(8px)" });
       });
-
-      // Ensure logo is hidden initially
-      if (logoContainerRef.current) {
-        gsap.set(logoContainerRef.current, { autoAlpha: 0 });
-      }
 
       // === ANIMATION SEQUENCE - Each moment gets its time to shine ===
 
@@ -494,48 +486,8 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
         );
       }
       
-      // === MEET SCRIPTFX REVEAL ===
-      const logoContainer = logoContainerRef.current;
-      if (logoContainer) {
-        // Set initial scale
-        gsap.set(logoContainer, { scale: 0.95 });
-
-        // Fade in logo slowly after a moment of darkness
-        timeline.to(
-          logoContainer,
-          {
-            autoAlpha: 1,
-            duration: 2.0,
-            ease: "power2.inOut", 
-          },
-          "curtainClose+=3.3"
-        );
-
-        // Zoom in effect (scale up) - continuous movement
-        timeline.to(
-          logoContainer,
-          {
-            scale: 2.0,
-            duration: 5.0, // Long continuous zoom
-            ease: "none", 
-          },
-          "curtainClose+=3.3"
-        );
-        
-        // Ensure fade completes well before zoom ends so we see it clearly
-        timeline.to(
-          logoContainer,
-          {
-            autoAlpha: 1,
-            duration: 1.5, // Faster fade
-            ease: "power2.inOut",
-          },
-          "curtainClose+=3.3"
-        );
-      }
-
-      // No static hold needed - the long zoom IS the hold
-      // This ensures we keep moving until the very end of the pinned section
+      // Short hold on black before section ends
+      timeline.to({}, { duration: 0.5 });
       
       // Get shake zone boundaries as ABSOLUTE times (not progress-based)
       // This way Act Four adding to timeline won't mess up the shake timing
@@ -671,19 +623,6 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
         ref={rightCurtainRef}
         className="pointer-events-none absolute inset-y-0 right-0 z-[60] w-1/2 bg-black"
       />
-      {/* Meet ScriptFX Reveal - Appears over curtains */}
-      <div 
-        ref={logoContainerRef}
-        className="pointer-events-none absolute inset-0 z-[70] flex flex-col items-center justify-center gap-4 px-8 opacity-0"
-      >
-        <p className="text-center font-body text-[18px] font-normal tracking-[0.05em] text-white/80 md:text-[22px]">
-          Meet
-        </p>
-        <img
-          src="/brand/scriptfxlogolarge.svg"
-          alt="ScriptFX"
-          className="h-auto w-full max-w-[648px]"
-        />
-      </div>    </div>
+    </div>
   );
 }

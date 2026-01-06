@@ -6,6 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ActOneScript } from "./act-one-script";
 import { ActTwoTagline } from "./act-two-tagline";
 import { ActThreeVoid } from "./act-three-void";
+import { ActFiveReveal } from "./act-five-reveal";
 import { ActFourSolution } from "./act-four-solution";
 
 // Register plugins
@@ -70,7 +71,10 @@ export function ScreenplaySectionV2() {
         </div>
       </section>
       
-      {/* Meet ScriptFX + Features Section - comes after screenplay */}
+      {/* Act 5: Meet ScriptFX - Video masked in letters */}
+      <ActFiveReveal />
+      
+      {/* Act 6: Features Section */}
       <ActFourSolution />
     </>
   );

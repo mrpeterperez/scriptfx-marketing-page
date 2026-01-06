@@ -43,8 +43,12 @@ export function ScreenplaySectionV2() {
     <>
       <section
         ref={containerRef}
-        className="relative left-1/2 w-screen -translate-x-1/2 bg-black opacity-100"
-        style={{ height: "500svh" }}
+        className="relative z-10 bg-black opacity-100"
+        style={{ 
+          height: "450svh", // Reduced from 500svh since we shortened the end hold
+          width: "100vw", 
+          marginLeft: "calc(50% - 50vw)" 
+        }}
       >
         {/* Sticky container */}
         <div className="sticky top-0 h-[100svh] w-full">

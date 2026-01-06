@@ -41,6 +41,7 @@ const features = [
 
 export function ActFourSolution() {
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const scrollTriggerRef = React.useRef<ScrollTrigger | null>(null);
   const [activeFeature, setActiveFeature] = React.useState(0);
 
   React.useLayoutEffect(() => {
@@ -48,7 +49,7 @@ export function ActFourSolution() {
     if (!container) return;
 
     const ctx = gsap.context(() => {
-      ScrollTrigger.create({
+      const st = ScrollTrigger.create({
         trigger: container,
         start: "top top",
         end: `+=${features.length * 100}vh`,
@@ -61,60 +62,86 @@ export function ActFourSolution() {
           );
           setActiveFeature(index);
         },
+        onEnter: () => {
+          // Show nav when entering features section
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(new CustomEvent("scriptfx-toggle-nav", { 
+              detail: { visible: true } 
+            }));
+          }
+        },
+        onLeaveBack: () => {
+          // Hide nav when going back to void/logo section
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(new CustomEvent("scriptfx-toggle-nav", { 
+              detail: { visible: false } 
+            }));
+          }
+        }
       });
+      scrollTriggerRef.current = st;
     }, container);
 
     return () => ctx.revert();
   }, []);
 
+  const handleFeatureClick = (index: number) => {
+    const st = scrollTriggerRef.current;
+    if (!st || !st.end) return;
+    
+    // Calculate scroll position exactly in the middle of that feature's section
+    const totalDistance = st.end - st.start;
+    const progressPerFeature = 1 / features.length;
+    const targetProgress = (index * progressPerFeature) + (progressPerFeature / 2); // Center of the slot
+    const scrollPos = st.start + (totalDistance * targetProgress);
+
+    window.scrollTo({
+      top: scrollPos,
+      behavior: "smooth"
+    });
+  };
+
   return (
     <>
-      {/* Meet ScriptFX - simple, scrolls normally */}
-      <section className="relative left-1/2 flex h-screen w-screen -translate-x-1/2 items-center justify-center bg-black">
-        <div className="flex flex-col items-center justify-center gap-4 px-8">
-          <p className="text-center font-body text-[18px] font-normal tracking-[0.05em] text-white/80 md:text-[22px]">
-            Meet
-          </p>
-          <img
-            src="/brand/scriptfxlogolarge.svg"
-            alt="ScriptFX"
-            className="h-auto w-full max-w-[648px]"
-          />
-        </div>
-      </section>
-
       {/* Features - pins and scrolls through */}
       <section
         ref={containerRef}
-        className="relative left-1/2 h-screen w-screen -translate-x-1/2 bg-black"
+        className="relative h-screen w-screen bg-black"
+        style={{ width: "100vw", marginLeft: "calc(50% - 50vw)" }}
       >
         <div className="h-full w-full px-6 py-6 md:px-12 md:py-12">
           <div className="flex h-full w-full overflow-hidden rounded-[16px] border border-border bg-secondary-container">
-            {/* Left Panel */}
+            {/* Left Panel - Feature List */}
             <div className="flex w-[320px] flex-shrink-0 flex-col border-r border-border p-8 md:w-[387px] md:p-12">
               {/* Completed */}
               <div className="space-y-2">
-                {features.slice(0, activeFeature).map((f) => (
-                  <div key={f.id} className="flex items-center gap-3 opacity-50">
-                    <div className="flex h-[34px] w-[42px] items-center justify-center rounded-2xl bg-primary">
-                      <span className="font-display text-[16px] font-medium text-white">{f.id}</span>
+                {features.slice(0, activeFeature).map((f) => {
+                  const originalIndex = features.findIndex(item => item.id === f.id);
+                  return (
+                    <div 
+                      key={f.id} 
+                      onClick={() => handleFeatureClick(originalIndex)}
+                      className="flex cursor-pointer items-center gap-3 opacity-50 transition-opacity hover:opacity-100"
+                    >
+                      <div className="flex h-[34px] w-[42px] items-center justify-center rounded-2xl bg-primary">
+                        <span className="font-display text-[16px] font-medium text-white">{f.id}</span>
+                      </div>
+                      <span className="font-display text-[14px] font-medium uppercase tracking-[0.05em] text-on-surface-variant">
+                        {f.title}
+                      </span>
                     </div>
-                    <span className="font-display text-[14px] font-medium uppercase tracking-[0.05em] text-on-surface-variant">
-                      {f.title}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Active */}
               <div className="my-6 flex-1">
-                <p className="mb-3 font-body text-[12px] italic text-on-surface-variant">Feature</p>
                 <div className="mb-4 flex h-[50px] w-[50px] items-center justify-center rounded-full bg-primary">
                   <span className="font-display text-[20px] font-medium text-white">
                     {features[activeFeature].id}
                   </span>
                 </div>
-                <h2 className="mb-3 font-display text-[36px] font-medium italic leading-[1.05] tracking-[-1.5px] text-on-surface md:text-[42px]">
+                <h2 className="mb-3 font-display text-[36px] font-medium leading-[1.05] tracking-[-1.5px] text-on-surface md:text-[42px]">
                   {features[activeFeature].title}
                 </h2>
                 <p className="font-body text-[14px] font-light leading-[1.5] text-on-surface-variant md:text-[16px]">
@@ -124,16 +151,23 @@ export function ActFourSolution() {
 
               {/* Upcoming */}
               <div className="space-y-2">
-                {features.slice(activeFeature + 1).map((f) => (
-                  <div key={f.id} className="flex items-center gap-3 opacity-50">
-                    <div className="flex h-[34px] w-[42px] items-center justify-center rounded-2xl bg-primary">
-                      <span className="font-display text-[16px] font-medium text-white">{f.id}</span>
+                {features.slice(activeFeature + 1).map((f) => {
+                  const originalIndex = features.findIndex(item => item.id === f.id);
+                  return (
+                    <div 
+                      key={f.id} 
+                      onClick={() => handleFeatureClick(originalIndex)}
+                      className="flex cursor-pointer items-center gap-3 opacity-50 transition-opacity hover:opacity-100"
+                    >
+                      <div className="flex h-[34px] w-[42px] items-center justify-center rounded-2xl bg-primary">
+                        <span className="font-display text-[16px] font-medium text-white">{f.id}</span>
+                      </div>
+                      <span className="font-display text-[14px] font-medium uppercase tracking-[0.05em] text-on-surface-variant">
+                        {f.title}
+                      </span>
                     </div>
-                    <span className="font-display text-[14px] font-medium uppercase tracking-[0.05em] text-on-surface-variant">
-                      {f.title}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 

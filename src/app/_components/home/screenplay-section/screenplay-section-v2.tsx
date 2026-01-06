@@ -50,7 +50,7 @@ export function ScreenplaySectionV2() {
     <>
       <section
         ref={containerRef}
-        className="relative z-10 bg-surface opacity-100"
+        className="relative z-10 bg-transparent opacity-100"
         style={{ 
           // Add extra hold so the following features section can overlap by 100svh
           // without shortening the overall scroll.
@@ -82,6 +82,16 @@ export function ScreenplaySectionV2() {
 
       {/* Act 6: Features Section */}
       <ActFourSolution />
+
+      <section
+        data-scriptfx-after-features="true"
+        className="relative z-[90] flex h-[100svh] w-screen items-center justify-center bg-transparent"
+        style={{ width: "100vw", marginLeft: "calc(50% - 50vw)" }}
+      >
+        <div className="font-display text-[64px] font-medium tracking-[-2.4px] text-on-surface">
+          TEST
+        </div>
+      </section>
     </>
   );
 }

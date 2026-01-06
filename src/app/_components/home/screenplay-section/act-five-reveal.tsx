@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -19,6 +20,7 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
   const textLinesRef = React.useRef<(HTMLSpanElement | null)[]>([]);
   const videoContainerRef = React.useRef<HTMLDivElement>(null);
   const videoRef = React.useRef<HTMLVideoElement>(null);
+  const scrimRef = React.useRef<HTMLDivElement>(null);
 
   const isTimelineDriven = !!timeline;
 
@@ -27,8 +29,9 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
     const textContainer = textContainerRef.current;
     const videoContainer = videoContainerRef.current;
     const video = videoRef.current;
+    const scrim = scrimRef.current;
 
-    if (!container || !textContainer || !videoContainer || !video) return;
+    if (!container || !textContainer || !videoContainer || !video || !scrim) return;
 
     const ctx = gsap.context(() => {
       gsap.set(container, { autoAlpha: isTimelineDriven ? 0 : 1 });
@@ -37,15 +40,19 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
         if (line) gsap.set(line, { autoAlpha: 0, filter: "blur(12px)" });
       });
       gsap.set(videoContainer, { autoAlpha: 0 });
-      gsap.set(video, { filter: "blur(18px)", scale: 1.02, transformOrigin: "center" });
+      gsap.set(video, { filter: "blur(20px)", scale: 1.02, transformOrigin: "center" });
+      // Important: this layer is portaled + fixed; keep it hidden until Act 5 starts.
+      gsap.set(scrim, { autoAlpha: 0 });
 
       const reveal = (tl: gsap.core.Timeline, at: gsap.Position) => {
         const base = "__act5Start";
         tl.addLabel(base, at);
 
-        // Black screen + Meet first
+        // Start Act 5 with the video already behind the title.
         tl.to(container, { autoAlpha: 1, duration: 0.01 }, base);
         tl.to(textContainer, { autoAlpha: 1, duration: 0.01 }, base);
+        tl.to(videoContainer, { autoAlpha: 1, duration: 0.01 }, base);
+        tl.to(scrim, { autoAlpha: 0.65, duration: 0.01 }, base);
 
         // Ensure autoplay kicks in reliably across browsers
         tl.call(() => {
@@ -68,34 +75,31 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
           );
         }
 
-        // Hold on black w/ "Meet" for a beat
-        tl.to({}, { duration: 1.8 }, base);
-
         // After Meet, reveal ScriptFX (logo)
-        const logoStart = ">";
+        const logoStart = ">+=0.6";
         if (logoLine) {
           tl.to(
             logoLine,
             {
               autoAlpha: 1,
               filter: "blur(0px)",
-              duration: 1.0,
+              duration: 0.7,
               ease: "power2.out",
             },
             logoStart
           );
         }
 
-        // Hold on black w/ "Meet ScriptFX"
-        tl.to({}, { duration: 2.0 });
+        // One beat on black w/ both lines visible
+        tl.to({}, { duration: 1.0 });
 
-        // Video fades in
+        // Video: deblur + slightly lift the scrim
         const videoStart = ">";
         tl.to(
-          videoContainer,
+          scrim,
           {
-            autoAlpha: 1,
-            duration: 1.2,
+            autoAlpha: 0.35,
+            duration: 0.5,
             ease: "power2.out",
           },
           videoStart
@@ -103,7 +107,7 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
         tl.to(
           video,
           {
-            filter: "blur(0px)",
+            filter: "blur(2px)",
             scale: 1,
             duration: 1.2,
             ease: "power2.out",
@@ -181,35 +185,13 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
     };
   }, []);
 
-  // Fade the video out when the features panel fully pins on top.
-  React.useEffect(() => {
-    const handler = (evt: Event) => {
-      const custom = evt as CustomEvent<{ pinned?: boolean }>;
-      const pinned = !!custom.detail?.pinned;
-      const videoContainer = videoContainerRef.current;
-      if (!videoContainer) return;
-
-      gsap.to(videoContainer, {
-        autoAlpha: pinned ? 0 : 1,
-        duration: 0.6,
-        ease: "power2.inOut",
-        overwrite: true,
-      });
-    };
-
-    window.addEventListener("scriptfx-features-pinned", handler as EventListener);
-    return () => {
-      window.removeEventListener("scriptfx-features-pinned", handler as EventListener);
-    };
-  }, []);
-
   const overlay = (
     <div
       ref={containerRef}
       className={
         isTimelineDriven
-          ? "pointer-events-none absolute inset-0 z-[70] overflow-hidden bg-black opacity-0"
-          : "absolute inset-0 overflow-hidden bg-black opacity-100"
+          ? "pointer-events-none fixed inset-0 z-[70] overflow-hidden opacity-0"
+          : "fixed inset-0 overflow-hidden opacity-100"
       }
     >
       {/* Meet ScriptFX text */}
@@ -242,11 +224,15 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
           </h2>
         </div>
       </div>
+    </div>
+  );
 
-      {/* Video */}
+  const pinnedLayers = (
+    <>
+      {/* Video (pinned/fixed so it can continue beyond later sections) */}
       <div
         ref={videoContainerRef}
-        className="absolute inset-0 z-10 overflow-hidden opacity-0"
+        className="pointer-events-none fixed inset-0 z-[60] overflow-hidden opacity-0"
       >
         <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-40 bg-gradient-to-b from-secondary-container via-secondary-container/80 to-transparent" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-40 bg-gradient-to-t from-black via-black/80 to-transparent" />
@@ -263,13 +249,25 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
             preload="auto"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/30" />
+          <div aria-hidden="true" className="scriptfx-grain z-20" />
         </div>
       </div>
-    </div>
+
+      {/* Scrim for readability (behind video) */}
+      <div
+        ref={scrimRef}
+        className="pointer-events-none fixed inset-0 z-[65] bg-black opacity-0"
+      />
+    </>
   );
 
   if (isTimelineDriven) {
-    return overlay;
+    return (
+      <>
+        {typeof document !== "undefined" ? createPortal(overlay, document.body) : null}
+        {typeof document !== "undefined" ? createPortal(pinnedLayers, document.body) : null}
+      </>
+    );
   }
 
   return (
@@ -278,6 +276,7 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
       className="relative h-screen w-screen bg-black"
       style={{ width: "100vw", marginLeft: "calc(50% - 50vw)" }}
     >
+      {typeof document !== "undefined" ? createPortal(pinnedLayers, document.body) : null}
       <div className="h-full w-full px-6 py-6 md:px-12 md:py-12">
         <div className="relative h-full w-full overflow-hidden rounded-[16px] border border-border bg-secondary-container">
           {overlay}

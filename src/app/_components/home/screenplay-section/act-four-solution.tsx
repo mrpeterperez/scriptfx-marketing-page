@@ -43,7 +43,6 @@ export function ActFourSolution() {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const scrollTriggerRef = React.useRef<ScrollTrigger | null>(null);
   const [activeFeature, setActiveFeature] = React.useState(0);
-  const [surfaceVisible, setSurfaceVisible] = React.useState(false);
 
   React.useLayoutEffect(() => {
     const container = containerRef.current;
@@ -64,8 +63,6 @@ export function ActFourSolution() {
           setActiveFeature(index);
         },
         onEnter: () => {
-          // Only show the surface backdrop once we're fully on top (pinned).
-          setSurfaceVisible(true);
           window.dispatchEvent(
             new CustomEvent("scriptfx-features-pinned", { detail: { pinned: true } })
           );
@@ -74,14 +71,11 @@ export function ActFourSolution() {
           }));
         },
         onEnterBack: () => {
-          setSurfaceVisible(true);
           window.dispatchEvent(
             new CustomEvent("scriptfx-features-pinned", { detail: { pinned: true } })
           );
         },
         onLeaveBack: () => {
-          // Going back up: return to transparent so the video reads behind again.
-          setSurfaceVisible(false);
           window.dispatchEvent(
             new CustomEvent("scriptfx-features-pinned", { detail: { pinned: false } })
           );
@@ -115,7 +109,7 @@ export function ActFourSolution() {
     <section
       ref={containerRef}
       data-scriptfx-features="true"
-      className="relative z-20 h-screen w-screen bg-transparent"
+      className="relative z-[80] h-screen w-screen bg-transparent"
       style={{
         width: "100vw",
         marginLeft: "calc(50% - 50vw)",
@@ -124,14 +118,6 @@ export function ActFourSolution() {
         marginTop: "-100svh",
       }}
     >
-      {/* Surface backdrop: only appears once the section is fully on top */}
-      <div
-        aria-hidden="true"
-        className={`pointer-events-none absolute inset-0 ${
-          surfaceVisible ? "bg-surface" : "bg-transparent"
-        }`}
-      />
-
       <div className="relative h-full w-full px-6 py-6 md:px-12 md:py-12">
         <div className="flex h-full w-full overflow-hidden rounded-[16px] border border-border bg-secondary-container">
           {/* Left Panel - Feature List */}

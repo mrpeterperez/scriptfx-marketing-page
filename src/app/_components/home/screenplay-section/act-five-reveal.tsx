@@ -18,20 +18,15 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
   const textLinesRef = React.useRef<(HTMLSpanElement | null)[]>([]);
   const videoContainerRef = React.useRef<HTMLDivElement>(null);
   const videoRef = React.useRef<HTMLVideoElement>(null);
-  const screenplayOverlayRef = React.useRef<HTMLDivElement>(null);
-
-  const loremText = React.useMemo(() => 
-    "Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium totam rem aperiam eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est qui dolorem ipsum quia dolor sit amet consectetur adipisci velit sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam quis nostrum exercitationem ullam corporis suscipit laboriosam nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident similique sunt in culpa qui officia deserunt mollitia animi id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus omnis voluptas assumenda est omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat. ".repeat(15),
-  []);
+  const pushTriggerRef = React.useRef<ScrollTrigger | null>(null);
 
   React.useLayoutEffect(() => {
     const container = containerRef.current;
     const textContainer = textContainerRef.current;
     const videoContainer = videoContainerRef.current;
     const video = videoRef.current;
-    const screenplayOverlay = screenplayOverlayRef.current;
 
-    if (!container || !textContainer || !videoContainer || !video || !screenplayOverlay) return;
+    if (!container || !textContainer || !videoContainer || !video) return;
 
     const ctx = gsap.context(() => {
       // In timeline-driven mode, we start fully hidden and reveal at `startLabel`.
@@ -45,7 +40,6 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
       });
       gsap.set(videoContainer, { autoAlpha: 0 });
       gsap.set(video, { filter: "blur(18px)", scale: 1.02, transformOrigin: "center" });
-      gsap.set(screenplayOverlay, { autoAlpha: 0, filter: "blur(8px)", scale: 0.98 });
 
       const reveal = (tl: gsap.core.Timeline, at: gsap.Position) => {
         const base = "__act5Start";
@@ -77,7 +71,7 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
         }
 
         // Hold on black w/ "Meet" for a beat
-        tl.to({}, { duration: 1.2 }, base);
+        tl.to({}, { duration: 1.8 }, base);
 
         // After Meet, reveal ScriptFX (logo) + screenplay pages at SAME TIME
         const logoStart = ">";
@@ -95,21 +89,8 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
           );
         }
 
-        // Vast text wall appears with ScriptFX
-        tl.to(
-          screenplayOverlay,
-          {
-            autoAlpha: 1,
-            filter: "blur(0px)",
-            scale: 1,
-            duration: 0.7,
-            ease: "power2.out",
-          },
-          logoStart
-        );
-
-        // Hold on black w/ "Meet ScriptFX" + screenplay pages longer
-        tl.to({}, { duration: 1.4 });
+        // Hold on black w/ "Meet ScriptFX" longer (no text-wall)
+        tl.to({}, { duration: 2.0 });
 
         // Video fades in while screenplay pages dissolve
         const videoStart = ">";
@@ -122,17 +103,6 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
           },
           videoStart
         );
-
-        // Dissolve screenplay overlay as video sharpens
-        tl.to(
-          screenplayOverlay,
-          {
-            autoAlpha: 0,
-            duration: 0.9,
-            ease: "power2.out",
-          },
-          "<+=0.25"
-        );
         tl.to(
           video,
           {
@@ -144,15 +114,11 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
           "<"
         );
 
+        // Let the fully revealed video breathe.
+        tl.to({}, { duration: 1.6 });
+
         // Let it breathe, then fade the text away (video keeps looping)
         tl.to({}, { duration: 1.1 });
-        tl.to(textContainer, {
-          autoAlpha: 0,
-          scale: 0.95,
-          filter: "blur(8px)",
-          duration: 1.2,
-          ease: "power2.inOut",
-        });
       };
 
       if (timeline) {
@@ -182,6 +148,71 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
     return () => ctx.revert();
   }, [timeline, startLabel]);
 
+  // Fade the video out when the features panel fully pins on top.
+  React.useEffect(() => {
+    const handler = (evt: Event) => {
+      const custom = evt as CustomEvent<{ pinned?: boolean }>;
+      const pinned = !!custom.detail?.pinned;
+      const videoContainer = videoContainerRef.current;
+      if (!videoContainer) return;
+
+      gsap.to(videoContainer, {
+        autoAlpha: pinned ? 0 : 1,
+        duration: 0.6,
+        ease: "power2.inOut",
+        overwrite: true,
+      });
+    };
+
+    window.addEventListener("scriptfx-features-pinned", handler as EventListener);
+    return () => {
+      window.removeEventListener("scriptfx-features-pinned", handler as EventListener);
+    };
+  }, []);
+
+  // Push the "Meet ScriptFX" text upward as the features panel rises in.
+  // Important: we do NOT move the video container.
+  React.useLayoutEffect(() => {
+    const textContainer = textContainerRef.current;
+    if (!textContainer) return;
+
+    const reduceMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion) return;
+
+    const featuresEl = document.querySelector<HTMLElement>(
+      "[data-scriptfx-features='true']"
+    );
+    if (!featuresEl) return;
+
+    // Ensure starting position.
+    gsap.set(textContainer, { y: 0 });
+
+    const st = ScrollTrigger.create({
+      trigger: featuresEl,
+      start: "top bottom",
+      end: "top top",
+      scrub: true,
+      onUpdate: (self) => {
+        // Keep the Meet ScriptFX block riding just above the rising panel.
+        // With the text container bottom-aligned and pb-12 (48px),
+        // translating by -progress*vh maintains a constant ~48px gap.
+        gsap.set(textContainer, { y: -self.progress * window.innerHeight });
+      },
+      onLeaveBack: () => {
+        gsap.set(textContainer, { y: 0 });
+      },
+    });
+
+    pushTriggerRef.current = st;
+    return () => {
+      pushTriggerRef.current?.kill();
+      pushTriggerRef.current = null;
+      gsap.set(textContainer, { y: 0 });
+    };
+  }, []);
+
   const isTimelineDriven = !!timeline;
 
   const overlay = (
@@ -193,16 +224,6 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
           : "absolute inset-0 overflow-hidden bg-black opacity-100"
       }
     >
-      {/* Vast lorem ipsum text wall overlay */}
-      <div
-        ref={screenplayOverlayRef}
-        className="pointer-events-none absolute inset-0 z-20 overflow-hidden p-3 md:p-4 opacity-0"
-      >
-        <div className="h-full w-full select-none font-mono text-[8px] leading-[1.2] tracking-[0.01em] text-white/18 md:text-[9px] md:leading-[1.25] break-all">
-          {loremText}
-        </div>
-      </div>
-
       {/* Video (inside the same screen box container) */}
       <div
         ref={videoContainerRef}
@@ -229,7 +250,7 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
       {/* Meet ScriptFX Text */}
       <div
         ref={textContainerRef}
-        className="absolute inset-0 z-30 flex items-center justify-center p-8"
+        className="absolute inset-0 z-30 flex items-end justify-center px-8 pb-12"
       >
         <div className="text-center">
           <h2 className="font-display text-[36px] font-medium leading-[1.1] tracking-[-1.2px] text-on-surface md:text-[75px] md:tracking-[-2.4px]">

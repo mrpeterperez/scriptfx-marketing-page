@@ -25,11 +25,17 @@ export function ScreenplaySectionV2() {
     if (!container) return;
 
     const ctx = gsap.context(() => {
+      const reduceMotion =
+        typeof window !== "undefined" &&
+        window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: container,
           start: "top center",
-          end: "bottom bottom",
+          // Finish the animation ~1 viewport before the section ends,
+          // leaving a "hold" where the final scene can breathe.
+          end: () => `bottom-=${window.innerHeight}px bottom`,
           scrub: 0.8,
         },
       });
@@ -44,7 +50,7 @@ export function ScreenplaySectionV2() {
     <>
       <section
         ref={containerRef}
-        className="relative z-10 bg-black opacity-100"
+        className="relative z-10 bg-surface opacity-100"
         style={{ 
           // Add extra hold so the following features section can overlap by 100svh
           // without shortening the overall scroll.

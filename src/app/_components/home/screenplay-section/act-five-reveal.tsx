@@ -147,6 +147,30 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
     return () => ctx.revert();
   }, [timeline, startLabel, isTimelineDriven]);
 
+  // Push the ScriptFX text up when features section pushes it
+  React.useLayoutEffect(() => {
+    const textContainer = textContainerRef.current;
+    if (!textContainer) return;
+
+    const featuresSection = document.querySelector('[data-scriptfx-features="true"]');
+    if (!featuresSection) return;
+
+    const ctx = gsap.context(() => {
+      gsap.to(textContainer, {
+        y: "-100vh",
+        ease: "none",
+        scrollTrigger: {
+          trigger: featuresSection,
+          start: "top bottom-=800px", // Start when features is 200px from viewport bottom
+          end: "top top",
+          scrub: true,
+        },
+      });
+    });
+
+    return () => ctx.revert();
+  }, []);
+
   // Fade the video out when the features panel fully pins on top.
   React.useEffect(() => {
     const handler = (evt: Event) => {

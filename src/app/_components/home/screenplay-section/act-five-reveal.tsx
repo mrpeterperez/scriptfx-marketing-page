@@ -18,7 +18,8 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
   const textLinesRef = React.useRef<(HTMLSpanElement | null)[]>([]);
   const videoContainerRef = React.useRef<HTMLDivElement>(null);
   const videoRef = React.useRef<HTMLVideoElement>(null);
-  const pushTriggerRef = React.useRef<ScrollTrigger | null>(null);
+
+  const isTimelineDriven = !!timeline;
 
   React.useLayoutEffect(() => {
     const container = containerRef.current;
@@ -29,12 +30,8 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
     if (!container || !textContainer || !videoContainer || !video) return;
 
     const ctx = gsap.context(() => {
-      // In timeline-driven mode, we start fully hidden and reveal at `startLabel`.
-      // In standalone mode, we behave like the previous pinned section.
-      const isTimelineDriven = !!timeline;
-
       gsap.set(container, { autoAlpha: isTimelineDriven ? 0 : 1 });
-      gsap.set(textContainer, { autoAlpha: 1, scale: 1, filter: "none" });
+      gsap.set(textContainer, { autoAlpha: isTimelineDriven ? 0 : 1, scale: 1, filter: "none" });
       textLinesRef.current.forEach((line) => {
         if (line) gsap.set(line, { autoAlpha: 0, y: 30, filter: "blur(12px)" });
       });
@@ -47,6 +44,7 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
 
         // Black screen + Meet first
         tl.to(container, { autoAlpha: 1, duration: 0.01 }, base);
+        tl.to(textContainer, { autoAlpha: 1, duration: 0.01 }, base);
 
         // Ensure autoplay kicks in reliably across browsers
         tl.call(() => {
@@ -73,7 +71,7 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
         // Hold on black w/ "Meet" for a beat
         tl.to({}, { duration: 1.8 }, base);
 
-        // After Meet, reveal ScriptFX (logo) + screenplay pages at SAME TIME
+        // After Meet, reveal ScriptFX (logo)
         const logoStart = ">";
         if (logoLine) {
           tl.to(
@@ -89,10 +87,10 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
           );
         }
 
-        // Hold on black w/ "Meet ScriptFX" longer (no text-wall)
+        // Hold on black w/ "Meet ScriptFX"
         tl.to({}, { duration: 2.0 });
 
-        // Video fades in while screenplay pages dissolve
+        // Video fades in
         const videoStart = ">";
         tl.to(
           videoContainer,
@@ -117,7 +115,7 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
         // Let the fully revealed video breathe.
         tl.to({}, { duration: 1.6 });
 
-        // Let it breathe, then fade the text away (video keeps looping)
+        // Extra hold
         tl.to({}, { duration: 1.1 });
       };
 
@@ -126,6 +124,7 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
         return;
       }
 
+      // Standalone mode (fallback)
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: scrollRootRef.current ?? container,
@@ -146,7 +145,7 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
     }, container);
 
     return () => ctx.revert();
-  }, [timeline, startLabel]);
+  }, [timeline, startLabel, isTimelineDriven]);
 
   // Fade the video out when the features panel fully pins on top.
   React.useEffect(() => {
@@ -170,51 +169,6 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
     };
   }, []);
 
-  // Push the "Meet ScriptFX" text upward as the features panel rises in.
-  // Important: we do NOT move the video container.
-  React.useLayoutEffect(() => {
-    const textContainer = textContainerRef.current;
-    if (!textContainer) return;
-
-    const reduceMotion =
-      typeof window !== "undefined" &&
-      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    if (reduceMotion) return;
-
-    const featuresEl = document.querySelector<HTMLElement>(
-      "[data-scriptfx-features='true']"
-    );
-    if (!featuresEl) return;
-
-    // Ensure starting position.
-    gsap.set(textContainer, { y: 0 });
-
-    const st = ScrollTrigger.create({
-      trigger: featuresEl,
-      start: "top bottom",
-      end: "top top",
-      scrub: true,
-      onUpdate: (self) => {
-        // Keep the Meet ScriptFX block riding just above the rising panel.
-        // With the text container bottom-aligned and pb-12 (48px),
-        // translating by -progress*vh maintains a constant ~48px gap.
-        gsap.set(textContainer, { y: -self.progress * window.innerHeight });
-      },
-      onLeaveBack: () => {
-        gsap.set(textContainer, { y: 0 });
-      },
-    });
-
-    pushTriggerRef.current = st;
-    return () => {
-      pushTriggerRef.current?.kill();
-      pushTriggerRef.current = null;
-      gsap.set(textContainer, { y: 0 });
-    };
-  }, []);
-
-  const isTimelineDriven = !!timeline;
-
   const overlay = (
     <div
       ref={containerRef}
@@ -224,33 +178,10 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
           : "absolute inset-0 overflow-hidden bg-black opacity-100"
       }
     >
-      {/* Video (inside the same screen box container) */}
-      <div
-        ref={videoContainerRef}
-        className="absolute inset-0 overflow-hidden opacity-0"
-      >
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-40 bg-gradient-to-b from-secondary-container via-secondary-container/80 to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-40 bg-gradient-to-t from-black via-black/80 to-transparent" />
-
-        <div className="relative h-full w-full overflow-hidden">
-          <video
-            ref={videoRef}
-            src="/brand/scriptfxtest.mp4"
-            className="h-full w-full object-cover"
-            muted
-            autoPlay
-            loop
-            playsInline
-            preload="auto"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/30" />
-        </div>
-      </div>
-
-      {/* Meet ScriptFX Text */}
+      {/* Meet ScriptFX text */}
       <div
         ref={textContainerRef}
-        className="absolute inset-0 z-30 flex items-end justify-center px-8 pb-12"
+        className="absolute inset-0 z-20 flex items-center justify-center p-8"
       >
         <div className="text-center">
           <h2 className="font-display text-[36px] font-medium leading-[1.1] tracking-[-1.2px] text-on-surface md:text-[75px] md:tracking-[-2.4px]">
@@ -258,7 +189,7 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
               ref={(el) => {
                 textLinesRef.current[0] = el;
               }}
-              className="block font-body text-[18px] font-normal tracking-[0.05em] text-white/80 md:text-[22px] mb-4"
+              className="mb-4 block font-body text-[18px] font-normal tracking-[0.05em] text-white/80 md:text-[22px]"
             >
               Meet
             </span>
@@ -275,6 +206,29 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
               />
             </span>
           </h2>
+        </div>
+      </div>
+
+      {/* Video */}
+      <div
+        ref={videoContainerRef}
+        className="absolute inset-0 z-10 overflow-hidden opacity-0"
+      >
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-40 bg-gradient-to-b from-secondary-container via-secondary-container/80 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-40 bg-gradient-to-t from-black via-black/80 to-transparent" />
+
+        <div className="relative h-full w-full overflow-hidden">
+          <video
+            ref={videoRef}
+            src="/brand/scriptfxtest.mp4"
+            className="h-full w-full object-cover"
+            muted
+            autoPlay
+            loop
+            playsInline
+            preload="auto"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/30" />
         </div>
       </div>
     </div>

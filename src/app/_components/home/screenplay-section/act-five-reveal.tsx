@@ -33,7 +33,7 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
       gsap.set(container, { autoAlpha: isTimelineDriven ? 0 : 1 });
       gsap.set(textContainer, { autoAlpha: isTimelineDriven ? 0 : 1, scale: 1, filter: "none" });
       textLinesRef.current.forEach((line) => {
-        if (line) gsap.set(line, { autoAlpha: 0, y: 30, filter: "blur(12px)" });
+        if (line) gsap.set(line, { autoAlpha: 0, filter: "blur(12px)" });
       });
       gsap.set(videoContainer, { autoAlpha: 0 });
       gsap.set(video, { filter: "blur(18px)", scale: 1.02, transformOrigin: "center" });
@@ -59,7 +59,6 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
             meetLine,
             {
               autoAlpha: 1,
-              y: 0,
               filter: "blur(0px)",
               duration: 0.01,
               ease: "none",
@@ -78,7 +77,6 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
             logoLine,
             {
               autoAlpha: 1,
-              y: 0,
               filter: "blur(0px)",
               duration: 1.0,
               ease: "power2.out",
@@ -147,28 +145,39 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
     return () => ctx.revert();
   }, [timeline, startLabel, isTimelineDriven]);
 
-  // Push the ScriptFX text up when features section pushes it
-  React.useLayoutEffect(() => {
+  // Push the ScriptFX text up when features section pushes it (physics-based)
+  React.useEffect(() => {
     const textContainer = textContainerRef.current;
     if (!textContainer) return;
 
     const featuresSection = document.querySelector('[data-scriptfx-features="true"]');
     if (!featuresSection) return;
 
-    const ctx = gsap.context(() => {
-      gsap.to(textContainer, {
-        y: "-100vh",
-        ease: "none",
-        scrollTrigger: {
-          trigger: featuresSection,
-          start: "top bottom-=800px", // Start when features is 200px from viewport bottom
-          end: "top top",
-          scrub: true,
-        },
-      });
-    });
+    const handleScroll = () => {
+      const textRect = textContainer.getBoundingClientRect();
+      const featuresRect = featuresSection.getBoundingClientRect();
+      
+      // Get the current transform so we can calculate natural position
+      const currentY = gsap.getProperty(textContainer, "y") as number || 0;
+      const naturalTextBottom = textRect.bottom - currentY;
+      
+      const featuresTop = featuresRect.top;
+      
+      // Only push when features panel actually touches the text (gap <= 0)
+      if (featuresTop <= naturalTextBottom) {
+        const pushAmount = naturalTextBottom - featuresTop;
+        gsap.set(textContainer, { y: -pushAmount });
+      } else {
+        gsap.set(textContainer, { y: 0 });
+      }
+    };
 
-    return () => ctx.revert();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   // Fade the video out when the features panel fully pins on top.

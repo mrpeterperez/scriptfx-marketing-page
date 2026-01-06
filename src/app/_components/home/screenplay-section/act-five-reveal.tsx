@@ -15,6 +15,7 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
   const scrollRootRef = React.useRef<HTMLElement>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const textContainerRef = React.useRef<HTMLDivElement>(null);
+  const textBlockRef = React.useRef<HTMLDivElement>(null);
   const textLinesRef = React.useRef<(HTMLSpanElement | null)[]>([]);
   const videoContainerRef = React.useRef<HTMLDivElement>(null);
   const videoRef = React.useRef<HTMLVideoElement>(null);
@@ -147,18 +148,18 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
 
   // Push the ScriptFX text up when features section pushes it (physics-based)
   React.useEffect(() => {
-    const textContainer = textContainerRef.current;
-    if (!textContainer) return;
+    const textBlock = textBlockRef.current;
+    if (!textBlock) return;
 
     const featuresSection = document.querySelector('[data-scriptfx-features="true"]');
     if (!featuresSection) return;
 
     const handleScroll = () => {
-      const textRect = textContainer.getBoundingClientRect();
+      const textRect = textBlock.getBoundingClientRect();
       const featuresRect = featuresSection.getBoundingClientRect();
       
       // Get the current transform so we can calculate natural position
-      const currentY = gsap.getProperty(textContainer, "y") as number || 0;
+      const currentY = (gsap.getProperty(textBlock, "y") as number) || 0;
       const naturalTextBottom = textRect.bottom - currentY;
       
       const featuresTop = featuresRect.top;
@@ -166,9 +167,9 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
       // Only push when features panel actually touches the text (gap <= 0)
       if (featuresTop <= naturalTextBottom) {
         const pushAmount = naturalTextBottom - featuresTop;
-        gsap.set(textContainer, { y: -pushAmount });
+        gsap.set(textBlock, { y: -pushAmount });
       } else {
-        gsap.set(textContainer, { y: 0 });
+        gsap.set(textBlock, { y: 0 });
       }
     };
 
@@ -216,7 +217,7 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
         ref={textContainerRef}
         className="absolute inset-0 z-20 flex items-center justify-center p-8"
       >
-        <div className="text-center">
+        <div ref={textBlockRef} className="text-center">
           <h2 className="font-display text-[36px] font-medium leading-[1.1] tracking-[-1.2px] text-on-surface md:text-[75px] md:tracking-[-2.4px]">
             <span
               ref={(el) => {

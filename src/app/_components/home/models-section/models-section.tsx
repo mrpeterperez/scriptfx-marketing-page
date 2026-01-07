@@ -32,9 +32,9 @@ export function ModelsSection({ className }: ModelsSectionProps) {
       gsap.set(overlayRef.current, { autoAlpha: 0 });
       gsap.set(contentRef.current, { autoAlpha: 1, y: 0 });
 
-      if (show) gsap.set(show, { autoAlpha: 1 });
+      if (show) gsap.set(show, { autoAlpha: 0 });
       if (dontTell) gsap.set(dontTell, { autoAlpha: 0 });
-      if (button) gsap.set(button, { autoAlpha: 0, y: 16, scale: 0.98, filter: "blur(8px)" });
+      if (button) gsap.set(button, { autoAlpha: 0, y: 16, scale: 0.98 });
 
       ScrollTrigger.create({
         trigger: containerRef.current,
@@ -61,15 +61,25 @@ export function ModelsSection({ className }: ModelsSectionProps) {
         },
       });
 
-      // "Don't tell." fades in
-      if (dontTell) {
-        tl.to(dontTell, {
+      // "Show." fades in first
+      if (show) {
+        tl.to(show, {
           autoAlpha: 1,
-          duration: 0.2,
+          duration: 0.15,
           ease: "power2.out",
         }, 0);
       }
 
+      // "Don't tell." fades in after
+      if (dontTell) {
+        tl.to(dontTell, {
+          autoAlpha: 1,
+          duration: 0.15,
+          ease: "power2.out",
+        }, 0.1);
+      }
+
+      // Hold before button appears
       tl.to({}, { duration: 0.2 });
 
       // Button appears
@@ -80,11 +90,10 @@ export function ModelsSection({ className }: ModelsSectionProps) {
             autoAlpha: 1,
             y: 0,
             scale: 1,
-            filter: "blur(0px)",
             duration: 0.2,
             ease: "power2.out",
           },
-          ">-=0.2"
+          ">"
         );
       }
 
@@ -98,15 +107,17 @@ export function ModelsSection({ className }: ModelsSectionProps) {
     <section
       ref={containerRef}
       data-scriptfx-models="true"
-      className={`relative z-[100] flex h-[100svh] w-screen items-center justify-center overflow-hidden bg-transparent p-8 ${className ?? ""}`}
+      className={`relative z-[100] h-[100svh] w-screen bg-transparent ${className ?? ""}`}
       style={{ width: "100vw", marginLeft: "calc(50% - 50vw)" }}
     >
       <div
         ref={overlayRef}
-        className="pointer-events-none fixed inset-0 z-40 opacity-0 backdrop-blur-md"
+        className="pointer-events-none fixed inset-0 z-40 opacity-0"
       />
 
-      <div ref={contentRef} className="relative z-[100] mx-auto max-w-5xl text-center">
+      <div className="relative h-full w-full px-6 py-6 md:px-12 md:py-12">
+        <div className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-[16px] border border-border bg-secondary-container">
+          <div ref={contentRef} className="relative z-[100] mx-auto max-w-5xl text-center">
         <h2
           ref={headlineRef}
           className="mb-12 font-display text-[48px] font-medium leading-[1.15] tracking-[-1px] text-on-surface md:text-[75px] md:tracking-[-2px]"
@@ -118,6 +129,8 @@ export function ModelsSection({ className }: ModelsSectionProps) {
           <Button href="/get-access" size="lg" className="px-10 py-6 text-[18px]">
             Get Access
           </Button>
+        </div>
+          </div>
         </div>
       </div>
     </section>

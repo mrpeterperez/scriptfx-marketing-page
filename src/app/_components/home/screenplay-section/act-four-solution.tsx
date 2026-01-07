@@ -42,6 +42,13 @@ const features = [
 export function ActFourSolution() {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const scrollTriggerRef = React.useRef<ScrollTrigger | null>(null);
+  const leftPanelRef = React.useRef<HTMLDivElement>(null);
+  const rightPanelRef = React.useRef<HTMLDivElement>(null);
+  const finalMessageRef = React.useRef<HTMLDivElement>(null);
+  const finalPart1Ref = React.useRef<HTMLSpanElement>(null);
+  const finalPart2Ref = React.useRef<HTMLSpanElement>(null);
+  const finalPart3Ref = React.useRef<HTMLSpanElement>(null);
+  const finalSubtextRef = React.useRef<HTMLParagraphElement>(null);
   const [activeFeature, setActiveFeature] = React.useState(0);
 
   React.useLayoutEffect(() => {
@@ -49,6 +56,26 @@ export function ActFourSolution() {
     if (!container) return;
 
     const ctx = gsap.context(() => {
+      // Total phases: 6 features + 6 for extended final message hold = 12
+      const totalPhases = features.length + 6;
+
+      // Set initial state for final message elements
+      if (finalMessageRef.current) {
+        gsap.set(finalMessageRef.current, { autoAlpha: 0 });
+      }
+      if (finalPart1Ref.current) {
+        gsap.set(finalPart1Ref.current, { autoAlpha: 0, y: 30, filter: "blur(12px)" });
+      }
+      if (finalPart2Ref.current) {
+        gsap.set(finalPart2Ref.current, { autoAlpha: 0, y: 30, filter: "blur(12px)" });
+      }
+      if (finalPart3Ref.current) {
+        gsap.set(finalPart3Ref.current, { autoAlpha: 0, y: 30, filter: "blur(12px)" });
+      }
+      if (finalSubtextRef.current) {
+        gsap.set(finalSubtextRef.current, { autoAlpha: 0, y: 20, filter: "blur(8px)" });
+      }
+
       // Bring the top nav back slightly before this section reaches the top.
       // This keeps the nav visible during the transition into the pinned features.
       ScrollTrigger.create({
@@ -80,15 +107,88 @@ export function ActFourSolution() {
       const st = ScrollTrigger.create({
         trigger: container,
         start: "top top",
-        end: `+=${features.length * 100}vh`, // Scroll distance for all features
+        end: `+=${totalPhases * 100}vh`, // Scroll distance for all features + final message
         pin: true,
-        scrub: 0.5,
+        scrub: true,
         onUpdate: (self) => {
-          const index = Math.min(
-            Math.floor(self.progress * features.length),
-            features.length - 1
-          );
-          setActiveFeature(index);
+          const phase = self.progress * totalPhases;
+          
+          if (phase >= features.length) {
+            // Final message phase - calculate sub-progress within final message
+            const finalMessageProgress = (phase - features.length) / (totalPhases - features.length);
+            
+            // Animate elements based on scroll progress within final message phase
+            if (leftPanelRef.current && rightPanelRef.current && finalMessageRef.current) {
+              const panelProgress = Math.min(finalMessageProgress * 3, 1); // First 33% of final phase
+              gsap.set(leftPanelRef.current, {
+                autoAlpha: 1 - panelProgress,
+                x: -50 * panelProgress,
+                filter: `blur(${10 * panelProgress}px)`,
+              });
+              gsap.set(rightPanelRef.current, {
+                autoAlpha: 1 - panelProgress,
+                x: 50 * panelProgress,
+                filter: `blur(${10 * panelProgress}px)`,
+              });
+              gsap.set(finalMessageRef.current, {
+                autoAlpha: Math.min(panelProgress * 2, 1),
+              });
+            }
+            
+            // Staggered text reveals - compressed to finish by 40% so we have 60% hold time
+            if (finalPart1Ref.current) {
+              const part1Progress = Math.max(0, Math.min((finalMessageProgress - 0.15) * 10, 1));
+              gsap.set(finalPart1Ref.current, {
+                autoAlpha: part1Progress,
+                y: 30 * (1 - part1Progress),
+                filter: `blur(${12 * (1 - part1Progress)}px)`,
+              });
+            }
+            if (finalPart2Ref.current) {
+              const part2Progress = Math.max(0, Math.min((finalMessageProgress - 0.22) * 10, 1));
+              gsap.set(finalPart2Ref.current, {
+                autoAlpha: part2Progress,
+                y: 30 * (1 - part2Progress),
+                filter: `blur(${12 * (1 - part2Progress)}px)`,
+              });
+            }
+            if (finalPart3Ref.current) {
+              const part3Progress = Math.max(0, Math.min((finalMessageProgress - 0.29) * 10, 1));
+              gsap.set(finalPart3Ref.current, {
+                autoAlpha: part3Progress,
+                y: 30 * (1 - part3Progress),
+                filter: `blur(${12 * (1 - part3Progress)}px)`,
+              });
+            }
+            if (finalSubtextRef.current) {
+              const subtextProgress = Math.max(0, Math.min((finalMessageProgress - 0.36) * 10, 1));
+              gsap.set(finalSubtextRef.current, {
+                autoAlpha: subtextProgress,
+                y: 20 * (1 - subtextProgress),
+                filter: `blur(${8 * (1 - subtextProgress)}px)`,
+              });
+            }
+            
+            setActiveFeature(features.length - 1);
+          } else {
+            // Reset final message elements when not in final phase
+            if (finalMessageRef.current) {
+              gsap.set(finalMessageRef.current, { autoAlpha: 0 });
+            }
+            if (leftPanelRef.current && rightPanelRef.current) {
+              gsap.set([leftPanelRef.current, rightPanelRef.current], {
+                autoAlpha: 1,
+                x: 0,
+                filter: "blur(0px)",
+              });
+            }
+            
+            const index = Math.min(
+              Math.floor(phase),
+              features.length - 1
+            );
+            setActiveFeature(index);
+          }
         },
         onEnter: () => {
           window.dispatchEvent(
@@ -152,9 +252,12 @@ export function ActFourSolution() {
       }}
     >
       <div className="relative h-full w-full px-6 py-6 md:px-12 md:py-12">
-        <div className="flex h-full w-full overflow-hidden rounded-[16px] border border-white/10 bg-black/40 backdrop-blur-3xl shadow-2xl ring-1 ring-white/5">
+        <div className="relative flex h-full w-full overflow-hidden rounded-[16px] border border-white/10 bg-black/40 backdrop-blur-3xl shadow-2xl ring-1 ring-white/5">
           {/* Left Panel - Feature List */}
-          <div className="flex w-[320px] flex-shrink-0 flex-col border-r border-white/10 p-8 md:w-[387px] md:p-12">
+          <div 
+            ref={leftPanelRef}
+            className="flex w-[320px] flex-shrink-0 flex-col border-r border-white/10 p-8 md:w-[387px] md:p-12"
+          >
             {/* Completed */}
             <div className="space-y-2">
               {features.slice(0, activeFeature).map((f) => {
@@ -214,7 +317,10 @@ export function ActFourSolution() {
           </div>
 
           {/* Right Panel */}
-          <div className="flex flex-1 items-center justify-center p-8 relative overflow-hidden group">
+          <div 
+            ref={rightPanelRef}
+            className="flex flex-1 items-center justify-center p-8 relative overflow-hidden group"
+          >
             {/* Ambient background glow for right panel */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-primary/5 via-transparent to-primary/5 opacity-0 transition-opacity duration-700 group-hover:opacity-100 blur-3xl pointer-events-none" />
             
@@ -225,6 +331,28 @@ export function ActFourSolution() {
                <p className="font-display text-[24px] text-on-surface-variant font-light tracking-wide">
                 <span className="text-primary/60 text-sm block mb-2 font-mono uppercase tracking-widest">Scene {features[activeFeature].id}</span>
                 {features[activeFeature].title} - Content Placeholder
+              </p>
+            </div>
+          </div>
+
+          {/* Final Message - Centered */}
+          <div
+            ref={finalMessageRef}
+            className="absolute inset-0 flex items-center justify-center invisible"
+          >
+            <div className="max-w-4xl text-center px-8">
+              <h2 
+                className="mb-8 font-display text-[48px] font-medium leading-[1.15] tracking-[-1px] text-on-surface md:text-[75px] md:tracking-[-2px]"
+              >
+                <span ref={finalPart1Ref} className="inline-block">One workflow.</span>{" "}
+                <span ref={finalPart2Ref} className="inline-block">Any model.</span>{" "}
+                <span ref={finalPart3Ref} className="inline-block">Zero churn.</span>
+              </h2>
+              <p 
+                ref={finalSubtextRef}
+                className="font-body text-[22px] font-normal leading-[1.5] text-on-surface/90 md:text-[28px]"
+              >
+                ScriptFX handles the models so you don't have to.
               </p>
             </div>
           </div>

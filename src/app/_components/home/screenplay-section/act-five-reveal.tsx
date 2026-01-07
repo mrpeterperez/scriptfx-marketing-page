@@ -185,11 +185,11 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
     };
   }, []);
 
-  // When the Models section arrives, push the pinned Act 5 layers upward
-  // so the Models panel displaces the video instead of overlapping it.
+  // When the Show Don't Tell section arrives, push the pinned Act 5 layers upward
+  // so the Show Don't Tell panel displaces the video instead of overlapping it.
   React.useEffect(() => {
-    const modelsSection = document.querySelector('[data-scriptfx-models="true"]');
-    if (!modelsSection) return;
+    const showDontTellSection = document.querySelector('[data-scriptfx-show-dont-tell="true"]');
+    if (!showDontTellSection) return;
 
     const videoContainer = videoContainerRef.current;
     const scrim = scrimRef.current;
@@ -198,14 +198,14 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
     if (!videoContainer || !scrim || !overlayContainer) return;
 
     const handleScroll = () => {
-      const modelsRect = (modelsSection as HTMLElement).getBoundingClientRect();
+      const showDontTellRect = (showDontTellSection as HTMLElement).getBoundingClientRect();
       const viewportHeight = window.innerHeight || 0;
 
-      // When the top of Models enters the viewport, start displacing.
-      // modelsRect.top === viewportHeight => 0 displacement
-      // modelsRect.top === 0 => full viewport displacement
+      // When the top of Show Don't Tell enters the viewport, start displacing.
+      // showDontTellRect.top === viewportHeight => 0 displacement
+      // showDontTellRect.top === 0 => full viewport displacement
       const displacement = Math.min(
-        Math.max(viewportHeight - modelsRect.top, 0),
+        Math.max(viewportHeight - showDontTellRect.top, 0),
         viewportHeight
       );
 

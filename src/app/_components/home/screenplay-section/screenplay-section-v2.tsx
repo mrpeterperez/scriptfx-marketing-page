@@ -8,7 +8,7 @@ import { ActTwoTagline } from "./act-two-tagline";
 import { ActThreeVoid } from "./act-three-void";
 import { ActFiveReveal } from "./act-five-reveal";
 import { ActFourSolution } from "./act-four-solution";
-import { ModelsSection } from "../models-section";
+import { ShowDontTell } from "../show-dont-tell";
 
 // Register plugins
 if (typeof window !== "undefined") {
@@ -84,8 +84,8 @@ export function ScreenplaySectionV2() {
       {/* Act 6: Features Section */}
       <ActFourSolution />
 
-      {/* Models Section */}
-      <ModelsSection />
+      {/* Show. Don't tell. Section */}
+      <ShowDontTell />
     </>
   );
 }

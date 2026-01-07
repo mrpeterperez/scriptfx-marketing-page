@@ -8,6 +8,7 @@ import { ActTwoTagline } from "./act-two-tagline";
 import { ActThreeVoid } from "./act-three-void";
 import { ActFiveReveal } from "./act-five-reveal";
 import { ActFourSolution } from "./act-four-solution";
+import { ModelsSection } from "../models-section";
 
 // Register plugins
 if (typeof window !== "undefined") {
@@ -36,7 +37,7 @@ export function ScreenplaySectionV2() {
           // Finish the animation ~1 viewport before the section ends,
           // leaving a "hold" where the final scene can breathe.
           end: () => `bottom-=${window.innerHeight}px bottom`,
-          scrub: 0.8,
+          scrub: 0.3,
         },
       });
       
@@ -83,15 +84,8 @@ export function ScreenplaySectionV2() {
       {/* Act 6: Features Section */}
       <ActFourSolution />
 
-      <section
-        data-scriptfx-after-features="true"
-        className="relative z-[90] flex h-[100svh] w-screen items-center justify-center bg-transparent"
-        style={{ width: "100vw", marginLeft: "calc(50% - 50vw)" }}
-      >
-        <div className="font-display text-[64px] font-medium tracking-[-2.4px] text-on-surface">
-          TEST
-        </div>
-      </section>
+      {/* Models Section */}
+      <ModelsSection />
     </>
   );
 }

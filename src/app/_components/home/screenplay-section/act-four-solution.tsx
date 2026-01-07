@@ -49,6 +49,34 @@ export function ActFourSolution() {
     if (!container) return;
 
     const ctx = gsap.context(() => {
+      // Bring the top nav back slightly before this section reaches the top.
+      // This keeps the nav visible during the transition into the pinned features.
+      ScrollTrigger.create({
+        trigger: container,
+        start: "top bottom-=120",
+        onEnter: () => {
+          window.dispatchEvent(
+            new CustomEvent("scriptfx-toggle-nav", {
+              detail: { visible: true },
+            })
+          );
+        },
+        onEnterBack: () => {
+          window.dispatchEvent(
+            new CustomEvent("scriptfx-toggle-nav", {
+              detail: { visible: true },
+            })
+          );
+        },
+        onLeaveBack: () => {
+          window.dispatchEvent(
+            new CustomEvent("scriptfx-toggle-nav", {
+              detail: { visible: false },
+            })
+          );
+        },
+      });
+
       const st = ScrollTrigger.create({
         trigger: container,
         start: "top top",
@@ -73,6 +101,11 @@ export function ActFourSolution() {
         onEnterBack: () => {
           window.dispatchEvent(
             new CustomEvent("scriptfx-features-pinned", { detail: { pinned: true } })
+          );
+          window.dispatchEvent(
+            new CustomEvent("scriptfx-toggle-nav", {
+              detail: { visible: true },
+            })
           );
         },
         onLeaveBack: () => {

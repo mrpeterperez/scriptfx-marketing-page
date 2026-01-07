@@ -185,6 +185,42 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
     };
   }, []);
 
+  // When the Models section arrives, push the pinned Act 5 layers upward
+  // so the Models panel displaces the video instead of overlapping it.
+  React.useEffect(() => {
+    const modelsSection = document.querySelector('[data-scriptfx-models="true"]');
+    if (!modelsSection) return;
+
+    const videoContainer = videoContainerRef.current;
+    const scrim = scrimRef.current;
+    const overlayContainer = containerRef.current;
+
+    if (!videoContainer || !scrim || !overlayContainer) return;
+
+    const handleScroll = () => {
+      const modelsRect = (modelsSection as HTMLElement).getBoundingClientRect();
+      const viewportHeight = window.innerHeight || 0;
+
+      // When the top of Models enters the viewport, start displacing.
+      // modelsRect.top === viewportHeight => 0 displacement
+      // modelsRect.top === 0 => full viewport displacement
+      const displacement = Math.min(
+        Math.max(viewportHeight - modelsRect.top, 0),
+        viewportHeight
+      );
+
+      gsap.set([videoContainer, scrim, overlayContainer], { y: -displacement });
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      gsap.set([videoContainer, scrim, overlayContainer], { y: 0 });
+    };
+  }, []);
+
   const overlay = (
     <div
       ref={containerRef}
@@ -250,7 +286,7 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
             preload="auto"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/30" />
-          <div aria-hidden="true" className="scriptfx-grain z-20" />
+          
         </div>
       </div>
 

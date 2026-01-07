@@ -28,7 +28,7 @@ export function TopNav() {
 
   return (
     <header 
-      className={`fixed left-1/2 top-5 z-50 w-full max-w-[600px] -translate-x-1/2 px-4 transition-all duration-500 ${
+      className={`fixed left-1/2 top-5 z-[200] w-full max-w-[600px] -translate-x-1/2 px-4 transition-all duration-500 ${
         isHidden ? "-translate-y-32 opacity-0" : "translate-y-0 opacity-100"
       }`}
     >

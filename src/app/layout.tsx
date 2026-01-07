@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { TopNav } from "@/components/nav/top-nav";
 import { SoundToggle } from "@/components/sound/sound-effects";
-import { CustomCursor } from "@/components/cursor/custom-cursor";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,9 +34,6 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-surface text-on-surface antialiased`}
       >
-        {/* Custom cursor - active during screenplay section (roughly 0-40% of scroll) */}
-        <CustomCursor activeScenes={[{ start: 0.05, end: 0.45 }]} />
-
         <TopNav />
         <main className="mx-auto w-full max-w-5xl px-6 pt-28 pb-12">
           {children}

@@ -117,7 +117,10 @@ export function TopNavMenu({
 
   return (
     <div className="fixed inset-0 z-[1000]" onClick={requestClose}>
-      <div className="absolute inset-0" aria-hidden="true" />
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        aria-hidden="true"
+      />
 
       <header className="pointer-events-none fixed left-0 right-0 top-0 z-[1001] mx-auto p-4 md:p-6">
         <div

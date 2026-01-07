@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { gsap } from "gsap";
-import { sounds } from "@/lib/sounds";
 
 interface ActThreeVoidProps {
   timeline: gsap.core.Timeline | null;
@@ -225,10 +224,6 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
         
         // Wall impact - just a soft thud sound, no shake
         // The confinement is felt through the elastic bounce, not violence
-        timeline.call(() => {
-          // Soft impact sound (could be a lighter version)
-          sounds.impactRumble();
-        }, [], "shift+=0.85");
         
         // Then bounce back to final position
         timeline.to(
@@ -345,7 +340,6 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
       timeline.addLabel("reveal");
       
       // Soft chime for "That era is ending."
-      timeline.call(() => sounds.softChime(), [], "reveal+=0.3");
 
       // Show target container
       timeline.to(

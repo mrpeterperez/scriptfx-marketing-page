@@ -170,21 +170,21 @@ export function TopNavMenu({
                 <div className="col-span-4 flex flex-col lg:col-span-2">
                   <nav aria-label="Menu" className="flex flex-col items-start gap-2 pb-8 text-on-surface lg:pb-0">
                     {[
-                      "Technology",
-                      "Company",
-                      "Careers",
-                      "Journal",
-                      "Beta",
-                    ].map((label) => (
-                      <button
+                      { label: "Technology", href: "/technology" },
+                      { label: "Pricing", href: "/pricing" },
+                      { label: "Careers", href: "/careers" },
+                      { label: "Journal", href: "/blog" },
+                      { label: "Beta", href: "/get-access" },
+                    ].map(({ label, href }) => (
+                      <a
                         key={label}
-                        type="button"
+                        href={href}
                         onClick={requestClose}
                         className="font-body text-[24px] font-light tracking-[-0.24px] text-on-surface transition-colors duration-200 hover:text-on-surface/80"
                         data-menu-item
                       >
                         {label}
-                      </button>
+                      </a>
                     ))}
                   </nav>
                 </div>
@@ -248,14 +248,14 @@ export function TopNavMenu({
                   <p className="font-body text-sm text-on-surface/60">Launching 2026</p>
                 </div>
                 <div className="col-span-2 lg:col-span-1">
-                  <button
-                    type="button"
+                  <a
+                    href="/get-access"
                     onClick={requestClose}
                     className="flex w-full items-center justify-end text-right font-body text-sm text-on-surface/60 hover:text-on-surface"
                   >
-                    <span className="pr-1">Beta Application</span>
+                    <span className="pr-1">Get Access</span>
                     <span className="inline-block h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>

@@ -43,11 +43,13 @@ const footerLinks = {
 export function StackingFinale() {
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollTriggerRef = useRef<ScrollTrigger | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
   
   // Panel 1: Features refs
   const panel1Ref = useRef<HTMLDivElement>(null);
   const leftPanelRef = useRef<HTMLDivElement>(null);
   const rightPanelRef = useRef<HTMLDivElement>(null);
+  const mobileContentRef = useRef<HTMLDivElement>(null);
   const finalMessageRef = useRef<HTMLDivElement>(null);
   const finalPart1Ref = useRef<HTMLSpanElement>(null);
   const finalPart2Ref = useRef<HTMLSpanElement>(null);
@@ -69,11 +71,22 @@ export function StackingFinale() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  // Mobile detection
+  useLayoutEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
       if (!containerRef.current) return;
 
       const panel2 = panel2Ref.current;
+      const isDesktop = window.innerWidth >= 768;
 
       // ===== INITIAL STATES =====
       
@@ -133,32 +146,48 @@ export function StackingFinale() {
             const index = Math.min(Math.floor(phase), features.length - 1);
             setActiveFeature(index);
             
+            // Show nav on desktop during features, hide on mobile
+            window.dispatchEvent(new CustomEvent("scriptfx-toggle-nav", { detail: { visible: isDesktop } }));
+            
             // Reset panel 2 - keep it hidden below
             if (panel2) gsap.set(panel2, { yPercent: 110 });
             
             // Reset final message
             if (finalMessageRef.current) gsap.set(finalMessageRef.current, { autoAlpha: 0 });
-            if (leftPanelRef.current) gsap.set(leftPanelRef.current, { autoAlpha: 1, x: 0, filter: "blur(0px)" });
-            if (rightPanelRef.current) gsap.set(rightPanelRef.current, { autoAlpha: 1, x: 0, filter: "blur(0px)" });
+            // Only animate desktop panels on desktop
+            if (isDesktop && leftPanelRef.current) gsap.set(leftPanelRef.current, { autoAlpha: 1, x: 0, filter: "blur(0px)" });
+            if (isDesktop && rightPanelRef.current) gsap.set(rightPanelRef.current, { autoAlpha: 1, x: 0, filter: "blur(0px)" });
+            // Reset mobile content
+            if (!isDesktop && mobileContentRef.current) gsap.set(mobileContentRef.current, { autoAlpha: 1, filter: "blur(0px)" });
           }
           // ===== PHASE 2: Final Message Reveal (6-12) =====
           else if (phase < 12) {
             const localProgress = (phase - 6) / 6;
             setActiveFeature(features.length - 1);
             
+            // Show nav on desktop during final message, hide on mobile
+            window.dispatchEvent(new CustomEvent("scriptfx-toggle-nav", { detail: { visible: isDesktop } }));
+            
             // Panels slide out, final message fades in
             const panelProgress = Math.min(localProgress * 3, 1);
-            if (leftPanelRef.current) {
+            if (isDesktop && leftPanelRef.current) {
               gsap.set(leftPanelRef.current, {
                 autoAlpha: 1 - panelProgress,
                 x: -50 * panelProgress,
                 filter: `blur(${10 * panelProgress}px)`,
               });
             }
-            if (rightPanelRef.current) {
+            if (isDesktop && rightPanelRef.current) {
               gsap.set(rightPanelRef.current, {
                 autoAlpha: 1 - panelProgress,
                 x: 50 * panelProgress,
+                filter: `blur(${10 * panelProgress}px)`,
+              });
+            }
+            // Fade out mobile content
+            if (!isDesktop && mobileContentRef.current) {
+              gsap.set(mobileContentRef.current, {
+                autoAlpha: 1 - panelProgress,
                 filter: `blur(${10 * panelProgress}px)`,
               });
             }
@@ -191,6 +220,11 @@ export function StackingFinale() {
           else if (phase < 15) {
             const localProgress = (phase - 12) / 3;
             
+            // Hide nav when footer starts appearing
+            if (localProgress > 0.1) {
+              window.dispatchEvent(new CustomEvent("scriptfx-toggle-nav", { detail: { visible: false } }));
+            }
+            
             // Panel 2 (Footer) slides up from 110% to 0%
             if (panel2) {
               const yPercent = 110 * (1 - localProgress);
@@ -220,6 +254,9 @@ export function StackingFinale() {
           else if (phase < 18) {
             const localProgress = (phase - 15) / 3;
             
+            // Keep nav hidden while footer is visible
+            window.dispatchEvent(new CustomEvent("scriptfx-toggle-nav", { detail: { visible: false } }));
+            
             // Keep panel 2 at top
             if (panel2) gsap.set(panel2, { yPercent: 0 });
             
@@ -241,6 +278,9 @@ export function StackingFinale() {
           // ===== PHASE 5: Transition to Waitlist (18-21) =====
           else {
             const localProgress = (phase - 18) / 3;
+            
+            // Keep nav hidden while footer is visible
+            window.dispatchEvent(new CustomEvent("scriptfx-toggle-nav", { detail: { visible: false } }));
             
             // Keep panel 2 at top
             if (panel2) gsap.set(panel2, { yPercent: 0 });
@@ -332,7 +372,56 @@ export function StackingFinale() {
           data-scriptfx-features="true"
           className="absolute inset-6 md:inset-12 z-[75] rounded-[16px] border border-white/10 bg-black/40 backdrop-blur-3xl shadow-2xl ring-1 ring-white/5 overflow-hidden"
         >
-          <div className="relative flex h-full w-full">
+          {/* ===== MOBILE LAYOUT ===== */}
+          <div ref={mobileContentRef} className="flex h-full w-full flex-col overflow-y-auto p-4 md:hidden">
+            {/* Hero Image/Visual Area */}
+            <div className="flex aspect-[4/3] w-full shrink-0 items-center justify-center rounded-xl border border-white/10 bg-black/30 mb-4">
+              <div className="text-center">
+                <p className="font-display text-[14px] text-on-surface-variant/60 font-light tracking-wide">
+                  <span className="text-primary/60 text-xs block mb-1 font-mono uppercase tracking-widest">
+                    Scene {features[activeFeature].id}
+                  </span>
+                  {features[activeFeature].title} - Content Placeholder
+                </p>
+              </div>
+            </div>
+
+            {/* Numbered Steps - Vertical Stack */}
+            <div className="flex flex-col gap-2">
+              {features.map((feature, index) => {
+                const isActive = index === activeFeature;
+                return (
+                  <button
+                    key={feature.id}
+                    onClick={() => handleFeatureClick(index)}
+                    className={`flex w-full items-start gap-3 rounded-xl p-3 text-left transition-all duration-300 ${isActive ? 'bg-white/5 border border-white/10' : 'opacity-50'}`}
+                  >
+                    {/* Circled Number */}
+                    <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${isActive ? 'border-primary bg-primary text-white' : 'border-on-surface-variant/50 text-on-surface-variant'}`}>
+                      <span className="font-display text-[14px] font-semibold">
+                        {feature.id}
+                      </span>
+                    </div>
+                    
+                    {/* Title & Description */}
+                    <div className="flex flex-col gap-0.5 pt-1 min-w-0">
+                      <h3 className={`font-display text-[16px] font-medium tracking-[-0.3px] uppercase ${isActive ? 'text-on-surface' : 'text-on-surface-variant'}`}>
+                        {feature.title}
+                      </h3>
+                      {isActive && (
+                        <p className="font-body text-[13px] font-light leading-[1.4] text-on-surface-variant">
+                          {feature.description}
+                        </p>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ===== DESKTOP LAYOUT ===== */}
+          <div className="relative hidden h-full w-full md:flex">
             {/* Left Panel - Feature List */}
             <div
               ref={leftPanelRef}
@@ -406,19 +495,19 @@ export function StackingFinale() {
                 </p>
               </div>
             </div>
+          </div>
 
-            {/* Final Message - Centered */}
-            <div ref={finalMessageRef} className="absolute inset-0 flex items-center justify-center invisible">
-              <div className="max-w-4xl text-center px-8">
-                <h2 className="mb-8 font-display text-[48px] font-medium leading-[1.15] tracking-[-1px] text-on-surface md:text-[75px] md:tracking-[-2px]">
-                  <span ref={finalPart1Ref} className="inline-block">One workflow.</span>{" "}
-                  <span ref={finalPart2Ref} className="inline-block">Any model.</span>{" "}
-                  <span ref={finalPart3Ref} className="inline-block">Zero churn.</span>
-                </h2>
-                <p ref={finalSubtextRef} className="font-body text-[22px] font-normal leading-[1.5] text-on-surface/90 md:text-[28px]">
-                  ScriptFX handles the models so you don't have to.
-                </p>
-              </div>
+          {/* Final Message - Centered (works on both mobile & desktop) */}
+          <div ref={finalMessageRef} className="absolute inset-0 flex items-center justify-center invisible z-10">
+            <div className="max-w-4xl text-center px-6 md:px-8">
+              <h2 className="text-center font-display text-[48px] font-medium leading-[1.15] tracking-[-1.2px] text-on-surface md:text-[75px] md:tracking-[-2.4px]">
+                <span ref={finalPart1Ref} className="block">One workflow.</span>
+                <span ref={finalPart2Ref} className="block">Any model.</span>
+                <span ref={finalPart3Ref} className="block">Zero <span className="italic">churn.</span></span>
+              </h2>
+              <p ref={finalSubtextRef} className="mt-6 font-body text-[16px] font-light leading-[1.5] tracking-[-0.16px] text-on-surface/90 md:mt-8 md:text-[18px] md:leading-[24px] md:tracking-[-0.18px]">
+                ScriptFX handles the models so you don't have to.
+              </p>
             </div>
           </div>
         </div>
@@ -445,17 +534,17 @@ export function StackingFinale() {
               <div className="relative h-[200px] md:h-[250px] w-full flex items-center justify-center mb-8">
                 {/* Show. Don't Tell - centered */}
                 <div ref={showDontTellRef} className="absolute inset-0 flex items-center justify-center">
-                  <h2 className="text-center font-display text-[36px] md:text-[75px] font-medium leading-[1.1] tracking-[-1.2px] md:tracking-[-2.4px] text-on-surface">
+                  <h2 className="text-center font-display text-[48px] md:text-[75px] font-medium leading-[1.15] tracking-[-1.2px] md:tracking-[-2.4px] text-on-surface">
                     <span ref={showRef} className="block">Show.</span>
-                    <span ref={dontTellRef} className="block">Don&apos;t Tell.</span>
+                    <span ref={dontTellRef} className="block">Don&apos;t <span className="italic">Tell.</span></span>
                   </h2>
                 </div>
                 
                 {/* Join the Waitlist text - centered */}
                 <div ref={waitlistTextRef} className="absolute inset-0 flex items-center justify-center">
-                  <h2 className="font-display text-[36px] md:text-[75px] font-medium leading-[1.1] tracking-[-1.2px] md:tracking-[-2.4px] text-on-surface text-center">
+                  <h2 className="text-center font-display text-[48px] md:text-[75px] font-medium leading-[1.15] tracking-[-1.2px] md:tracking-[-2.4px] text-on-surface">
                     <span ref={joinRef} className="block">Join the</span>
-                    <span ref={waitlistRef} className="block">Waitlist.</span>
+                    <span ref={waitlistRef} className="block"><span className="italic">Waitlist.</span></span>
                   </h2>
                 </div>
               </div>

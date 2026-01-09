@@ -284,7 +284,7 @@ export function ShowDontTell({ className }: ShowDontTellProps) {
 
           {/* Text content */}
           <div ref={contentRef} className="relative z-30 mx-auto max-w-5xl text-center">
-            <h2 className="mb-6 font-display text-[48px] font-medium leading-[1.15] tracking-[-1px] text-white md:text-[75px] md:tracking-[-2px] drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)]">
+            <h2 className="mb-8 font-display text-[48px] font-medium leading-[1.15] tracking-[-1px] text-on-surface md:text-[75px] md:tracking-[-2px]">
               <span ref={showRef} className="inline-block">Show.</span>{" "}
               <span ref={dontTellRef} className="inline-block">Don't tell.</span>
             </h2>

@@ -6,17 +6,14 @@ const footerLinks = {
   Product: [
     { label: "Technology", href: "/technology" },
     { label: "Pricing", href: "/pricing" },
-    { label: "Features", href: "/features" },
-    { label: "Beta", href: "/get-access" },
   ],
   Company: [
-    { label: "Blog", href: "/blog" },
     { label: "Careers", href: "/careers" },
-    { label: "About", href: "/about" },
+    { label: "Journal", href: "/blog" },
   ],
-  Social: [
-    { label: "X/Twitter", href: "https://twitter.com/scriptfx" },
-    { label: "LinkedIn", href: "https://linkedin.com/company/scriptfx" },
+  Resources: [
+    { label: "Beta", href: "/get-access" },
+    { label: "Sign In", href: "/sign-in" },
   ],
   Legal: [
     { label: "Privacy Policy", href: "/privacy" },

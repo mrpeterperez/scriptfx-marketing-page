@@ -90,7 +90,7 @@ export function ActOneScript({ timeline }: ActOneScriptProps) {
 
   return (
     <div
-      className="absolute inset-0 flex items-end justify-center overflow-hidden pt-4 p-8 md:p-16 pb-32 md:pb-48"
+      className="absolute inset-0 flex items-end justify-center overflow-hidden p-6 pb-24 pt-4 md:p-16 md:pb-48"
     >
       {/* Top fade gradient */}
       <div
@@ -100,7 +100,7 @@ export function ActOneScript({ timeline }: ActOneScriptProps) {
 
       <div
         ref={screenplayContentRef}
-        className="w-full max-w-[680px] select-text font-mono text-[16px] leading-relaxed md:text-[19px]"
+        className="w-full max-w-[680px] select-text font-mono text-[14px] leading-relaxed md:text-[19px]"
       >
         {screenplayLines.map((line, i) => (
           <div

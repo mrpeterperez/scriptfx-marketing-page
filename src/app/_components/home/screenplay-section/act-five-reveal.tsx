@@ -236,17 +236,17 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
       {/* Meet ScriptFX text */}
       <div
         ref={textContainerRef}
-        className="absolute inset-0 z-20 flex items-center justify-center p-8"
+        className="absolute inset-0 z-20 flex items-center justify-center p-6 md:p-8"
       >
         <div ref={textBlockRef} className="text-center">
-          <h2 className="font-display text-[36px] font-medium leading-[1.1] tracking-[-1.2px] text-on-surface md:text-[75px] md:tracking-[-2.4px]">
+          <h2 className="font-body text-[48px] font-medium leading-[1.15] tracking-[-1.2px] text-on-surface md:text-[75px] md:tracking-[-3px]">
             <span
               ref={(el) => {
                 textLinesRef.current[0] = el;
               }}
-              className="mb-4 block font-body text-[14px] font-normal uppercase tracking-[0.15em] text-white/80 md:text-[22px]"
+              className="mb-3 block font-body text-[12px] font-normal uppercase tracking-[0.15em] text-white/80 md:mb-4 md:text-[16px]"
             >
-              MEET
+              THIS IS
             </span>
             <span
               ref={(el) => {
@@ -257,7 +257,7 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
               <img
                 src="/brand/scriptfxlogolarge.svg"
                 alt="ScriptFX"
-                className="relative z-10 mx-auto h-auto w-full max-w-[500px] drop-shadow-[0_0_8px_rgba(255,255,255,0.15)]"
+                className="relative z-10 mx-auto h-auto w-full max-w-[300px] drop-shadow-[0_0_8px_rgba(255,255,255,0.15)] md:max-w-[500px]"
               />
             </span>
           </h2>

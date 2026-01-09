@@ -67,6 +67,8 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
 
     // Create a cleanup context
     const ctx = gsap.context(() => {
+      const isDesktop = window.matchMedia("(min-width: 768px)").matches;
+
       // Initial states
       gsap.set(container, { autoAlpha: 0 });
       gsap.set(targetTextEl, { autoAlpha: 0 });
@@ -74,7 +76,7 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
       
       // Hide right column initially
       if (rightColumn) {
-        gsap.set(rightColumn, { autoAlpha: 0, x: 40 });
+        gsap.set(rightColumn, { autoAlpha: 0, x: isDesktop ? 40 : 0 });
       }
       
       // Hide left margin initially (will draw from top like a pen)
@@ -87,18 +89,25 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
       if (leftColumn) {
         const containerWidth = container.offsetWidth;
         const leftWidth = leftColumn.offsetWidth;
-        const centerOffset = (containerWidth - leftWidth) / 2 - leftColumn.offsetLeft;
-        gsap.set(leftColumn, { 
-          x: centerOffset,
-          textAlign: "center"
-        });
         
-        // Calculate where divider needs to be to act as right margin
-        // It should be just to the right of the centered left column
-        if (divider) {
-          const dividerCurrentPos = divider.offsetLeft;
-          const leftColumnCenteredRight = leftColumn.offsetLeft + centerOffset + leftWidth + 24; // 24px gap
-          dividerMarginOffset = leftColumnCenteredRight - dividerCurrentPos;
+        // Only modify position on desktop where we do the shift animation
+        if (isDesktop) {
+          const centerOffset = (containerWidth - leftWidth) / 2 - leftColumn.offsetLeft;
+          gsap.set(leftColumn, { 
+            x: centerOffset,
+            textAlign: "center"
+          });
+          
+          // Calculate where divider needs to be to act as right margin
+          // It should be just to the right of the centered left column
+          if (divider) {
+            const dividerCurrentPos = divider.offsetLeft;
+            const leftColumnCenteredRight = leftColumn.offsetLeft + centerOffset + leftWidth + 24; // 24px gap
+            dividerMarginOffset = leftColumnCenteredRight - dividerCurrentPos;
+          }
+        } else {
+          // On mobile, ensure valid defaults
+          gsap.set(leftColumn, { x: 0, textAlign: "center" });
         }
       }
       
@@ -198,15 +207,18 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
       
       if (leftColumn) {
         // First overshoot past the target (hits the wall) - slower build up
-        timeline.to(
-          leftColumn,
-          {
-            x: -25, // Overshoot left
-            duration: 0.9,
-            ease: "power2.in",
-          },
-          "shift"
-        );
+        // Only apply shift on desktop
+        if (isDesktop) {
+          timeline.to(
+            leftColumn,
+            {
+              x: -25, // Overshoot left
+              duration: 0.9,
+              ease: "power2.in",
+            },
+            "shift"
+          );
+        }
         
         // Left margin fades out as text moves - disappears when hitting wall
         if (leftMargin) {
@@ -230,7 +242,7 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
           leftColumn,
           {
             x: 0,
-            textAlign: "left",
+            textAlign: isDesktop ? "left" : "center",
             duration: 0.8,
             ease: "elastic.out(1, 0.4)",
           },
@@ -539,17 +551,17 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
         {/* Source text - tighter 2 column layout */}
         <div
           ref={sourceTextRef}
-          className="pointer-events-auto flex w-full max-w-5xl items-center justify-center gap-12 px-8 md:gap-20 md:px-12"
+          className="pointer-events-auto flex w-full max-w-4xl flex-col items-center justify-center gap-8 px-6 md:flex-row md:gap-16 md:px-12"
         >
         {/* Left column with left margin line */}
-        <div ref={leftColumnRef} className="relative select-text">
+        <div ref={leftColumnRef} className="relative w-full select-text text-center md:w-auto md:text-left">
           {/* Left margin line */}
           <div
             ref={leftMarginRef}
-            className="absolute -left-6 top-1/2 h-32 w-px -translate-y-1/2 bg-on-surface/30 md:-left-8 md:h-40"
+            className="absolute -left-6 top-1/2 hidden h-32 w-px -translate-y-1/2 bg-on-surface/30 md:block"
           />
           
-          <p className="font-body text-[22px] font-normal leading-[1.5] text-on-surface/90 md:text-[28px]">
+          <p className="font-body text-[18px] font-normal leading-[1.5] text-on-surface/90 md:text-[24px]">
             {leftLines.map((line, lineIdx) => (
               <span key={lineIdx} className="block">
                 {line.split("").map((char, charIdx) => (
@@ -569,11 +581,11 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
         {/* Divider - starts as right margin, then slides to center */}
         <div 
           ref={dividerRef}
-          className="divider hidden h-32 w-px bg-on-surface/30 md:block md:h-40" 
+          className="divider hidden h-32 w-px bg-on-surface/30 md:block" 
         />
 
         {/* Right column */}
-        <div ref={rightColumnRef} className="select-text text-right">
+        <div ref={rightColumnRef} className="w-full select-text text-center md:w-auto md:text-right">
           <p className="font-display text-[48px] font-medium leading-[1.15] tracking-[-1px] text-on-surface md:text-[75px] md:tracking-[-2px]">
             {rightLines.map((line, lineIdx) => (
               <span key={lineIdx} className="block">
@@ -595,9 +607,9 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
         {/* Target text - center italic with glow */}
         <div
           ref={targetTextRef}
-          className="pointer-events-none absolute inset-0 flex items-center justify-center"
+          className="pointer-events-none absolute inset-0 flex items-center justify-center px-6"
         >
-          <h2 className="text-center font-display text-[48px] font-medium italic leading-[1.1] tracking-[-1.2px] text-on-surface md:text-[75px] md:tracking-[-2px]">
+          <h2 className="text-center font-display text-[48px] font-medium leading-[1.15] tracking-[-1px] text-on-surface md:text-[75px] md:tracking-[-2px]">
             {targetText.split("").map((char, i) => (
               <span
                 key={i}

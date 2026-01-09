@@ -244,9 +244,9 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
               ref={(el) => {
                 textLinesRef.current[0] = el;
               }}
-              className="mb-4 block font-body text-[18px] font-normal tracking-[0.05em] text-white/80 md:text-[22px]"
+              className="mb-4 block font-body text-[14px] font-normal uppercase tracking-[0.15em] text-white/80 md:text-[22px]"
             >
-              Meet
+              MEET
             </span>
             <span
               ref={(el) => {
@@ -254,11 +254,10 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
               }}
               className="block relative"
             >
-              <div className="absolute inset-0 z-[-1] animate-pulse blur-[40px] opacity-40 bg-white/20 rounded-full scale-110" />
               <img
                 src="/brand/scriptfxlogolarge.svg"
                 alt="ScriptFX"
-                className="relative z-10 mx-auto h-auto w-full max-w-[500px] drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]"
+                className="relative z-10 mx-auto h-auto w-full max-w-[500px] drop-shadow-[0_0_8px_rgba(255,255,255,0.15)]"
               />
             </span>
           </h2>

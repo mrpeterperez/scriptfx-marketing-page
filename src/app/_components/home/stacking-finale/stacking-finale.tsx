@@ -6,37 +6,10 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Link from "next/link";
 import Image from "next/image";
+import { features } from "@/app/_components/home/features-section";
+import { footerLinks } from "@/lib/footer-links";
 
 gsap.registerPlugin(ScrollTrigger);
-
-// ============== DATA ==============
-
-const features = [
-  { id: 1, title: "Write", description: "Familiar. Focused. Out of your way." },
-  { id: 2, title: "Hear it.", description: "AI-powered voice generation brings your characters to life instantly." },
-  { id: 3, title: "Build it.", description: "Generate concept art, storyboards, and visual references from your script." },
-  { id: 4, title: "Direct it.", description: "Control camera angles, lighting, and composition with simple commands." },
-  { id: 5, title: "Act it.", description: "Create animated previews with AI-generated performances." },
-  { id: 6, title: "Watch it.", description: "Export polished previsualization videos to share with your team." },
-];
-
-const footerLinks = {
-  Product: [
-    { label: "Technology", href: "/technology" },
-    { label: "Pricing", href: "/pricing" },
-    { label: "Features", href: "/features" },
-    { label: "Beta", href: "/get-access" },
-  ],
-  Company: [
-    { label: "Blog", href: "/blog" },
-    { label: "Careers", href: "/careers" },
-    { label: "About", href: "/about" },
-  ],
-  Social: [
-    { label: "X/Twitter", href: "https://twitter.com/scriptfx" },
-    { label: "LinkedIn", href: "https://linkedin.com/company/scriptfx" },
-  ],
-};
 
 // ============== COMPONENT ==============
 

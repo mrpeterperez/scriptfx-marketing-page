@@ -8,7 +8,7 @@ export interface Feature {
 export const features: Feature[] = [
   {
     id: 1,
-    title: "Write like you always have.",
+    title: "Write",
     headline: "Write like you always have.",
     description: "Familiar. Focused. Out of your way.",
   },
@@ -16,30 +16,30 @@ export const features: Feature[] = [
     id: 2,
     title: "Hear it.",
     headline: "Hear it.",
-    description: "Listen to your script come alive with AI voices.",
+    description: "AI-powered voice generation brings your characters to life instantly.",
   },
   {
     id: 3,
     title: "Build it.",
     headline: "Build it.",
-    description: "Construct your world scene by scene.",
+    description: "Generate concept art, storyboards, and visual references from your script.",
   },
   {
     id: 4,
     title: "Direct it.",
     headline: "Direct it.",
-    description: "Block your scenes and plan your shots.",
+    description: "Control camera angles, lighting, and composition with simple commands.",
   },
   {
     id: 5,
     title: "Act it.",
     headline: "Act it.",
-    description: "Bring your characters to life.",
+    description: "Create animated previews with AI-generated performances.",
   },
   {
     id: 6,
     title: "Watch it.",
     headline: "Watch it.",
-    description: "See your vision realized.",
+    description: "Export polished previsualization videos to share with your team.",
   },
 ];

@@ -287,6 +287,17 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/30" />
           
+          {/* Film grain / noise overlay */}
+          <div 
+            className="pointer-events-none absolute inset-0 z-50"
+            style={{
+              backgroundImage: 'url("/brand/grain.png")',
+              backgroundRepeat: 'repeat',
+              backgroundSize: '100px',
+              opacity: 0.5,
+              mixBlendMode: 'soft-light',
+            }}
+          />
         </div>
       </div>
 

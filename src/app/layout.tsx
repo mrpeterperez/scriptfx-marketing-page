@@ -32,10 +32,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-surface text-on-surface antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-surface text-on-surface antialiased font-body`}
       >
         <TopNav />
-        <main className="mx-auto w-full max-w-5xl px-6 pt-28 pb-12">
+        <main className="mx-auto w-full max-w-5xl px-6 pt-28">
           {children}
         </main>
 

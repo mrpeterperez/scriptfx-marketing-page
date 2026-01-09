@@ -168,9 +168,12 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
       
       const featuresTop = featuresRect.top;
       
+      // Add offset to close visual gap between text and panel edge
+      const gapOffset = 28;
+      
       // Only push when features panel actually touches the text (gap <= 0)
-      if (featuresTop <= naturalTextBottom) {
-        const pushAmount = naturalTextBottom - featuresTop;
+      if (featuresTop <= naturalTextBottom + gapOffset) {
+        const pushAmount = (naturalTextBottom + gapOffset) - featuresTop;
         gsap.set(textBlock, { y: -pushAmount });
       } else {
         gsap.set(textBlock, { y: 0 });

@@ -54,16 +54,16 @@ export function FooterReveal({ className }: FooterRevealProps) {
       const form = formRef.current;
       const footerContent = footerContentRef.current;
 
-      // Initial states
+      // Initial states - panel starts below
       gsap.set(panelRef.current, {
-        scale: 0.9,
-        y: 50,
+        scale: 0.92,
+        y: 150,
       });
 
-      if (join) gsap.set(join, { x: -10, opacity: 0.5 });
-      if (waitlist) gsap.set(waitlist, { x: 10, opacity: 0.5 });
-      if (form) gsap.set(form, { y: 20, opacity: 0 });
-      if (footerContent) gsap.set(footerContent, { y: 30, opacity: 0 });
+      if (join) gsap.set(join, { y: 50, opacity: 0 });
+      if (waitlist) gsap.set(waitlist, { y: 50, opacity: 0 });
+      if (form) gsap.set(form, { y: 40, opacity: 0 });
+      if (footerContent) gsap.set(footerContent, { y: 50, opacity: 0 });
 
       // Simple scroll-triggered animation - no pinning
       const tl = gsap.timeline({
@@ -83,22 +83,22 @@ export function FooterReveal({ className }: FooterRevealProps) {
         ease: "power2.out",
       }, 0);
 
-      // Text parallax
+      // Text rises up
       if (join) {
         tl.to(join, {
-          x: -5,
+          y: 0,
           opacity: 1,
           duration: 1,
           ease: "power2.out",
-        }, 0);
+        }, 0.1);
       }
       if (waitlist) {
         tl.to(waitlist, {
-          x: 5,
+          y: 0,
           opacity: 1,
           duration: 1,
           ease: "power2.out",
-        }, 0);
+        }, 0.2);
       }
 
       // Form and footer fade in

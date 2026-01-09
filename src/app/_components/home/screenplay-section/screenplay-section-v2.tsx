@@ -7,8 +7,7 @@ import { ActOneScript } from "./act-one-script";
 import { ActTwoTagline } from "./act-two-tagline";
 import { ActThreeVoid } from "./act-three-void";
 import { ActFiveReveal } from "./act-five-reveal";
-import { ActFourSolution } from "./act-four-solution";
-import { ShowDontTell } from "../show-dont-tell";
+import { StackingFinale } from "../stacking-finale";
 
 // Register plugins
 if (typeof window !== "undefined") {
@@ -81,11 +80,8 @@ export function ScreenplaySectionV2() {
         </div>
       </section>
 
-      {/* Act 6: Features Section */}
-      <ActFourSolution />
-
-      {/* Show. Don't tell. Section */}
-      <ShowDontTell />
+      {/* Stacking Finale: Features → Show Don't Tell → Footer */}
+      <StackingFinale />
     </>
   );
 }

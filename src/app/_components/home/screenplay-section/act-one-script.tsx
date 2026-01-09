@@ -90,7 +90,7 @@ export function ActOneScript({ timeline }: ActOneScriptProps) {
 
   return (
     <div
-      className="absolute inset-0 flex items-end justify-center overflow-hidden p-6 pb-24 pt-4 md:p-16 md:pb-48"
+      className="absolute inset-0 flex items-start justify-center overflow-hidden p-6 pt-16 pb-24 md:items-end md:p-16 md:pb-48 md:pt-4"
     >
       {/* Top fade gradient */}
       <div

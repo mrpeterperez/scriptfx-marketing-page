@@ -2,17 +2,16 @@ export const footerLinks = {
   Product: [
     { label: "Technology", href: "/technology" },
     { label: "Pricing", href: "/pricing" },
-    { label: "Features", href: "/features" },
     { label: "Beta", href: "/get-access" },
   ],
   Company: [
-    { label: "Blog", href: "/blog" },
+    { label: "Journal", href: "/blog" },
     { label: "Careers", href: "/careers" },
-    { label: "About", href: "/about" },
   ],
-  Social: [
-    { label: "X/Twitter", href: "https://twitter.com/scriptfx" },
+  Connect: [
+    { label: "X", href: "https://x.com/scriptfx" },
     { label: "LinkedIn", href: "https://linkedin.com/company/scriptfx" },
+    { label: "Discord", href: "https://discord.gg/scriptfx" },
   ],
 } as const;
 

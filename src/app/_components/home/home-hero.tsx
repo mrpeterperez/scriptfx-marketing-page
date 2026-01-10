@@ -217,18 +217,6 @@ export function HomeHero() {
                       "linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.25) 65.968%, rgba(0, 0, 0, 0.75) 79.979%, rgba(0, 0, 0, 0.8) 100%)",
                   }}
                 />
-
-                {/* Film grain / noise overlay */}
-                <div 
-                  className="pointer-events-none absolute inset-0 z-10"
-                  style={{
-                    backgroundImage: 'url("/brand/grain.png")',
-                    backgroundRepeat: 'repeat',
-                    backgroundSize: '100px',
-                    opacity: 0.5,
-                    mixBlendMode: 'soft-light',
-                  }}
-                />
               </div>
             </div>
           </section>

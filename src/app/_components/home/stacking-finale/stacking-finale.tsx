@@ -408,7 +408,7 @@ export function StackingFinale() {
                     <div
                       key={f.id}
                       onClick={() => handleFeatureClick(originalIndex)}
-                      className="flex cursor-pointer items-center gap-3 opacity-50 transition-opacity hover:opacity-100"
+                      className="flex cursor-pointer items-center gap-3 opacity-50 transition-all duration-200 hover:opacity-100 hover:translate-x-1"
                     >
                       <div className="flex h-[34px] w-[42px] items-center justify-center rounded-2xl bg-primary">
                         <span className="font-display text-[16px] font-medium text-white">{f.id}</span>
@@ -442,7 +442,7 @@ export function StackingFinale() {
                     <div
                       key={f.id}
                       onClick={() => handleFeatureClick(originalIndex)}
-                      className="flex cursor-pointer items-center gap-3 opacity-50 transition-opacity hover:opacity-100"
+                      className="flex cursor-pointer items-center gap-3 opacity-50 transition-all duration-200 hover:opacity-100 hover:translate-x-1"
                     >
                       <div className="flex h-[34px] w-[42px] items-center justify-center rounded-2xl bg-primary">
                         <span className="font-display text-[16px] font-medium text-white">{f.id}</span>
@@ -531,19 +531,20 @@ export function StackingFinale() {
                       placeholder="Enter your email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full bg-transparent border border-on-surface/30 rounded-full py-3 px-6 text-center text-on-surface font-body text-[14px] outline-none placeholder:text-on-surface-variant focus:bg-on-surface/5 focus:border-on-surface/50 transition-colors disabled:opacity-50"
+                      className="w-full bg-transparent border border-on-surface/30 rounded-full py-3 px-6 text-center text-on-surface font-body text-[14px] outline-none placeholder:text-on-surface-variant transition-all duration-200 disabled:opacity-50 focus:border-accent focus:ring-1 focus:ring-accent/30 focus:bg-accent/5 invalid:border-error invalid:focus:ring-error/30"
                       disabled={isSubmitting}
+                      required
                     />
                     <button
                       type="submit"
                       disabled={isSubmitting || !email}
-                      className="w-full px-8 bg-on-surface text-surface py-3 rounded-full font-body text-[12px] tracking-[1px] uppercase hover:bg-on-surface/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full px-8 bg-on-surface text-surface py-3 rounded-full font-body text-[12px] tracking-[1px] uppercase transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-on-surface/90 hover:scale-[1.02] active:scale-[0.98]"
                     >
                       {isSubmitting ? "Submitting..." : "Submit"}
                     </button>
                   </>
                 ) : (
-                  <div className="text-center">
+                  <div className="text-center animate-in fade-in slide-in-from-bottom-2 duration-500">
                     <p className="text-on-surface font-body text-[14px] mb-2">✓ You&apos;re on the list!</p>
                     <p className="text-on-surface-variant font-body text-[12px]">We&apos;ll be in touch soon.</p>
                   </div>

@@ -21,8 +21,23 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
   const videoContainerRef = React.useRef<HTMLDivElement>(null);
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const scrimRef = React.useRef<HTMLDivElement>(null);
+  const [videoReady, setVideoReady] = React.useState(false);
 
   const isTimelineDriven = !!timeline;
+
+  // Handle video ready state
+  React.useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleCanPlay = () => setVideoReady(true);
+    video.addEventListener("canplaythrough", handleCanPlay);
+    
+    // Check if already ready
+    if (video.readyState >= 3) setVideoReady(true);
+
+    return () => video.removeEventListener("canplaythrough", handleCanPlay);
+  }, []);
 
   React.useLayoutEffect(() => {
     const container = containerRef.current;
@@ -175,8 +190,18 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
       if (featuresTop <= naturalTextBottom + gapOffset) {
         const pushAmount = (naturalTextBottom + gapOffset) - featuresTop;
         gsap.set(textBlock, { y: -pushAmount });
+        
+        // Fade out as it approaches the top of the screen
+        const textTop = textRect.top;
+        const fadeStartThreshold = 150; // Start fading when 150px from top
+        if (textTop < fadeStartThreshold) {
+          const opacity = Math.max(0, textTop / fadeStartThreshold);
+          gsap.set(textBlock, { opacity });
+        } else {
+          gsap.set(textBlock, { opacity: 1 });
+        }
       } else {
-        gsap.set(textBlock, { y: 0 });
+        gsap.set(textBlock, { y: 0, opacity: 1 });
       }
     };
 
@@ -280,12 +305,13 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
           <video
             ref={videoRef}
             src="/brand/scriptfxtest.mp4"
-            className="h-full w-full object-cover"
+            className={`h-full w-full object-cover transition-opacity duration-700 ${videoReady ? "opacity-100" : "opacity-0"}`}
             muted
             autoPlay
             loop
             playsInline
             preload="auto"
+            poster="/placeholder/video-poster.png"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/30" />
           

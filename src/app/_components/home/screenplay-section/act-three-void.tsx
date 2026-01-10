@@ -609,7 +609,7 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
           ref={targetTextRef}
           className="pointer-events-none absolute inset-0 flex items-center justify-center px-6"
         >
-          <h2 className="text-center font-display text-[48px] font-medium leading-[1.15] tracking-[-1px] text-on-surface md:text-[75px] md:tracking-[-2px]">
+          <h2 className="text-center font-display text-[48px] font-medium italic leading-[1.15] tracking-[-1px] text-on-surface md:text-[75px] md:tracking-[-2px]">
             {targetText.split("").map((char, i) => (
               <span
                 key={i}

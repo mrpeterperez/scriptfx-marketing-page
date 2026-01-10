@@ -172,8 +172,8 @@ export function TopNavMenu({
                     {[
                       { label: "Technology", href: "/technology" },
                       { label: "Pricing", href: "/pricing" },
-                      { label: "Careers", href: "/careers" },
                       { label: "Journal", href: "/blog" },
+                      { label: "Careers", href: "/careers" },
                       { label: "Beta", href: "/get-access" },
                     ].map(({ label, href }) => (
                       <a
@@ -242,7 +242,7 @@ export function TopNavMenu({
 
               <div className="grid w-full grid-cols-4" data-menu-footer>
                 <div className="hidden lg:col-span-2 lg:block">
-                  <p className="font-body text-sm text-on-surface/60">The helpful robotics company</p>
+                  <p className="font-body text-sm text-on-surface/60">Show. Don&apos;t Tell.</p>
                 </div>
                 <div className="col-span-2 lg:col-span-1">
                   <p className="font-body text-sm text-on-surface/60">Launching 2026</p>

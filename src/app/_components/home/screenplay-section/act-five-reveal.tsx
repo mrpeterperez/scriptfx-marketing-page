@@ -321,8 +321,9 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
             style={{
               backgroundImage: 'url("/brand/grain.png")',
               backgroundRepeat: 'repeat',
-              backgroundSize: '100px',
-              opacity: 0.5,
+              backgroundSize: '220px',
+              backgroundPosition: 'center',
+              opacity: 0.35,
               mixBlendMode: 'soft-light',
             }}
           />

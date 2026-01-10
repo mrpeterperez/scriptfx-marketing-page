@@ -76,8 +76,9 @@ export function IntroReveal() {
         opacity: 0,
         duration: 0.3,
         ease: "power1.out",
-        onStart: () => {
-          // Dispatch event so nav and hero UI can animate in
+        onComplete: () => {
+          // Dispatch only after the overlay is actually out of the way.
+          // This prevents the nav/headline animations from running "behind" the intro.
           window.dispatchEvent(new CustomEvent("scriptfx-intro-complete"));
         },
       }, "-=0.35");
@@ -126,6 +127,20 @@ export function IntroReveal() {
           style={{
             backgroundImage:
               "linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.25) 65.968%, rgba(0, 0, 0, 0.75) 79.979%, rgba(0, 0, 0, 0.8) 100%)",
+          }}
+        />
+
+        {/* Film grain / noise overlay */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage: 'url("/brand/grain.png")',
+            backgroundRepeat: "repeat",
+            backgroundSize: "220px",
+            backgroundPosition: "center",
+            opacity: 0.35,
+            mixBlendMode: "soft-light",
           }}
         />
       </div>

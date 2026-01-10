@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { gsap } from "gsap";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { TopNavMenu } from "@/components/nav/top-nav-menu";
@@ -10,7 +11,6 @@ import { NavLogo } from "@/components/nav/nav-logo";
 export function TopNav() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [isHidden, setIsHidden] = React.useState(false);
-  const [isRevealed, setIsRevealed] = React.useState(false);
   const navRef = React.useRef<HTMLElement | null>(null);
 
   React.useEffect(() => {
@@ -24,36 +24,7 @@ export function TopNav() {
     };
   }, []);
 
-  // Entrance animation after intro reveal
-  React.useEffect(() => {
-    const nav = navRef.current;
-    if (!nav) return;
 
-    // Start hidden
-    nav.style.opacity = "0";
-    nav.style.transform = "translateX(-50%) translateY(-20px)";
-
-    const handleIntroComplete = () => {
-      setIsRevealed(true);
-      // Animate in with GSAP-like timing via CSS
-      requestAnimationFrame(() => {
-        nav.style.transition = "opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)";
-        nav.style.opacity = "1";
-        nav.style.transform = "translateX(-50%) translateY(0)";
-      });
-    };
-
-    // If no intro reveal (e.g., navigated from another page), show immediately
-    const fallbackTimer = setTimeout(() => {
-      if (!isRevealed) handleIntroComplete();
-    }, 2000);
-
-    window.addEventListener("scriptfx-intro-complete", handleIntroComplete);
-    return () => {
-      window.removeEventListener("scriptfx-intro-complete", handleIntroComplete);
-      clearTimeout(fallbackTimer);
-    };
-  }, [isRevealed]);
 
   if (isMenuOpen) {
     return <TopNavMenu onClose={() => setIsMenuOpen(false)} />;
@@ -62,13 +33,9 @@ export function TopNav() {
   return (
     <header
       ref={navRef}
-      className={`fixed left-1/2 top-5 z-[200] w-full max-w-[600px] px-4 ${
-        isHidden ? "pointer-events-none" : ""
+      className={`fixed left-0 right-0 top-5 z-[200] mx-auto w-full max-w-[600px] px-4 transition-all duration-500 ${
+        isHidden ? "-translate-y-32 opacity-0 pointer-events-none" : "translate-y-0 opacity-100"
       }`}
-      style={{
-        // Hide/show based on scroll state (after initial reveal)
-        ...(isRevealed && isHidden ? { opacity: 0, transform: "translateX(-50%) translateY(-32px)" } : {}),
-      }}
     >
       <div className="relative flex h-14 items-center justify-between rounded-lg bg-black/60 px-4 backdrop-blur-xl shadow-[-11.15px_-10.392px_48px_-12px_rgba(0,0,0,0.15),-1.858px_-1.732px_12px_-8px_rgba(0,0,0,0.15)]">
         <div className="pointer-events-none absolute inset-[-1px] rounded-[8px] shadow-[inset_2.1px_1.957px_9.04px_0px_rgba(255,255,255,0.05),inset_1.171px_1.091px_4.52px_0px_rgba(255,255,255,0.03)]" />

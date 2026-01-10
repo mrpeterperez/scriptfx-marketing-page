@@ -16,6 +16,63 @@ export function HomeHero() {
   const [currentIndex, setCurrentIndex] = React.useState(0);
   const currentSectionRef = React.useRef<HTMLElement | null>(null);
 
+  // Hero headline entrance animation
+  React.useEffect(() => {
+    const handleIntroComplete = () => {
+      const headline = document.querySelector(".hero-headline");
+      const line1 = document.querySelector(".hero-line-1");
+      const line2 = document.querySelector(".hero-line-2");
+      const tagline = document.querySelector(".hero-tagline");
+
+      if (!headline || !line1 || !line2 || !tagline) return;
+
+      const tl = gsap.timeline();
+
+      // Container fades in
+      tl.to(headline, {
+        opacity: 1,
+        y: 0,
+        duration: 0.5,
+        ease: "power2.out",
+      });
+
+      // Line 1 slides up
+      tl.to(line1, {
+        opacity: 1,
+        y: 0,
+        duration: 0.6,
+        ease: "power3.out",
+      }, "-=0.3");
+
+      // Line 2 slides up with slight delay
+      tl.to(line2, {
+        opacity: 1,
+        y: 0,
+        duration: 0.6,
+        ease: "power3.out",
+      }, "-=0.4");
+
+      // Tagline fades in last
+      tl.to(tagline, {
+        opacity: 1,
+        y: 0,
+        duration: 0.5,
+        ease: "power2.out",
+      }, "-=0.3");
+    };
+
+    // Fallback if no intro reveal
+    const fallbackTimer = setTimeout(() => {
+      handleIntroComplete();
+    }, 2200);
+
+    window.addEventListener("scriptfx-intro-complete", handleIntroComplete);
+    return () => {
+      window.removeEventListener("scriptfx-intro-complete", handleIntroComplete);
+      clearTimeout(fallbackTimer);
+    };
+  }, []);
+
   React.useLayoutEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -178,15 +235,18 @@ export function HomeHero() {
         </div>
 
         {/* Fixed headline overlay - always visible */}
-        <div className="fixed bottom-4 left-4 z-50 max-w-[520px] pb-12 pl-12 text-white md:bottom-12 md:left-12 md:max-w-[760px]">
+        <div 
+          className="hero-headline fixed bottom-4 left-4 z-50 max-w-[520px] pb-12 pl-12 text-white md:bottom-12 md:left-12 md:max-w-[760px]"
+          style={{ opacity: 0, transform: "translateY(20px)" }}
+        >
           <h1 className="font-display text-[36px] font-medium leading-[34px] tracking-[-1.2px] not-italic md:text-[60px] md:leading-[46px] md:tracking-[-2.4px]">
-            <span className="mb-2 block md:mb-4">Write Your Screenplay.</span>
-            <span className="block">
+            <span className="hero-line-1 mb-2 block md:mb-4" style={{ opacity: 0, transform: "translateY(15px)" }}>Write Your Screenplay.</span>
+            <span className="hero-line-2 block" style={{ opacity: 0, transform: "translateY(15px)" }}>
               Watch It Come{" "}
               <span className="font-display italic font-medium">Alive.</span>
             </span>
           </h1>
-          <p className="mt-3 font-body text-[16px] leading-[22px] tracking-[-0.16px] text-white/90 md:mt-6 md:text-[18px] md:leading-[24px] md:tracking-[-0.18px]">
+          <p className="hero-tagline mt-3 font-body text-[16px] leading-[22px] tracking-[-0.16px] text-white/90 md:mt-6 md:text-[18px] md:leading-[24px] md:tracking-[-0.18px]" style={{ opacity: 0, transform: "translateY(10px)" }}>
             From screenplay to cinema — without leaving the page.
           </p>
         </div>

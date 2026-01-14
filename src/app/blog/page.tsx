@@ -1,4 +1,4 @@
-import { BlogIndex } from "@/app/_components/blog/blog-index";
+import { BlogIndex } from "@/components/blog";
 
 export const metadata = {
   title: "Blog",

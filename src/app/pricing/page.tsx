@@ -1,4 +1,4 @@
-import { Pricing } from "@/app/_components/pricing/pricing";
+import { Pricing } from "@/components/pricing";
 
 export const metadata = {
   title: "Pricing",

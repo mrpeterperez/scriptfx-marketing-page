@@ -1,4 +1,4 @@
-import { SignIn } from "@/app/_components/sign-in/sign-in";
+import { SignIn } from "@/components/sign-in";
 
 export const metadata = {
   title: "Sign In",

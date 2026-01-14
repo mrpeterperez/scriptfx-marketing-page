@@ -1,4 +1,4 @@
-import { GetAccess } from "@/app/_components/get-access/get-access";
+import { GetAccess } from "@/components/get-access";
 
 export const metadata = {
   title: "Get Access",

@@ -505,11 +505,11 @@ export function StackingFinale() {
             <div className="flex-1 flex flex-col items-center justify-center relative">
               {/* Text container - holds both Show Don't Tell and Waitlist text */}
               <div className="relative h-[200px] md:h-[250px] w-full flex items-center justify-center mb-8">
-                {/* Show. Don't Tell - centered */}
+                {/* Stop pitching ideas. Ship experiences. - centered */}
                 <div ref={showDontTellRef} className="absolute inset-0 flex items-center justify-center">
                   <h2 className="text-center font-display text-[48px] md:text-[68px] font-medium leading-[1.15] tracking-[-1.2px] md:tracking-[-2.4px] text-on-surface">
-                    <span ref={showRef} className="block">Show.</span>
-                    <span ref={dontTellRef} className="block">Don&apos;t <span className="italic">Tell.</span></span>
+                    <span ref={showRef} className="block">Stop pitching ideas.</span>
+                    <span ref={dontTellRef} className="block">Ship <span className="italic">experiences.</span></span>
                   </h2>
                 </div>
                 

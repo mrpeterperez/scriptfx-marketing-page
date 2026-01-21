@@ -264,7 +264,7 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
         className="absolute inset-0 z-20 flex items-center justify-center p-6 md:p-8"
       >
         <div ref={textBlockRef} className="text-center">
-          <h2 className="font-body text-[48px] font-medium leading-[1.15] tracking-[-1.2px] text-on-surface md:text-[68px] md:tracking-[-3px]">
+          <h2 className="font-body text-5xl font-medium leading-[1.15] tracking-tighter text-on-surface md:text-6xl">
             <span
               ref={(el) => {
                 textLinesRef.current[0] = el;

@@ -473,7 +473,7 @@ export function StackingFinale() {
           {/* Final Message - Centered (works on both mobile & desktop) */}
           <div ref={finalMessageRef} className="absolute inset-0 flex items-center justify-center invisible z-10">
             <div className="max-w-4xl text-center px-6 md:px-8">
-              <h2 className="text-center font-display text-[48px] font-medium leading-[1.15] tracking-[-1.2px] text-on-surface md:text-[68px] md:tracking-[-2.4px]">
+              <h2 className="text-center font-display text-5xl font-medium leading-[1.15] tracking-tighter text-on-surface md:text-6xl">
                 <span ref={finalPart1Ref} className="block">One workflow.</span>
                 <span ref={finalPart2Ref} className="block">Any model.</span>
                 <span ref={finalPart3Ref} className="block">Zero <span className="italic">churn.</span></span>
@@ -507,7 +507,7 @@ export function StackingFinale() {
               <div className="relative h-[200px] md:h-[250px] w-full flex items-center justify-center mb-8">
                 {/* Stop pitching ideas. Ship experiences. - centered */}
                 <div ref={showDontTellRef} className="absolute inset-0 flex items-center justify-center">
-                  <h2 className="text-center font-display text-[48px] md:text-[68px] font-medium leading-[1.15] tracking-[-1.2px] md:tracking-[-2.4px] text-on-surface">
+                  <h2 className="text-center font-display text-5xl md:text-6xl font-medium leading-[1.15] tracking-tighter text-on-surface">
                     <span ref={showRef} className="block">Stop pitching ideas.</span>
                     <span ref={dontTellRef} className="block">Ship <span className="italic">experiences.</span></span>
                   </h2>
@@ -515,7 +515,7 @@ export function StackingFinale() {
                 
                 {/* Join the Waitlist text - centered */}
                 <div ref={waitlistTextRef} className="absolute inset-0 flex items-center justify-center">
-                  <h2 className="text-center font-display text-[48px] md:text-[68px] font-medium leading-[1.15] tracking-[-1.2px] md:tracking-[-2.4px] text-on-surface">
+                  <h2 className="text-center font-display text-5xl md:text-6xl font-medium leading-[1.15] tracking-tighter text-on-surface">
                     <span ref={joinRef} className="block">Join the</span>
                     <span ref={waitlistRef} className="block"><span className="italic">Waitlist.</span></span>
                   </h2>

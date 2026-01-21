@@ -586,7 +586,7 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
 
         {/* Right column */}
         <div ref={rightColumnRef} className="w-full select-text text-center md:w-auto md:text-right">
-          <p className="font-display text-[48px] font-medium leading-[1.15] tracking-[-1px] text-on-surface md:text-[68px] md:tracking-[-2px]">
+          <p className="font-display text-5xl font-medium leading-[1.15] tracking-tight text-on-surface md:text-6xl md:tracking-tighter">
             {rightLines.map((line, lineIdx) => (
               <span key={lineIdx} className="block">
                 {line.split("").map((char, charIdx) => (
@@ -609,7 +609,7 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
           ref={targetTextRef}
           className="pointer-events-none absolute inset-0 flex items-center justify-center px-6"
         >
-          <h2 className="text-center font-display text-[48px] font-medium italic leading-[1.15] tracking-[-1px] text-on-surface md:text-[68px] md:tracking-[-2px]">
+          <h2 className="text-center font-display text-5xl font-medium italic leading-[1.15] tracking-tight text-on-surface md:text-6xl md:tracking-tighter">
             {targetText.split("").map((char, i) => (
               <span
                 key={i}

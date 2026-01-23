@@ -7,7 +7,9 @@ import { ActOneScript } from "./act-one-script";
 import { ActTwoTagline } from "./act-two-tagline";
 import { ActThreeVoid } from "./act-three-void";
 import { ActFiveReveal } from "./act-five-reveal";
-import { StackingFinale } from "@/components/home/stacking-finale";
+import { FeaturesSection } from "@/components/home/features";
+import { YourWaySection } from "@/components/home/your-way";
+import { FooterSection } from "@/components/home/footer";
 
 // Register plugins
 if (typeof window !== "undefined") {
@@ -80,8 +82,14 @@ export function ScreenplaySection() {
         </div>
       </section>
 
-      {/* Stacking Finale: Features → Show Don't Tell → Footer */}
-      <StackingFinale />
+      {/* Features Section */}
+      <FeaturesSection />
+
+      {/* Your Way: One Script. Any Setup. */}
+      <YourWaySection />
+
+      {/* Footer: Show Don't Tell → Waitlist → Footer */}
+      <FooterSection />
     </>
   );
 }

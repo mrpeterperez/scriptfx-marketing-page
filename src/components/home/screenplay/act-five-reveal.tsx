@@ -323,7 +323,7 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
               backgroundRepeat: 'repeat',
               backgroundSize: '220px',
               backgroundPosition: 'center',
-              opacity: 0.35,
+              opacity: 0.15,
               mixBlendMode: 'soft-light',
             }}
           />

@@ -139,7 +139,7 @@ export function IntroReveal() {
             backgroundRepeat: "repeat",
             backgroundSize: "220px",
             backgroundPosition: "center",
-            opacity: 0.35,
+            opacity: 0.15,
             mixBlendMode: "soft-light",
           }}
         />

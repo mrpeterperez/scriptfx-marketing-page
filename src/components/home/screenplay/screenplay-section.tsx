@@ -8,7 +8,6 @@ import { ActTwoTagline } from "./act-two-tagline";
 import { ActThreeVoid } from "./act-three-void";
 import { ActFiveReveal } from "./act-five-reveal";
 import { FeaturesSection } from "@/components/home/features";
-import { YourWaySection } from "@/components/home/your-way";
 import { FooterSection } from "@/components/home/footer";
 
 // Register plugins
@@ -82,11 +81,8 @@ export function ScreenplaySection() {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Features Section (includes Your Way columns) */}
       <FeaturesSection />
-
-      {/* Your Way: One Script. Any Setup. */}
-      <YourWaySection />
 
       {/* Footer: Show Don't Tell → Waitlist → Footer */}
       <FooterSection />

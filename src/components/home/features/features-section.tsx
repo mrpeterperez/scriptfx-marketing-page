@@ -1,39 +1,38 @@
 "use client";
 
-import * as React from "react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Image from "next/image";
 import { features } from "./features-data";
+import { yourWayFrames } from "../your-way/your-way-data";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export function FeaturesSection() {
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollTriggerRef = useRef<ScrollTrigger | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
 
   // Panel refs
   const panel1Ref = useRef<HTMLDivElement>(null);
   const leftPanelRef = useRef<HTMLDivElement>(null);
   const rightPanelRef = useRef<HTMLDivElement>(null);
   const mobileContentRef = useRef<HTMLDivElement>(null);
-  const finalMessageRef = useRef<HTMLDivElement>(null);
-  const finalPart1Ref = useRef<HTMLSpanElement>(null);
-  const finalPart2Ref = useRef<HTMLSpanElement>(null);
-  const finalPart3Ref = useRef<HTMLSpanElement>(null);
-  const finalSubtextRef = useRef<HTMLParagraphElement>(null);
   const [activeFeature, setActiveFeature] = useState(0);
 
-  // Mobile detection
-  useLayoutEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
+  // "One workflow" message refs
+  const workflowMessageRef = useRef<HTMLDivElement>(null);
+  const workflowPart1Ref = useRef<HTMLSpanElement>(null);
+  const workflowPart2Ref = useRef<HTMLSpanElement>(null);
+  const workflowPart3Ref = useRef<HTMLSpanElement>(null);
+  const workflowSubtextRef = useRef<HTMLParagraphElement>(null);
+
+  // "Your Script. Any Setup." refs
+  const yourWaySectionRef = useRef<HTMLDivElement>(null);
+  const yourWayHeadline1Ref = useRef<HTMLSpanElement>(null);
+  const yourWayHeadline2Ref = useRef<HTMLSpanElement>(null);
+  const yourWayColumnsRef = useRef<HTMLDivElement>(null);
+  const yourWayColumnRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -42,11 +41,21 @@ export function FeaturesSection() {
       const isDesktop = window.innerWidth >= 768;
 
       // ===== INITIAL STATES =====
-      if (finalMessageRef.current) gsap.set(finalMessageRef.current, { autoAlpha: 0 });
-      if (finalPart1Ref.current) gsap.set(finalPart1Ref.current, { autoAlpha: 0, y: 30, filter: "blur(12px)" });
-      if (finalPart2Ref.current) gsap.set(finalPart2Ref.current, { autoAlpha: 0, y: 30, filter: "blur(12px)" });
-      if (finalPart3Ref.current) gsap.set(finalPart3Ref.current, { autoAlpha: 0, y: 30, filter: "blur(12px)" });
-      if (finalSubtextRef.current) gsap.set(finalSubtextRef.current, { autoAlpha: 0, y: 20, filter: "blur(8px)" });
+      // "One workflow" message - hidden
+      if (workflowMessageRef.current) gsap.set(workflowMessageRef.current, { autoAlpha: 0 });
+      if (workflowPart1Ref.current) gsap.set(workflowPart1Ref.current, { autoAlpha: 0, y: 30, filter: "blur(12px)" });
+      if (workflowPart2Ref.current) gsap.set(workflowPart2Ref.current, { autoAlpha: 0, y: 30, filter: "blur(12px)" });
+      if (workflowPart3Ref.current) gsap.set(workflowPart3Ref.current, { autoAlpha: 0, y: 30, filter: "blur(12px)" });
+      if (workflowSubtextRef.current) gsap.set(workflowSubtextRef.current, { autoAlpha: 0, y: 20, filter: "blur(8px)" });
+
+      // "Your Script. Any Setup." - hidden
+      if (yourWaySectionRef.current) gsap.set(yourWaySectionRef.current, { autoAlpha: 0 });
+      if (yourWayHeadline1Ref.current) gsap.set(yourWayHeadline1Ref.current, { autoAlpha: 0, y: 30, filter: "blur(12px)" });
+      if (yourWayHeadline2Ref.current) gsap.set(yourWayHeadline2Ref.current, { autoAlpha: 0, y: 30, filter: "blur(12px)" });
+      if (yourWayColumnsRef.current) gsap.set(yourWayColumnsRef.current, { autoAlpha: 0 });
+      yourWayColumnRefs.current.forEach((col) => {
+        if (col) gsap.set(col, { autoAlpha: 0, y: 50, filter: "blur(8px)" });
+      });
 
       // Bring the top nav back
       ScrollTrigger.create({
@@ -64,8 +73,8 @@ export function FeaturesSection() {
       });
 
       // ===== MAIN SCROLL TRIGGER =====
-      // Total phases: 6 features + 6 final message hold = 12
-      const totalPhases = 12;
+      // Total phases: 6 features + 4 workflow message + 4 your way + 2 hold = 16
+      const totalPhases = 16;
 
       const st = ScrollTrigger.create({
         trigger: containerRef.current,
@@ -85,24 +94,26 @@ export function FeaturesSection() {
             // Show nav on desktop during features, hide on mobile
             window.dispatchEvent(new CustomEvent("scriptfx-toggle-nav", { detail: { visible: isDesktop } }));
 
-            // Reset final message
-            if (finalMessageRef.current) gsap.set(finalMessageRef.current, { autoAlpha: 0 });
+            // Reset messages
+            if (workflowMessageRef.current) gsap.set(workflowMessageRef.current, { autoAlpha: 0 });
+            if (yourWaySectionRef.current) gsap.set(yourWaySectionRef.current, { autoAlpha: 0 });
+
             // Only animate desktop panels on desktop
             if (isDesktop && leftPanelRef.current) gsap.set(leftPanelRef.current, { autoAlpha: 1, x: 0, filter: "blur(0px)" });
             if (isDesktop && rightPanelRef.current) gsap.set(rightPanelRef.current, { autoAlpha: 1, x: 0, filter: "blur(0px)" });
             // Reset mobile content
             if (!isDesktop && mobileContentRef.current) gsap.set(mobileContentRef.current, { autoAlpha: 1, filter: "blur(0px)" });
           }
-          // ===== PHASE 2: Final Message Reveal (6-12) =====
-          else {
-            const localProgress = (phase - 6) / 6;
+          // ===== PHASE 2: "One workflow" Message Reveal (6-10) =====
+          else if (phase < 10) {
+            const localProgress = (phase - 6) / 4;
             setActiveFeature(features.length - 1);
 
-            // Show nav on desktop during final message, hide on mobile
+            // Show nav on desktop, hide on mobile
             window.dispatchEvent(new CustomEvent("scriptfx-toggle-nav", { detail: { visible: isDesktop } }));
 
-            // Panels slide out, final message fades in
-            const panelProgress = Math.min(localProgress * 3, 1);
+            // Panels slide out, workflow message fades in
+            const panelProgress = Math.min(localProgress * 4, 1);
             if (isDesktop && leftPanelRef.current) {
               gsap.set(leftPanelRef.current, {
                 autoAlpha: 1 - panelProgress,
@@ -124,27 +135,95 @@ export function FeaturesSection() {
                 filter: `blur(${10 * panelProgress}px)`,
               });
             }
-            if (finalMessageRef.current) {
-              gsap.set(finalMessageRef.current, { autoAlpha: Math.min(panelProgress * 2, 1) });
+
+            // Workflow message fades in
+            if (workflowMessageRef.current) {
+              gsap.set(workflowMessageRef.current, { autoAlpha: Math.min(panelProgress * 2, 1) });
             }
 
             // Staggered text reveals
-            if (finalPart1Ref.current) {
-              const p = Math.max(0, Math.min((localProgress - 0.15) * 10, 1));
-              gsap.set(finalPart1Ref.current, { autoAlpha: p, y: 30 * (1 - p), filter: `blur(${12 * (1 - p)}px)` });
+            if (workflowPart1Ref.current) {
+              const p = Math.max(0, Math.min((localProgress - 0.1) * 8, 1));
+              gsap.set(workflowPart1Ref.current, { autoAlpha: p, y: 30 * (1 - p), filter: `blur(${12 * (1 - p)}px)` });
             }
-            if (finalPart2Ref.current) {
-              const p = Math.max(0, Math.min((localProgress - 0.22) * 10, 1));
-              gsap.set(finalPart2Ref.current, { autoAlpha: p, y: 30 * (1 - p), filter: `blur(${12 * (1 - p)}px)` });
+            if (workflowPart2Ref.current) {
+              const p = Math.max(0, Math.min((localProgress - 0.18) * 8, 1));
+              gsap.set(workflowPart2Ref.current, { autoAlpha: p, y: 30 * (1 - p), filter: `blur(${12 * (1 - p)}px)` });
             }
-            if (finalPart3Ref.current) {
-              const p = Math.max(0, Math.min((localProgress - 0.29) * 10, 1));
-              gsap.set(finalPart3Ref.current, { autoAlpha: p, y: 30 * (1 - p), filter: `blur(${12 * (1 - p)}px)` });
+            if (workflowPart3Ref.current) {
+              const p = Math.max(0, Math.min((localProgress - 0.26) * 8, 1));
+              gsap.set(workflowPart3Ref.current, { autoAlpha: p, y: 30 * (1 - p), filter: `blur(${12 * (1 - p)}px)` });
             }
-            if (finalSubtextRef.current) {
-              const p = Math.max(0, Math.min((localProgress - 0.36) * 10, 1));
-              gsap.set(finalSubtextRef.current, { autoAlpha: p, y: 20 * (1 - p), filter: `blur(${8 * (1 - p)}px)` });
+            if (workflowSubtextRef.current) {
+              const p = Math.max(0, Math.min((localProgress - 0.34) * 8, 1));
+              gsap.set(workflowSubtextRef.current, { autoAlpha: p, y: 20 * (1 - p), filter: `blur(${8 * (1 - p)}px)` });
             }
+
+            // Your Way stays hidden
+            if (yourWaySectionRef.current) gsap.set(yourWaySectionRef.current, { autoAlpha: 0 });
+          }
+          // ===== PHASE 3: Transition to "Your Script. Any Setup." (10-14) =====
+          else if (phase < 14) {
+            const localProgress = (phase - 10) / 4;
+
+            // Show nav on desktop, hide on mobile
+            window.dispatchEvent(new CustomEvent("scriptfx-toggle-nav", { detail: { visible: isDesktop } }));
+
+            // Fade out "One workflow" message
+            const fadeOutProgress = Math.min(localProgress * 3, 1);
+            if (workflowMessageRef.current) {
+              gsap.set(workflowMessageRef.current, { autoAlpha: 1 - fadeOutProgress });
+            }
+
+            // Fade in "Your Script. Any Setup." section
+            if (yourWaySectionRef.current) {
+              const fadeIn = Math.max(0, (localProgress - 0.2) * 2);
+              gsap.set(yourWaySectionRef.current, { autoAlpha: Math.min(fadeIn, 1) });
+            }
+
+            // Headline reveals
+            if (yourWayHeadline1Ref.current) {
+              const p = Math.max(0, Math.min((localProgress - 0.25) * 4, 1));
+              gsap.set(yourWayHeadline1Ref.current, { autoAlpha: p, y: 30 * (1 - p), filter: `blur(${12 * (1 - p)}px)` });
+            }
+            if (yourWayHeadline2Ref.current) {
+              const p = Math.max(0, Math.min((localProgress - 0.35) * 4, 1));
+              gsap.set(yourWayHeadline2Ref.current, { autoAlpha: p, y: 30 * (1 - p), filter: `blur(${12 * (1 - p)}px)` });
+            }
+
+            // Columns fade in with stagger
+            if (yourWayColumnsRef.current) {
+              const colContainerAlpha = Math.max(0, (localProgress - 0.4) * 2.5);
+              gsap.set(yourWayColumnsRef.current, { autoAlpha: Math.min(colContainerAlpha, 1) });
+            }
+
+            yourWayColumnRefs.current.forEach((col, i) => {
+              if (!col) return;
+              const delay = 0.45 + i * 0.1;
+              const colProgress = Math.max(0, Math.min((localProgress - delay) * 4, 1));
+              gsap.set(col, {
+                autoAlpha: colProgress,
+                y: 50 * (1 - colProgress),
+                filter: `blur(${8 * (1 - colProgress)}px)`,
+              });
+            });
+          }
+          // ===== PHASE 4: Hold final (14-16) =====
+          else {
+            // Show nav on desktop, hide on mobile
+            window.dispatchEvent(new CustomEvent("scriptfx-toggle-nav", { detail: { visible: isDesktop } }));
+
+            // Hide workflow message
+            if (workflowMessageRef.current) gsap.set(workflowMessageRef.current, { autoAlpha: 0 });
+
+            // Keep Your Way visible
+            if (yourWaySectionRef.current) gsap.set(yourWaySectionRef.current, { autoAlpha: 1 });
+            if (yourWayHeadline1Ref.current) gsap.set(yourWayHeadline1Ref.current, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+            if (yourWayHeadline2Ref.current) gsap.set(yourWayHeadline2Ref.current, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+            if (yourWayColumnsRef.current) gsap.set(yourWayColumnsRef.current, { autoAlpha: 1 });
+            yourWayColumnRefs.current.forEach((col) => {
+              if (col) gsap.set(col, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+            });
           }
         },
         onEnter: () => {
@@ -167,7 +246,7 @@ export function FeaturesSection() {
     const st = scrollTriggerRef.current;
     if (!st || !st.end) return;
     const totalDistance = st.end - st.start;
-    const progressPerFeature = 1 / 12;
+    const progressPerFeature = 1 / 16;
     const targetProgress = index * progressPerFeature + progressPerFeature / 2;
     const scrollPos = st.start + totalDistance * targetProgress;
     window.scrollTo({ top: scrollPos, behavior: "smooth" });
@@ -318,17 +397,65 @@ export function FeaturesSection() {
             </div>
           </div>
 
-          {/* Final Message - Centered (works on both mobile & desktop) */}
-          <div ref={finalMessageRef} className="absolute inset-0 flex items-center justify-center invisible z-10">
+          {/* ===== "One workflow. Any model. Zero churn." Message ===== */}
+          <div ref={workflowMessageRef} className="absolute inset-0 flex items-center justify-center invisible z-10">
             <div className="max-w-4xl text-center px-6 md:px-8">
               <h2 className="text-center font-display text-5xl font-medium leading-[1.15] tracking-tighter text-on-surface md:text-6xl">
-                <span ref={finalPart1Ref} className="block">One workflow.</span>
-                <span ref={finalPart2Ref} className="block">Any model.</span>
-                <span ref={finalPart3Ref} className="block">Zero <span className="italic">churn.</span></span>
+                <span ref={workflowPart1Ref} className="block transform-gpu will-change-transform">One workflow.</span>
+                <span ref={workflowPart2Ref} className="block transform-gpu will-change-transform">Any model.</span>
+                <span ref={workflowPart3Ref} className="block transform-gpu will-change-transform">Zero <span className="italic">churn.</span></span>
               </h2>
-              <p ref={finalSubtextRef} className="mt-6 font-body text-[16px] font-light leading-[1.5] tracking-[-0.16px] text-on-surface/90 md:mt-8 md:text-[18px] md:leading-[24px] md:tracking-[-0.18px]">
-                ScriptFX handles the models so you don't have to.
+              <p ref={workflowSubtextRef} className="mt-6 font-body text-[16px] font-light leading-[1.5] tracking-[-0.16px] text-on-surface/90 md:mt-8 md:text-[18px] md:leading-[24px] md:tracking-[-0.18px]">
+                ScriptFX handles the models so you don&apos;t have to.
               </p>
+            </div>
+          </div>
+
+          {/* ===== "Your Script. Any Setup." + Columns ===== */}
+          <div ref={yourWaySectionRef} className="absolute inset-0 flex flex-col items-center justify-center invisible z-10 overflow-hidden">
+            {/* Headline */}
+            <div className="text-center mb-8 md:mb-12">
+              <h2 className="font-display text-5xl font-medium leading-[1.15] tracking-tighter text-on-surface md:text-6xl">
+                <span ref={yourWayHeadline1Ref} className="block transform-gpu will-change-transform">Your Script.</span>
+                <span ref={yourWayHeadline2Ref} className="block transform-gpu will-change-transform">Any <span className="italic">Setup.</span></span>
+              </h2>
+            </div>
+
+            {/* Columns */}
+            <div
+              ref={yourWayColumnsRef}
+              className="w-full px-6 md:px-12 lg:px-20"
+            >
+              <div className="mx-auto grid max-w-5xl grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
+                {yourWayFrames.map((frame, i) => (
+                  <div
+                    key={frame.id}
+                    ref={(el) => { yourWayColumnRefs.current[i] = el; }}
+                    className="group flex flex-col overflow-hidden rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm transform-gpu will-change-transform"
+                  >
+                    {/* Image */}
+                    <div className="relative aspect-[16/10] w-full overflow-hidden">
+                      <Image
+                        src={frame.image}
+                        alt={frame.headline}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    </div>
+
+                    {/* Text */}
+                    <div className="p-4 md:p-5">
+                      <h3 className="font-display text-xl font-medium tracking-tight text-on-surface md:text-2xl">
+                        {frame.headline}
+                      </h3>
+                      <p className="mt-1 font-body text-sm font-light text-on-surface-variant">
+                        {frame.subtext}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

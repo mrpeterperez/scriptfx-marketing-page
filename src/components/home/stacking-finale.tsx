@@ -8,6 +8,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { features } from "./features-data";
 import { footerLinks } from "@/lib/footer-links";
+import { yourWayFrames } from "./your-way/your-way-data";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -29,6 +30,11 @@ export function StackingFinale() {
   const finalPart3Ref = useRef<HTMLSpanElement>(null);
   const finalSubtextRef = useRef<HTMLParagraphElement>(null);
   const [activeFeature, setActiveFeature] = useState(0);
+
+  // Your Way refs
+  const yourWayTitleRef = useRef<HTMLDivElement>(null);
+  const yourWayColumnsRef = useRef<HTMLDivElement>(null);
+  const yourWayColumnRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   // Panel 2: Footer refs
   const panel2Ref = useRef<HTMLDivElement>(null);
@@ -70,6 +76,13 @@ export function StackingFinale() {
       if (finalPart3Ref.current) gsap.set(finalPart3Ref.current, { autoAlpha: 0, y: 30, filter: "blur(12px)" });
       if (finalSubtextRef.current) gsap.set(finalSubtextRef.current, { autoAlpha: 0, y: 20, filter: "blur(8px)" });
 
+      // Your Way - starts hidden
+      if (yourWayTitleRef.current) gsap.set(yourWayTitleRef.current, { yPercent: 0 });
+      if (yourWayColumnsRef.current) gsap.set(yourWayColumnsRef.current, { autoAlpha: 0 });
+      yourWayColumnRefs.current.forEach((col) => {
+        if (col) gsap.set(col, { autoAlpha: 0, y: 50, filter: "blur(8px)" });
+      });
+
       // Panel 2 (Footer) - starts completely below viewport
       if (panel2) gsap.set(panel2, { yPercent: 110 });
       
@@ -101,8 +114,8 @@ export function StackingFinale() {
       });
 
       // ===== MAIN SCROLL TRIGGER =====
-      // Total phases: 6 features + 6 final message hold + 3 footer slide + 3 show don't tell + 3 waitlist = 21
-      const totalPhases = 21;
+      // Total phases: 6 features + 4 final message + 4 your way columns + 3 footer slide + 3 show don't tell + 3 waitlist = 23
+      const totalPhases = 23;
 
       const st = ScrollTrigger.create({
         trigger: containerRef.current,
@@ -118,13 +131,13 @@ export function StackingFinale() {
           if (phase < 6) {
             const index = Math.min(Math.floor(phase), features.length - 1);
             setActiveFeature(index);
-            
+
             // Show nav on desktop during features, hide on mobile
             window.dispatchEvent(new CustomEvent("scriptfx-toggle-nav", { detail: { visible: isDesktop } }));
-            
+
             // Reset panel 2 - keep it hidden below
             if (panel2) gsap.set(panel2, { yPercent: 110 });
-            
+
             // Reset final message
             if (finalMessageRef.current) gsap.set(finalMessageRef.current, { autoAlpha: 0 });
             // Only animate desktop panels on desktop
@@ -132,17 +145,21 @@ export function StackingFinale() {
             if (isDesktop && rightPanelRef.current) gsap.set(rightPanelRef.current, { autoAlpha: 1, x: 0, filter: "blur(0px)" });
             // Reset mobile content
             if (!isDesktop && mobileContentRef.current) gsap.set(mobileContentRef.current, { autoAlpha: 1, filter: "blur(0px)" });
+
+            // Reset Your Way
+            if (yourWayTitleRef.current) gsap.set(yourWayTitleRef.current, { yPercent: 0 });
+            if (yourWayColumnsRef.current) gsap.set(yourWayColumnsRef.current, { autoAlpha: 0 });
           }
-          // ===== PHASE 2: Final Message Reveal (6-12) =====
-          else if (phase < 12) {
-            const localProgress = (phase - 6) / 6;
+          // ===== PHASE 2: Final Message Reveal (6-10) =====
+          else if (phase < 10) {
+            const localProgress = (phase - 6) / 4;
             setActiveFeature(features.length - 1);
-            
+
             // Show nav on desktop during final message, hide on mobile
             window.dispatchEvent(new CustomEvent("scriptfx-toggle-nav", { detail: { visible: isDesktop } }));
-            
+
             // Panels slide out, final message fades in
-            const panelProgress = Math.min(localProgress * 3, 1);
+            const panelProgress = Math.min(localProgress * 4, 1);
             if (isDesktop && leftPanelRef.current) {
               gsap.set(leftPanelRef.current, {
                 autoAlpha: 1 - panelProgress,
@@ -170,28 +187,75 @@ export function StackingFinale() {
 
             // Staggered text reveals
             if (finalPart1Ref.current) {
-              const p = Math.max(0, Math.min((localProgress - 0.15) * 10, 1));
+              const p = Math.max(0, Math.min((localProgress - 0.1) * 8, 1));
               gsap.set(finalPart1Ref.current, { autoAlpha: p, y: 30 * (1 - p), filter: `blur(${12 * (1 - p)}px)` });
             }
             if (finalPart2Ref.current) {
-              const p = Math.max(0, Math.min((localProgress - 0.22) * 10, 1));
+              const p = Math.max(0, Math.min((localProgress - 0.18) * 8, 1));
               gsap.set(finalPart2Ref.current, { autoAlpha: p, y: 30 * (1 - p), filter: `blur(${12 * (1 - p)}px)` });
             }
             if (finalPart3Ref.current) {
-              const p = Math.max(0, Math.min((localProgress - 0.29) * 10, 1));
+              const p = Math.max(0, Math.min((localProgress - 0.26) * 8, 1));
               gsap.set(finalPart3Ref.current, { autoAlpha: p, y: 30 * (1 - p), filter: `blur(${12 * (1 - p)}px)` });
             }
             if (finalSubtextRef.current) {
-              const p = Math.max(0, Math.min((localProgress - 0.36) * 10, 1));
+              const p = Math.max(0, Math.min((localProgress - 0.34) * 8, 1));
               gsap.set(finalSubtextRef.current, { autoAlpha: p, y: 20 * (1 - p), filter: `blur(${8 * (1 - p)}px)` });
             }
+
+            // Your Way stays hidden, title centered
+            if (yourWayTitleRef.current) gsap.set(yourWayTitleRef.current, { yPercent: 0 });
+            if (yourWayColumnsRef.current) gsap.set(yourWayColumnsRef.current, { autoAlpha: 0 });
+            yourWayColumnRefs.current.forEach((col) => {
+              if (col) gsap.set(col, { autoAlpha: 0, y: 50, filter: "blur(8px)" });
+            });
 
             // Reset panel 2 - keep it hidden below
             if (panel2) gsap.set(panel2, { yPercent: 110 });
           }
-          // ===== PHASE 3: Footer slides up with "Show." first (12-15) =====
-          else if (phase < 15) {
-            const localProgress = (phase - 12) / 3;
+          // ===== PHASE 3: Your Way Columns Reveal (10-14) =====
+          else if (phase < 14) {
+            const localProgress = (phase - 10) / 4;
+
+            // Show nav on desktop, hide on mobile
+            window.dispatchEvent(new CustomEvent("scriptfx-toggle-nav", { detail: { visible: isDesktop } }));
+
+            // Keep final message visible
+            if (finalMessageRef.current) gsap.set(finalMessageRef.current, { autoAlpha: 1 });
+            if (finalPart1Ref.current) gsap.set(finalPart1Ref.current, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+            if (finalPart2Ref.current) gsap.set(finalPart2Ref.current, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+            if (finalPart3Ref.current) gsap.set(finalPart3Ref.current, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+            if (finalSubtextRef.current) gsap.set(finalSubtextRef.current, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+
+            // Title shifts up
+            if (yourWayTitleRef.current) {
+              const titleShift = Math.min(localProgress * 2, 1);
+              gsap.set(yourWayTitleRef.current, { yPercent: -35 * titleShift });
+            }
+
+            // Columns fade in with stagger
+            if (yourWayColumnsRef.current) {
+              const colContainerAlpha = Math.min(localProgress * 3, 1);
+              gsap.set(yourWayColumnsRef.current, { autoAlpha: colContainerAlpha });
+            }
+
+            yourWayColumnRefs.current.forEach((col, i) => {
+              if (!col) return;
+              const delay = 0.2 + i * 0.15;
+              const colProgress = Math.max(0, Math.min((localProgress - delay) * 3, 1));
+              gsap.set(col, {
+                autoAlpha: colProgress,
+                y: 50 * (1 - colProgress),
+                filter: `blur(${8 * (1 - colProgress)}px)`,
+              });
+            });
+
+            // Reset panel 2 - keep it hidden below
+            if (panel2) gsap.set(panel2, { yPercent: 110 });
+          }
+          // ===== PHASE 4: Footer slides up with "Show." first (14-17) =====
+          else if (phase < 17) {
+            const localProgress = (phase - 14) / 3;
             
             // Hide nav when footer starts appearing
             if (localProgress > 0.1) {
@@ -222,10 +286,17 @@ export function StackingFinale() {
               const p = Math.max(0, Math.min((localProgress - 0.5) * 3, 1));
               gsap.set(formRef.current, { autoAlpha: p, y: 20 * (1 - p) });
             }
+
+            // Keep Your Way visible but start fading
+            if (yourWayTitleRef.current) gsap.set(yourWayTitleRef.current, { yPercent: -35 });
+            if (yourWayColumnsRef.current) {
+              const fadeOut = 1 - localProgress;
+              gsap.set(yourWayColumnsRef.current, { autoAlpha: fadeOut });
+            }
           }
-          // ===== PHASE 4: Hold "Show." then reveal "Don't Tell." (15-18) =====
-          else if (phase < 18) {
-            const localProgress = (phase - 15) / 3;
+          // ===== PHASE 5: Hold "Show." then reveal "Don't Tell." (17-20) =====
+          else if (phase < 20) {
+            const localProgress = (phase - 17) / 3;
             
             // Keep nav hidden while footer is visible
             window.dispatchEvent(new CustomEvent("scriptfx-toggle-nav", { detail: { visible: false } }));
@@ -247,10 +318,13 @@ export function StackingFinale() {
             
             // Keep form visible
             if (formRef.current) gsap.set(formRef.current, { autoAlpha: 1, y: 0 });
+
+            // Hide Your Way
+            if (yourWayColumnsRef.current) gsap.set(yourWayColumnsRef.current, { autoAlpha: 0 });
           }
-          // ===== PHASE 5: Transition to Waitlist (18-21) =====
+          // ===== PHASE 6: Transition to Waitlist (20-23) =====
           else {
-            const localProgress = (phase - 18) / 3;
+            const localProgress = (phase - 20) / 3;
             
             // Keep nav hidden while footer is visible
             window.dispatchEvent(new CustomEvent("scriptfx-toggle-nav", { detail: { visible: false } }));
@@ -310,7 +384,7 @@ export function StackingFinale() {
     const st = scrollTriggerRef.current;
     if (!st || !st.end) return;
     const totalDistance = st.end - st.start;
-    const progressPerFeature = 1 / 21;
+    const progressPerFeature = 1 / 23;
     const targetProgress = index * progressPerFeature + progressPerFeature / 2;
     const scrollPos = st.start + totalDistance * targetProgress;
     window.scrollTo({ top: scrollPos, behavior: "smooth" });
@@ -470,17 +544,58 @@ export function StackingFinale() {
             </div>
           </div>
 
-          {/* Final Message - Centered (works on both mobile & desktop) */}
-          <div ref={finalMessageRef} className="absolute inset-0 flex items-center justify-center invisible z-10">
-            <div className="max-w-4xl text-center px-6 md:px-8">
+          {/* Final Message + Your Way - Centered (works on both mobile & desktop) */}
+          <div ref={finalMessageRef} className="absolute inset-0 flex flex-col items-center justify-center invisible z-10 overflow-hidden">
+            {/* Title section - shifts up */}
+            <div
+              ref={yourWayTitleRef}
+              className="flex flex-col items-center transform-gpu will-change-transform"
+            >
               <h2 className="text-center font-display text-5xl font-medium leading-[1.15] tracking-tighter text-on-surface md:text-6xl">
-                <span ref={finalPart1Ref} className="block">One workflow.</span>
-                <span ref={finalPart2Ref} className="block">Any model.</span>
-                <span ref={finalPart3Ref} className="block">Zero <span className="italic">churn.</span></span>
+                <span ref={finalPart1Ref} className="block transform-gpu will-change-transform">One workflow.</span>
+                <span ref={finalPart2Ref} className="block transform-gpu will-change-transform">Any model.</span>
+                <span ref={finalPart3Ref} className="block transform-gpu will-change-transform">Zero <span className="italic">churn.</span></span>
               </h2>
-              <p ref={finalSubtextRef} className="mt-6 font-body text-[16px] font-light leading-[1.5] tracking-[-0.16px] text-on-surface/90 md:mt-8 md:text-[18px] md:leading-[24px] md:tracking-[-0.18px]">
-                ScriptFX handles the models so you don't have to.
+              <p ref={finalSubtextRef} className="mt-6 max-w-lg font-body text-[16px] font-light leading-[1.5] tracking-[-0.16px] text-on-surface/90 md:mt-8 md:text-[18px] md:leading-[24px] md:tracking-[-0.18px]">
+                ScriptFX handles the models so you don&apos;t have to.
               </p>
+            </div>
+
+            {/* Your Way Columns - appear below */}
+            <div
+              ref={yourWayColumnsRef}
+              className="absolute inset-x-0 bottom-8 md:bottom-12 lg:bottom-16 px-6 md:px-12 lg:px-20"
+            >
+              <div className="mx-auto grid max-w-5xl grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
+                {yourWayFrames.map((frame, i) => (
+                  <div
+                    key={frame.id}
+                    ref={(el) => { yourWayColumnRefs.current[i] = el; }}
+                    className="group flex flex-col overflow-hidden rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm transform-gpu will-change-transform"
+                  >
+                    {/* Image */}
+                    <div className="relative aspect-[16/10] w-full overflow-hidden">
+                      <Image
+                        src={frame.image}
+                        alt={frame.headline}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    </div>
+
+                    {/* Text */}
+                    <div className="p-4 md:p-5">
+                      <h3 className="font-display text-xl font-medium tracking-tight text-on-surface md:text-2xl">
+                        {frame.headline}
+                      </h3>
+                      <p className="mt-1 font-body text-sm font-light text-on-surface-variant">
+                        {frame.subtext}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

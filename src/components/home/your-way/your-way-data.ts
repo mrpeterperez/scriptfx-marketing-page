@@ -8,20 +8,20 @@ export interface YourWayFrame {
 export const yourWayFrames: YourWayFrame[] = [
   {
     id: 1,
-    headline: "Just a laptop.",
-    subtext: "That's enough.",
+    headline: "Laptop only.",
+    subtext: "Generate scenes straight from your script. No camera needed.",
     image: "/placeholder/your-way-1.png",
   },
   {
     id: 2,
     headline: "Your gear.",
-    subtext: "Use it.",
+    subtext: "Shoot it yourself. Star in it. Direct the action.",
     image: "/placeholder/your-way-2.png",
   },
   {
     id: 3,
-    headline: "Your crew.",
-    subtext: "Bring them.",
+    headline: "Full studio.",
+    subtext: "Elevate existing footage with AI.",
     image: "/placeholder/your-way-3.png",
   },
 ];

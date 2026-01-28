@@ -31,6 +31,7 @@ export function FeaturesSection() {
   const yourWaySectionRef = useRef<HTMLDivElement>(null);
   const yourWayHeadline1Ref = useRef<HTMLSpanElement>(null);
   const yourWayHeadline2Ref = useRef<HTMLSpanElement>(null);
+  const yourWaySubtextRef = useRef<HTMLParagraphElement>(null);
   const yourWayColumnsRef = useRef<HTMLDivElement>(null);
   const yourWayColumnRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -48,11 +49,12 @@ export function FeaturesSection() {
       if (workflowPart3Ref.current) gsap.set(workflowPart3Ref.current, { autoAlpha: 0, y: 30, filter: "blur(12px)" });
       if (workflowSubtextRef.current) gsap.set(workflowSubtextRef.current, { autoAlpha: 0, y: 20, filter: "blur(8px)" });
 
-      // "Your Script. Any Setup." - hidden
+      // "Your Script. Any Setup." - hidden, columns start with height 0 so headline can be centered
       if (yourWaySectionRef.current) gsap.set(yourWaySectionRef.current, { autoAlpha: 0 });
       if (yourWayHeadline1Ref.current) gsap.set(yourWayHeadline1Ref.current, { autoAlpha: 0, y: 30, filter: "blur(12px)" });
       if (yourWayHeadline2Ref.current) gsap.set(yourWayHeadline2Ref.current, { autoAlpha: 0, y: 30, filter: "blur(12px)" });
-      if (yourWayColumnsRef.current) gsap.set(yourWayColumnsRef.current, { autoAlpha: 0 });
+      if (yourWaySubtextRef.current) gsap.set(yourWaySubtextRef.current, { autoAlpha: 0, y: 20, filter: "blur(8px)" });
+      if (yourWayColumnsRef.current) gsap.set(yourWayColumnsRef.current, { autoAlpha: 0, height: 0, marginTop: 0, overflow: "hidden" });
       yourWayColumnRefs.current.forEach((col) => {
         if (col) gsap.set(col, { autoAlpha: 0, y: 50, filter: "blur(8px)" });
       });
@@ -73,8 +75,8 @@ export function FeaturesSection() {
       });
 
       // ===== MAIN SCROLL TRIGGER =====
-      // Total phases: 6 features + 4 workflow message + 4 your way + 2 hold = 16
-      const totalPhases = 16;
+      // Total phases: 6 features + 4 workflow + 2 headline + 2 hold + 2 laptop + 2 hold + 2 gear + 2 hold + 2 studio + 2 hold = 26
+      const totalPhases = 26;
 
       const st = ScrollTrigger.create({
         trigger: containerRef.current,
@@ -162,65 +164,161 @@ export function FeaturesSection() {
             // Your Way stays hidden
             if (yourWaySectionRef.current) gsap.set(yourWaySectionRef.current, { autoAlpha: 0 });
           }
-          // ===== PHASE 3: Transition to "Your Script. Any Setup." (10-14) =====
-          else if (phase < 14) {
-            const localProgress = (phase - 10) / 4;
+          // ===== PHASE 3: Fade out workflow, fade in Your Script headline CENTERED (10-12) =====
+          else if (phase < 12) {
+            const localProgress = (phase - 10) / 2;
 
             // Show nav on desktop, hide on mobile
             window.dispatchEvent(new CustomEvent("scriptfx-toggle-nav", { detail: { visible: isDesktop } }));
 
             // Fade out "One workflow" message
-            const fadeOutProgress = Math.min(localProgress * 3, 1);
+            const fadeOutProgress = Math.min(localProgress * 2, 1);
             if (workflowMessageRef.current) {
               gsap.set(workflowMessageRef.current, { autoAlpha: 1 - fadeOutProgress });
             }
 
             // Fade in "Your Script. Any Setup." section
             if (yourWaySectionRef.current) {
-              const fadeIn = Math.max(0, (localProgress - 0.2) * 2);
-              gsap.set(yourWaySectionRef.current, { autoAlpha: Math.min(fadeIn, 1) });
+              gsap.set(yourWaySectionRef.current, { autoAlpha: Math.min(localProgress * 2, 1) });
             }
 
-            // Headline reveals
+            // Headline reveals - CENTERED (columns hidden with height 0)
             if (yourWayHeadline1Ref.current) {
-              const p = Math.max(0, Math.min((localProgress - 0.25) * 4, 1));
+              const p = Math.max(0, Math.min((localProgress - 0.1) * 4, 1));
               gsap.set(yourWayHeadline1Ref.current, { autoAlpha: p, y: 30 * (1 - p), filter: `blur(${12 * (1 - p)}px)` });
             }
             if (yourWayHeadline2Ref.current) {
-              const p = Math.max(0, Math.min((localProgress - 0.35) * 4, 1));
+              const p = Math.max(0, Math.min((localProgress - 0.3) * 4, 1));
               gsap.set(yourWayHeadline2Ref.current, { autoAlpha: p, y: 30 * (1 - p), filter: `blur(${12 * (1 - p)}px)` });
             }
-
-            // Columns fade in with stagger
-            if (yourWayColumnsRef.current) {
-              const colContainerAlpha = Math.max(0, (localProgress - 0.4) * 2.5);
-              gsap.set(yourWayColumnsRef.current, { autoAlpha: Math.min(colContainerAlpha, 1) });
+            if (yourWaySubtextRef.current) {
+              const p = Math.max(0, Math.min((localProgress - 0.5) * 4, 1));
+              gsap.set(yourWaySubtextRef.current, { autoAlpha: p, y: 20 * (1 - p), filter: `blur(${8 * (1 - p)}px)` });
             }
 
-            yourWayColumnRefs.current.forEach((col, i) => {
-              if (!col) return;
-              const delay = 0.45 + i * 0.1;
-              const colProgress = Math.max(0, Math.min((localProgress - delay) * 4, 1));
-              gsap.set(col, {
-                autoAlpha: colProgress,
-                y: 50 * (1 - colProgress),
-                filter: `blur(${8 * (1 - colProgress)}px)`,
-              });
+            // Columns stay hidden (height: 0 so headline stays centered)
+            if (yourWayColumnsRef.current) {
+              gsap.set(yourWayColumnsRef.current, { autoAlpha: 0, height: 0, marginTop: 0, overflow: "hidden" });
+            }
+            yourWayColumnRefs.current.forEach((col) => {
+              if (col) gsap.set(col, { autoAlpha: 0, y: 50, filter: "blur(8px)" });
             });
           }
-          // ===== PHASE 4: Hold final (14-16) =====
-          else {
-            // Show nav on desktop, hide on mobile
+          // ===== PHASE 4: HOLD headline centered (12-14) =====
+          else if (phase < 14) {
             window.dispatchEvent(new CustomEvent("scriptfx-toggle-nav", { detail: { visible: isDesktop } }));
-
-            // Hide workflow message
             if (workflowMessageRef.current) gsap.set(workflowMessageRef.current, { autoAlpha: 0 });
-
-            // Keep Your Way visible
             if (yourWaySectionRef.current) gsap.set(yourWaySectionRef.current, { autoAlpha: 1 });
             if (yourWayHeadline1Ref.current) gsap.set(yourWayHeadline1Ref.current, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
             if (yourWayHeadline2Ref.current) gsap.set(yourWayHeadline2Ref.current, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
-            if (yourWayColumnsRef.current) gsap.set(yourWayColumnsRef.current, { autoAlpha: 1 });
+            if (yourWaySubtextRef.current) gsap.set(yourWaySubtextRef.current, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+            // Columns hidden
+            if (yourWayColumnsRef.current) gsap.set(yourWayColumnsRef.current, { autoAlpha: 0, height: 0, marginTop: 0, overflow: "hidden" });
+            yourWayColumnRefs.current.forEach((col) => {
+              if (col) gsap.set(col, { autoAlpha: 0, y: 50, filter: "blur(8px)" });
+            });
+          }
+          // ===== PHASE 5: Card 1 (Laptop) appears, pushes headline up (14-16) =====
+          else if (phase < 16) {
+            const p = (phase - 14) / 2;
+            const eased = 1 - Math.pow(1 - p, 3);
+            window.dispatchEvent(new CustomEvent("scriptfx-toggle-nav", { detail: { visible: isDesktop } }));
+            if (workflowMessageRef.current) gsap.set(workflowMessageRef.current, { autoAlpha: 0 });
+            if (yourWaySectionRef.current) gsap.set(yourWaySectionRef.current, { autoAlpha: 1 });
+            if (yourWayHeadline1Ref.current) gsap.set(yourWayHeadline1Ref.current, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+            if (yourWayHeadline2Ref.current) gsap.set(yourWayHeadline2Ref.current, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+            if (yourWaySubtextRef.current) gsap.set(yourWaySubtextRef.current, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+            // Container expands
+            if (yourWayColumnsRef.current) gsap.set(yourWayColumnsRef.current, { autoAlpha: 1, height: "auto", marginTop: 48 * eased, overflow: "visible" });
+            // Only card 0 fades in
+            yourWayColumnRefs.current.forEach((col, i) => {
+              if (!col) return;
+              if (i === 0) {
+                gsap.set(col, { autoAlpha: eased, y: 50 * (1 - eased), filter: `blur(${8 * (1 - eased)}px)` });
+              } else {
+                gsap.set(col, { autoAlpha: 0, y: 50, filter: "blur(8px)" });
+              }
+            });
+          }
+          // ===== PHASE 6: HOLD - Laptop moment (16-18) =====
+          else if (phase < 18) {
+            window.dispatchEvent(new CustomEvent("scriptfx-toggle-nav", { detail: { visible: isDesktop } }));
+            if (workflowMessageRef.current) gsap.set(workflowMessageRef.current, { autoAlpha: 0 });
+            if (yourWaySectionRef.current) gsap.set(yourWaySectionRef.current, { autoAlpha: 1 });
+            if (yourWayHeadline1Ref.current) gsap.set(yourWayHeadline1Ref.current, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+            if (yourWayHeadline2Ref.current) gsap.set(yourWayHeadline2Ref.current, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+            if (yourWaySubtextRef.current) gsap.set(yourWaySubtextRef.current, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+            if (yourWayColumnsRef.current) gsap.set(yourWayColumnsRef.current, { autoAlpha: 1, height: "auto", marginTop: 48, overflow: "visible" });
+            yourWayColumnRefs.current.forEach((col, i) => {
+              if (!col) return;
+              gsap.set(col, i === 0 ? { autoAlpha: 1, y: 0, filter: "blur(0px)" } : { autoAlpha: 0, y: 50, filter: "blur(8px)" });
+            });
+          }
+          // ===== PHASE 7: Card 2 (Gear) appears (18-20) =====
+          else if (phase < 20) {
+            const p = (phase - 18) / 2;
+            const eased = 1 - Math.pow(1 - p, 3);
+            window.dispatchEvent(new CustomEvent("scriptfx-toggle-nav", { detail: { visible: isDesktop } }));
+            if (workflowMessageRef.current) gsap.set(workflowMessageRef.current, { autoAlpha: 0 });
+            if (yourWaySectionRef.current) gsap.set(yourWaySectionRef.current, { autoAlpha: 1 });
+            if (yourWayHeadline1Ref.current) gsap.set(yourWayHeadline1Ref.current, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+            if (yourWayHeadline2Ref.current) gsap.set(yourWayHeadline2Ref.current, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+            if (yourWaySubtextRef.current) gsap.set(yourWaySubtextRef.current, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+            if (yourWayColumnsRef.current) gsap.set(yourWayColumnsRef.current, { autoAlpha: 1, height: "auto", marginTop: 48, overflow: "visible" });
+            yourWayColumnRefs.current.forEach((col, i) => {
+              if (!col) return;
+              if (i === 0) {
+                gsap.set(col, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+              } else if (i === 1) {
+                gsap.set(col, { autoAlpha: eased, y: 50 * (1 - eased), filter: `blur(${8 * (1 - eased)}px)` });
+              } else {
+                gsap.set(col, { autoAlpha: 0, y: 50, filter: "blur(8px)" });
+              }
+            });
+          }
+          // ===== PHASE 8: HOLD - Gear moment (20-22) =====
+          else if (phase < 22) {
+            window.dispatchEvent(new CustomEvent("scriptfx-toggle-nav", { detail: { visible: isDesktop } }));
+            if (workflowMessageRef.current) gsap.set(workflowMessageRef.current, { autoAlpha: 0 });
+            if (yourWaySectionRef.current) gsap.set(yourWaySectionRef.current, { autoAlpha: 1 });
+            if (yourWayHeadline1Ref.current) gsap.set(yourWayHeadline1Ref.current, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+            if (yourWayHeadline2Ref.current) gsap.set(yourWayHeadline2Ref.current, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+            if (yourWaySubtextRef.current) gsap.set(yourWaySubtextRef.current, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+            if (yourWayColumnsRef.current) gsap.set(yourWayColumnsRef.current, { autoAlpha: 1, height: "auto", marginTop: 48, overflow: "visible" });
+            yourWayColumnRefs.current.forEach((col, i) => {
+              if (!col) return;
+              gsap.set(col, i <= 1 ? { autoAlpha: 1, y: 0, filter: "blur(0px)" } : { autoAlpha: 0, y: 50, filter: "blur(8px)" });
+            });
+          }
+          // ===== PHASE 9: Card 3 (Studio) appears (22-24) =====
+          else if (phase < 24) {
+            const p = (phase - 22) / 2;
+            const eased = 1 - Math.pow(1 - p, 3);
+            window.dispatchEvent(new CustomEvent("scriptfx-toggle-nav", { detail: { visible: isDesktop } }));
+            if (workflowMessageRef.current) gsap.set(workflowMessageRef.current, { autoAlpha: 0 });
+            if (yourWaySectionRef.current) gsap.set(yourWaySectionRef.current, { autoAlpha: 1 });
+            if (yourWayHeadline1Ref.current) gsap.set(yourWayHeadline1Ref.current, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+            if (yourWayHeadline2Ref.current) gsap.set(yourWayHeadline2Ref.current, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+            if (yourWaySubtextRef.current) gsap.set(yourWaySubtextRef.current, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+            if (yourWayColumnsRef.current) gsap.set(yourWayColumnsRef.current, { autoAlpha: 1, height: "auto", marginTop: 48, overflow: "visible" });
+            yourWayColumnRefs.current.forEach((col, i) => {
+              if (!col) return;
+              if (i <= 1) {
+                gsap.set(col, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+              } else {
+                gsap.set(col, { autoAlpha: eased, y: 50 * (1 - eased), filter: `blur(${8 * (1 - eased)}px)` });
+              }
+            });
+          }
+          // ===== PHASE 10: HOLD - All cards final (24+) =====
+          else {
+            window.dispatchEvent(new CustomEvent("scriptfx-toggle-nav", { detail: { visible: isDesktop } }));
+            if (workflowMessageRef.current) gsap.set(workflowMessageRef.current, { autoAlpha: 0 });
+            if (yourWaySectionRef.current) gsap.set(yourWaySectionRef.current, { autoAlpha: 1 });
+            if (yourWayHeadline1Ref.current) gsap.set(yourWayHeadline1Ref.current, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+            if (yourWayHeadline2Ref.current) gsap.set(yourWayHeadline2Ref.current, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+            if (yourWaySubtextRef.current) gsap.set(yourWaySubtextRef.current, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
+            if (yourWayColumnsRef.current) gsap.set(yourWayColumnsRef.current, { autoAlpha: 1, height: "auto", marginTop: 48, overflow: "visible" });
             yourWayColumnRefs.current.forEach((col) => {
               if (col) gsap.set(col, { autoAlpha: 1, y: 0, filter: "blur(0px)" });
             });
@@ -413,12 +511,15 @@ export function FeaturesSection() {
 
           {/* ===== "Your Script. Any Setup." + Columns ===== */}
           <div ref={yourWaySectionRef} className="absolute inset-0 flex flex-col items-center justify-center invisible z-10 overflow-hidden">
-            {/* Headline */}
-            <div className="text-center mb-8 md:mb-12">
+            {/* Headline - no bottom margin so it's truly centered when columns are hidden */}
+            <div className="text-center max-w-3xl px-6">
               <h2 className="font-display text-5xl font-medium leading-[1.15] tracking-tighter text-on-surface md:text-6xl">
                 <span ref={yourWayHeadline1Ref} className="block transform-gpu will-change-transform">Your Script.</span>
                 <span ref={yourWayHeadline2Ref} className="block transform-gpu will-change-transform">Any <span className="italic">Setup.</span></span>
               </h2>
+              <p ref={yourWaySubtextRef} className="mt-4 font-body text-[16px] font-light leading-[1.5] tracking-[-0.16px] text-on-surface/80 md:mt-6 md:text-[18px]">
+                From text on the page to finished scenes — however you work.
+              </p>
             </div>
 
             {/* Columns */}
@@ -434,7 +535,7 @@ export function FeaturesSection() {
                     className="group flex flex-col overflow-hidden rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm transform-gpu will-change-transform"
                   >
                     {/* Image */}
-                    <div className="relative aspect-[16/10] w-full overflow-hidden">
+                    <div className="relative aspect-[16/9] w-full overflow-hidden">
                       <Image
                         src={frame.image}
                         alt={frame.headline}
@@ -445,7 +546,7 @@ export function FeaturesSection() {
                     </div>
 
                     {/* Text */}
-                    <div className="p-4 md:p-5">
+                    <div className="p-5 md:p-6">
                       <h3 className="font-display text-xl font-medium tracking-tight text-on-surface md:text-2xl">
                         {frame.headline}
                       </h3>

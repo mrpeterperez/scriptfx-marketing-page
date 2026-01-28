@@ -8,20 +8,20 @@ export interface YourWayFrame {
 export const yourWayFrames: YourWayFrame[] = [
   {
     id: 1,
-    headline: "Laptop only.",
-    subtext: "Generate scenes straight from your script. No camera needed.",
+    headline: "No camera.",
+    subtext: "Turn scenes into cinematic visuals directly from the script. No filming. No actors. No crew.",
     image: "/placeholder/your-way-1.png",
   },
   {
     id: 2,
-    headline: "Your gear.",
-    subtext: "Shoot it yourself. Star in it. Direct the action.",
+    headline: "Your setup.",
+    subtext: "Film scenes on your phone or camera. ScriptFX handles performances, visuals, and continuity.",
     image: "/placeholder/your-way-2.png",
   },
   {
     id: 3,
-    headline: "Full studio.",
-    subtext: "Elevate existing footage with AI.",
+    headline: "Full production.",
+    subtext: "Combine real footage with AI-generated shots, performances, and environments — all in one pipeline.",
     image: "/placeholder/your-way-3.png",
   },
 ];

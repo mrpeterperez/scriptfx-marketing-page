@@ -65,7 +65,7 @@ export function ActTwoTagline({ timeline }: ActTwoTaglineProps) {
     >
       <h2 className="pointer-events-auto text-center font-display text-5xl font-medium leading-[1.15] tracking-tighter text-on-surface md:text-6xl">
         <span ref={(el) => { taglineLinesRef.current[0] = el; }} className="block">Screenwriting</span>
-        <span ref={(el) => { taglineLinesRef.current[1] = el; }} className="block">doesn't end on</span>
+        <span ref={(el) => { taglineLinesRef.current[1] = el; }} className="block">doesn&apos;t end on</span>
         <span ref={(el) => { taglineLinesRef.current[2] = el; }} className="block">
           the page <span className="italic">anymore.</span>
         </span>

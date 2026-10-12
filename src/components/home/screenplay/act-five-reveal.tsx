@@ -4,6 +4,7 @@ import * as React from "react";
 import { createPortal } from "react-dom";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useCursorTilt } from "@/lib/use-cursor-tilt";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -13,6 +14,7 @@ interface ActFiveRevealProps {
 }
 
 export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFiveRevealProps) {
+  const logoRef = useCursorTilt<HTMLImageElement>();
   const scrollRootRef = React.useRef<HTMLElement>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const textContainerRef = React.useRef<HTMLDivElement>(null);
@@ -67,7 +69,7 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
         tl.to(container, { autoAlpha: 1, duration: 0.01 }, base);
         tl.to(textContainer, { autoAlpha: 1, duration: 0.01 }, base);
         tl.to(videoContainer, { autoAlpha: 1, duration: 0.01 }, base);
-        tl.to(scrim, { autoAlpha: 0.65, duration: 0.01 }, base);
+        tl.to(scrim, { autoAlpha: 1, duration: 0.01 }, base);
 
         // Ensure autoplay kicks in reliably across browsers
         tl.call(() => {
@@ -264,7 +266,7 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
         className="absolute inset-0 z-20 flex items-center justify-center p-6 md:p-8"
       >
         <div ref={textBlockRef} className="text-center">
-          <h2 className="font-body text-5xl font-medium leading-[1.15] tracking-tighter text-on-surface md:text-6xl">
+          <h2 className="font-body text-5xl font-medium leading-[1.15] tracking-tighter text-white md:text-6xl">
             <span
               ref={(el) => {
                 textLinesRef.current[0] = el;
@@ -280,9 +282,11 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
               className="block relative"
             >
               <img
-                src="/brand/scriptfxlogolarge.svg"
+                ref={logoRef}
+                src="/brand/ScriptFXLogo.svg"
                 alt="ScriptFX"
-                className="relative z-10 mx-auto h-auto w-full max-w-[300px] drop-shadow-[0_0_8px_rgba(255,255,255,0.15)] md:max-w-[500px]"
+                className="relative z-10 mx-auto h-auto w-[88vw] max-w-[420px] origin-center transition-transform duration-200 ease-out will-change-transform md:w-[70vw] md:max-w-[780px] lg:max-w-[900px]"
+                style={{ filter: "drop-shadow(0 2px 0 rgba(160,160,160,0.35)) drop-shadow(0 8px 16px rgba(0,0,0,0.35))" }}
               />
             </span>
           </h2>
@@ -298,7 +302,7 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
         ref={videoContainerRef}
         className="pointer-events-none fixed inset-0 z-[60] overflow-hidden opacity-0"
       >
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-40 bg-gradient-to-b from-secondary-container via-secondary-container/80 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-40 bg-gradient-to-b from-black via-black/80 to-transparent" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-40 bg-gradient-to-t from-black via-black/80 to-transparent" />
 
         <div className="relative h-full w-full overflow-hidden">
@@ -333,7 +337,7 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
       {/* Scrim for readability (behind video) */}
       <div
         ref={scrimRef}
-        className="pointer-events-none fixed inset-0 z-[65] bg-black opacity-0"
+        className="pointer-events-none fixed inset-0 z-[65] bg-[var(--scriptfx-black)] opacity-0"
       />
     </>
   );
@@ -350,7 +354,7 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
   return (
     <section
       ref={scrollRootRef}
-      className="relative h-screen w-screen bg-black"
+      className="relative h-screen w-screen bg-[var(--scriptfx-black)]"
       style={{ width: "100vw", marginLeft: "calc(50% - 50vw)" }}
     >
       {typeof document !== "undefined" ? createPortal(pinnedLayers, document.body) : null}

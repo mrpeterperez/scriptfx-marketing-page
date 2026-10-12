@@ -2,118 +2,48 @@
 
 import * as React from "react";
 import { gsap } from "gsap";
-import { screenplayLines, getLineClass } from "./screenplay-data";
 
-interface ActOneScriptProps {
-  timeline: gsap.core.Timeline | null;
-}
+const blocks = [
+  [36], [100, 72], [94, 58], [100, 84], [88, 62], [76],
+  [100, 78], [100, 64], [94, 48], [86], [58], [24], [34], [42], [100, 56], [68], [52],
+];
 
-export function ActOneScript({ timeline }: ActOneScriptProps) {
-  const screenplayContentRef = React.useRef<HTMLDivElement>(null);
-  const linesRef = React.useRef<(HTMLDivElement | null)[]>([]);
-  const topGradientRef = React.useRef<HTMLDivElement>(null);
+export function ActOneScript({ timeline }: { timeline: gsap.core.Timeline | null }) {
+  const contentRef = React.useRef<HTMLDivElement>(null);
+  const endingRef = React.useRef<HTMLDivElement>(null);
 
   React.useLayoutEffect(() => {
-    if (!timeline || !screenplayContentRef.current) return;
-
-    const screenplayContent = screenplayContentRef.current;
-    const topGradient = topGradientRef.current;
-
-    // Initial states - dim text, no blur (atmospheric but clean)
-    gsap.set(screenplayContent, { autoAlpha: 1, scale: 1 });
-    gsap.set(topGradient, { autoAlpha: 0 });
-    
-    // Hide all lines initially - they'll reveal dim
-    linesRef.current.forEach((line) => {
-      if (line) gsap.set(line, { autoAlpha: 0, y: 20 });
-    });
-
-    // Fade in top gradient early
-    timeline.to(topGradient, { autoAlpha: 1, duration: 0.1 }, 0);
-
-    // 1. Reveal lines one by one - dim (55% opacity) with typewriter sound
-    linesRef.current.forEach((line, i) => {
-      if (!line) return;
-
-      timeline.to(line, {
-        autoAlpha: 0.55,
-        y: 0,
-        duration: 0.4, 
-        ease: "power2.out",
-      }, i * 0.35);
-    });
-
-    // Short pause
-    timeline.to({}, { duration: 1.2 });
-
-    // 2. Focus effect: Dim others more, FADE TO BLACK becomes solid white hero
-    const lastLine = linesRef.current[linesRef.current.length - 1];
-    
-    // Dim all lines EXCEPT the last one
-    linesRef.current.forEach((line, i) => {
-      if (!line) return;
-      const isLastLine = i === linesRef.current.length - 1;
-      
-      if (!isLastLine) {
-        timeline.to(line, {
-          autoAlpha: 0.2,
-          duration: 0.6,
-          ease: "power2.inOut",
-        }, i === 0 ? undefined : "<");
-      }
-    });
-    
-    // FADE TO BLACK becomes SOLID WHITE with glow - the hero moment
-    if (lastLine) {
-      timeline.to(lastLine, {
-        autoAlpha: 1,
-        color: "#ffffff",
-        textShadow: "0 0 30px rgba(255,255,255,0.5), 0 0 60px rgba(255,255,255,0.25)",
-        duration: 0.6,
-        ease: "power2.out",
-      }, "<");
-    }
-
-    // 3. Hold the "FADE TO BLACK" hero moment
-    timeline.to({}, { duration: 2 });
-
-    // 4. Dissolve completely
-    timeline.to(screenplayContent, {
-      autoAlpha: 0,
-      scale: 0.95,
-      filter: "blur(12px)",
-      duration: 1,
-      ease: "power2.inOut",
-    });
-
+    if (!timeline || !contentRef.current) return;
+    const ctx = gsap.context(() => {
+      const bars = contentRef.current!.querySelectorAll(".screenplay-skeleton-line");
+      gsap.set(bars, { scaleX: 0, transformOrigin: "left center" });
+      const letters = endingRef.current!.querySelectorAll(".screenplay-typewriter-letter");
+      const cursor = endingRef.current!.querySelector(".screenplay-typewriter-cursor");
+      gsap.set(letters, { visibility: "hidden" });
+      gsap.set(cursor, { autoAlpha: 0 });
+      timeline.to(bars, { scaleX: 1, duration: 0.45, stagger: 0.08, ease: "power2.out" });
+      timeline.to({}, { duration: 0.7 });
+      timeline.set(cursor, { autoAlpha: 1 });
+      timeline.to(letters, { visibility: "visible", duration: 0.01, stagger: 0.055, ease: "none" });
+      timeline.addLabel("endingReadable");
+      timeline.to({}, { duration: 2.2 });
+      timeline.set(cursor, { autoAlpha: 0 });
+      timeline.to({}, { duration: 0.25 });
+    }, contentRef);
+    return () => ctx.revert();
   }, [timeline]);
 
-  return (
-    <div
-      className="absolute inset-0 flex items-start justify-center overflow-hidden p-6 pt-16 pb-24 md:items-end md:p-16 md:pb-48 md:pt-4"
-    >
-      {/* Top fade gradient */}
-      <div
-        ref={topGradientRef}
-        className="pointer-events-none absolute inset-x-0 top-0 z-10 h-40 bg-gradient-to-b from-secondary-container via-secondary-container/80 to-transparent opacity-0"
-      />
-
-      <div
-        ref={screenplayContentRef}
-        className="w-full max-w-[680px] select-text font-mono text-[14px] leading-relaxed md:text-[19px]"
-      >
-        {screenplayLines.map((line, i) => (
-          <div
-            key={i}
-            ref={(el) => {
-              linesRef.current[i] = el;
-            }}
-            className={`${getLineClass(line.type)} text-on-surface`}
-          >
-            {line.text}
-          </div>
-        ))}
+  return <div className="screenplay-skeleton-frame absolute inset-0 flex items-center justify-center">
+    <div ref={contentRef} className="screenplay-skeleton" aria-label="Animated screenplay preview">
+      <div aria-hidden="true">
+        {blocks.map((widths, index) => <div key={index} className={`screenplay-skeleton-block ${index >= 11 && index <= 13 ? "screenplay-skeleton-dialogue" : ""}`}>
+          {widths.map((width, line) => <div key={line} className="screenplay-skeleton-line" style={{ width: `${width}%` }} />)}
+        </div>)}
+      </div>
+      <div ref={endingRef} className="screenplay-skeleton-ending" aria-label="FADE TO BLACK.">
+        {"FADE TO BLACK.".split("").map((letter, index) => <span key={index} className="screenplay-typewriter-letter" aria-hidden="true">{letter}</span>)}
+        <span className="screenplay-typewriter-cursor" aria-hidden="true" />
       </div>
     </div>
-  );
+  </div>;
 }

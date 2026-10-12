@@ -1,0 +1,24 @@
+name: Marketing quality
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - name: Check production routes
+        run: |
+          npm start -- --hostname 127.0.0.1 --port 3000 > /tmp/scriptfx-site.log 2>&1 &
+          node --input-type=module -e "for(let n=0;n<30;n++){try{await fetch('http://127.0.0.1:3000');process.exit(0)}catch{await new Promise(r=>setTimeout(r,1000))}}process.exit(1)"
+          npm run check:site

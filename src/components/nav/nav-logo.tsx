@@ -18,7 +18,7 @@ export function NavLogo({ className, onClick }: NavLogoProps) {
       href="/"
       scroll
       aria-label="Home"
-      className={className ?? "flex items-center"}
+      className={className ?? "inline-flex shrink-0 self-center items-center leading-none"}
       onClick={(event) => {
         onClick?.(event);
         if (event.defaultPrevented) return;
@@ -29,13 +29,16 @@ export function NavLogo({ className, onClick }: NavLogoProps) {
         }
       }}
     >
-      <Image
-        src="/brand/scriptfx-logo.svg"
-        alt="ScriptFX"
-        width={88}
-        height={21}
-        priority
-      />
+      <span className="flex items-center">
+        <Image
+          src="/brand/ScriptFXLogo.svg"
+          alt="ScriptFX"
+          width={102}
+          height={21}
+          className="block invert h-auto w-[102px] translate-y-[2px]"
+          priority
+        />
+      </span>
     </Link>
   );
 }

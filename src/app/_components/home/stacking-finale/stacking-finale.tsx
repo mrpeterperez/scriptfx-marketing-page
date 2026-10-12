@@ -6,7 +6,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Link from "next/link";
 import Image from "next/image";
-import { features } from "@/app/_components/home/features-section";
+import { features } from "@/components/home/features/features-data";
 import { footerLinks } from "@/lib/footer-links";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -479,7 +479,7 @@ export function StackingFinale() {
                 <span ref={finalPart3Ref} className="block">Zero <span className="italic">churn.</span></span>
               </h2>
               <p ref={finalSubtextRef} className="mt-6 font-body text-[16px] font-light leading-[1.5] tracking-[-0.16px] text-on-surface/90 md:mt-8 md:text-[18px] md:leading-[24px] md:tracking-[-0.18px]">
-                ScriptFX handles the models so you don't have to.
+                ScriptFX handles the models so you don&apos;t have to.
               </p>
             </div>
           </div>
@@ -557,7 +557,7 @@ export function StackingFinale() {
               <div className="col-span-3 lg:col-span-1 flex flex-col justify-between h-full order-first mb-4 lg:mb-0">
                 <Link href="/" className="hover:opacity-80 transition-opacity">
                   <Image
-                    src="/brand/scriptfx-logo.svg"
+                    src="/brand/ScriptFXLogo.svg"
                     alt="ScriptFX"
                     width={88}
                     height={21}

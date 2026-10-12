@@ -1,0 +1,16 @@
+# Marketing deployment. Indexing is off until explicitly enabled.
+NEXT_PUBLIC_SITE_URL=https://your-confirmed-domain.example
+NEXT_PUBLIC_APP_URL=https://your-confirmed-application.example
+SITE_INDEXABLE=false
+SCRIPTFX_API_URL=https://your-confirmed-api.example
+MARKETING_PROXY_SECRET=replace-with-a-random-secret-of-at-least-32-characters
+# Optional, loaded only after consent:
+NEXT_PUBLIC_GA_ID=
+NEXT_PUBLIC_SHOW_FONT_PICKER=false
+
+# Existing Hono API deployment (in addition to its existing environment):
+# MARKETING_PROXY_SECRET must match the marketing deployment.
+MARKETING_EMAIL_ENABLED=false
+RESEND_API_KEY=
+MARKETING_EMAIL_FROM=
+MARKETING_NOTIFY_TO=

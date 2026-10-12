@@ -16,6 +16,7 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
   const leftColumnRef = React.useRef<HTMLDivElement>(null);
   const rightColumnRef = React.useRef<HTMLDivElement>(null);
   const leftMarginRef = React.useRef<HTMLDivElement>(null);
+  const rightMarginRef = React.useRef<HTMLDivElement>(null);
   const dividerRef = React.useRef<HTMLDivElement>(null);
   const grainRef = React.useRef<HTMLDivElement>(null);
   const shakeRef = React.useRef<HTMLDivElement>(null);
@@ -57,8 +58,9 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
     const leftColumn = leftColumnRef.current;
     const rightColumn = rightColumnRef.current;
     
-    // Get left margin line
+    // Get margin lines
     const leftMargin = leftMarginRef.current;
+    const rightMargin = rightMarginRef.current;
 
     // Get all target character spans
     const allTargetChars = Array.from(
@@ -79,9 +81,13 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
         gsap.set(rightColumn, { autoAlpha: 0, x: isDesktop ? 40 : 0 });
       }
       
-      // Hide left margin initially (will draw from top like a pen)
+      // Hide margin lines initially (will draw from top like a pen)
       if (leftMargin) {
         gsap.set(leftMargin, { autoAlpha: 0, scaleY: 0, transformOrigin: "top center" });
+      }
+      // Right margin line — mobile only (desktop uses the divider as right margin)
+      if (rightMargin) {
+        gsap.set(rightMargin, { autoAlpha: 0, scaleY: 0, transformOrigin: "top center" });
       }
       
       // Calculate offset to center the left column
@@ -177,6 +183,26 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
           "margins+=0.1"
         );
       }
+      // Right margin line draws in (mobile — mirrors the desktop divider stagger)
+      if (rightMargin) {
+        timeline.to(
+          rightMargin,
+          {
+            autoAlpha: 1,
+            duration: 0.1,
+          },
+          "margins+=0.15"
+        );
+        timeline.to(
+          rightMargin,
+          {
+            scaleY: 1,
+            duration: 0.6,
+            ease: "power1.out",
+          },
+          "margins+=0.25"
+        );
+      }
       // Divider draws as RIGHT MARGIN
       if (divider) {
         timeline.to(
@@ -231,6 +257,19 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
               ease: "power2.in",
             },
             "shift+=0.4" // Starts fading partway through the shift
+          );
+        }
+        // Right margin line fades out alongside it (mobile)
+        if (rightMargin) {
+          timeline.to(
+            rightMargin,
+            {
+              autoAlpha: 0,
+              scaleY: 0,
+              duration: 0.5,
+              ease: "power2.in",
+            },
+            "shift+=0.4"
           );
         }
         
@@ -553,14 +592,19 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
           ref={sourceTextRef}
           className="pointer-events-auto flex w-full max-w-4xl flex-col items-center justify-center gap-8 px-6 md:flex-row md:gap-16 md:px-12"
         >
-        {/* Left column with left margin line */}
-        <div ref={leftColumnRef} className="relative w-full select-text text-center md:w-auto md:text-left">
+        {/* Left column with margin lines flanking the text */}
+        <div ref={leftColumnRef} className="relative w-auto select-text text-center md:text-left">
           {/* Left margin line */}
           <div
             ref={leftMarginRef}
-            className="absolute -left-6 top-1/2 hidden h-32 w-px -translate-y-1/2 bg-on-surface/30 md:block"
+            className="absolute -left-6 top-1/2 h-32 w-px -translate-y-1/2 bg-on-surface/30"
           />
-          
+          {/* Right margin line — mobile only (desktop uses the divider) */}
+          <div
+            ref={rightMarginRef}
+            className="absolute -right-6 top-1/2 h-32 w-px -translate-y-1/2 bg-on-surface/30 md:hidden"
+          />
+
           <p className="font-body text-[18px] font-normal leading-[1.5] text-on-surface/90 md:text-[24px]">
             {leftLines.map((line, lineIdx) => (
               <span key={lineIdx} className="block">

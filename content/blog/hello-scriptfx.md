@@ -1,4 +1,5 @@
 ---
+draft: true
 title: "Hello from ScriptFX"
 date: "2026-01-02"
 description: "A quick welcome post to prove the MDX blog pipeline works."

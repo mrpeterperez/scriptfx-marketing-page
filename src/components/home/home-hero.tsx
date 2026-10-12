@@ -2,243 +2,135 @@
 
 import * as React from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { Play, Pause, Volume2, VolumeX } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { HeroScreenplay } from "./hero-screenplay";
 
-const slides = [
-  "/placeholder/video-poster.png",
-  "/placeholder/slide-2.png",
-  "/placeholder/slide-3.png",
-];
-
-export function HomeHero() {
+export function HomeHero({ videoSrc: initialVideoSrc = "/video/mountain-scene.mp4" }: { videoSrc?: string } = {}) {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
-  const [currentIndex, setCurrentIndex] = React.useState(0);
-  const currentSectionRef = React.useRef<HTMLElement | null>(null);
-
-
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+  const [clip, setClip] = React.useState(0);
+  const videoSrc = clip === 0 ? initialVideoSrc : "/video/bakers-dozen.mp4";
+  const [time, setTime] = React.useState(0);
+  const [playing, setPlaying] = React.useState(false);
+  const [muted, setMuted] = React.useState(true);
 
   React.useLayoutEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
-
-    const wrapper = container.querySelector<HTMLElement>(".hero-wrapper");
-
-    const reduceMotion =
-      typeof window !== "undefined" &&
-      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-
-    // Ensure correct initial visibility even before GSAP kicks in.
-    if (wrapper) {
-      const heroHeight = (slides.length + 0.5) * window.innerHeight;
-      const y = window.scrollY;
-      gsap.set(wrapper, { autoAlpha: y < heroHeight ? 1 : 0 });
-    }
-
-    if (reduceMotion) return;
-
+    if (!container || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     gsap.registerPlugin(ScrollTrigger);
-
     const ctx = gsap.context(() => {
-      const sections = gsap.utils.toArray<HTMLElement>(".panel");
-      const indicators = gsap.utils.toArray<HTMLElement>(".indicator-dot");
-      let currentSection = sections[0];
-      currentSectionRef.current = currentSection;
-
-      gsap.defaults({ overwrite: "auto" });
-
-      // Set initial state - first panel visible, others hidden
-      // CSS already handles initial opacity to prevent flicker
-      sections.forEach((section, i) => {
-        if (i === 0) {
-          gsap.set(section, { autoAlpha: 1, scale: 1, rotationY: 0, filter: "blur(0px)", clearProps: "none" });
-        } else {
-          gsap.set(section, { autoAlpha: 0, scale: 0.95, rotationY: 0, filter: "blur(0px)", clearProps: "none" });
-        }
+      const motion = gsap.timeline({
+        scrollTrigger: {
+          trigger: container,
+          start: () => `top top+=${parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--masthead-height"))}`,
+          end: "bottom top",
+          scrub: 0.6,
+        },
       });
-
-      // Stretch container height for 3 sections + transition space
-      gsap.set(container, { height: (sections.length + 0.5) * window.innerHeight });
-
-      // Ensure wrapper is correctly hidden/visible on first paint based on scroll
-      // (prevents headline flash when refreshing while scrolled past the hero)
-      if (wrapper) {
-        const start = (sections.length - 0.5) * window.innerHeight;
-        const end = (sections.length + 0.5) * window.innerHeight;
-        const y = window.scrollY;
-
-        if (y <= start) {
-          gsap.set(wrapper, { yPercent: 0, scale: 1, autoAlpha: 1 });
-        } else if (y >= end) {
-          gsap.set(wrapper, { yPercent: -100, scale: 0.9, autoAlpha: 0 });
-        } else {
-          const progress = (y - start) / (end - start);
-          gsap.set(wrapper, {
-            yPercent: -100 * progress,
-            scale: 1 - 0.1 * progress,
-            autoAlpha: 1 - progress,
-          });
-        }
-      }
-
-      // Create ScrollTrigger for each section with fade/scale/rotate/blur effect
-      sections.forEach((section, i) => {
-        ScrollTrigger.create({
-          start: () => (i - 0.5) * window.innerHeight,
-          end: () => (i + 0.5) * window.innerHeight,
-          onToggle: (self) => {
-            if (self.isActive && section !== currentSection) {
-              const currentIndex = sections.indexOf(currentSection);
-              const rotationDirection = i > currentIndex ? -1.5 : 1.5;
-              
-              // Fade out current with rotation and blur
-              gsap.to(currentSection, {
-                autoAlpha: 0,
-                scale: 0.95,
-                rotationY: rotationDirection,
-                filter: "blur(8px)",
-                duration: 0.6,
-                ease: "power2.inOut",
-              });
-              
-              // Fade in new with counter-rotation and blur removal
-              gsap.to(section, {
-                autoAlpha: 1,
-                scale: 1,
-                rotationY: 0,
-                filter: "blur(0px)",
-                duration: 0.6,
-                ease: "power2.inOut",
-              });
-              
-              // Animate indicators with spring physics
-              indicators.forEach((dot, dotIndex) => {
-                if (dotIndex === i) {
-                  gsap.to(dot, {
-                    height: "3rem",
-                    duration: 0.5,
-                    ease: "elastic.out(1, 0.5)",
-                  });
-                } else {
-                  gsap.to(dot, {
-                    height: "0.25rem",
-                    duration: 0.4,
-                    ease: "power2.out",
-                  });
-                }
-              });
-              
-              currentSection = section;
-              currentSectionRef.current = section;
-              setCurrentIndex(i);
-            }
-          },
-        });
-      });
-
-      // Scroll up the entire hero wrapper after the last panel
-      if (wrapper) {
-        ScrollTrigger.create({
-          start: () => (sections.length - 0.5) * window.innerHeight,
-          end: () => (sections.length + 0.5) * window.innerHeight,
-          scrub: 1,
-          onUpdate: (self) => {
-            gsap.to(wrapper, {
-              yPercent: -100 * self.progress,
-              scale: 1 - 0.1 * self.progress,
-              autoAlpha: 1 - self.progress,
-              duration: 0,
-            });
-          },
-        });
-      }
+      motion.to(".hero-media", { scale: 1.02, ease: "none" }, 0);
+      motion.to(".hero-headline", { y: -24, ease: "none" }, 0.35);
     }, container);
-
-    return () => {
-      ctx.revert();
-    };
+    return () => ctx.revert();
   }, []);
+
+  React.useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !("requestVideoFrameCallback" in video)) return;
+    let frame: number;
+    const update = (_now: number, metadata: VideoFrameCallbackMetadata) => {
+      setTime(metadata.mediaTime);
+      frame = video.requestVideoFrameCallback(update);
+    };
+    frame = video.requestVideoFrameCallback(update);
+    return () => video.cancelVideoFrameCallback(frame);
+  }, [videoSrc]);
+
+  React.useEffect(() => {
+    const video = videoRef.current;
+    if (!video || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const intro = document.querySelector(".intro-reveal");
+    let introComplete = !intro || getComputedStyle(intro).visibility === "hidden";
+    const play = () => {
+      introComplete = true;
+      if (video.getBoundingClientRect().bottom > 0) void video.play().catch(() => {});
+    };
+    window.addEventListener("scriptfx-intro-complete", play);
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && introComplete) void video.play().catch(() => {});
+      else video.pause();
+    });
+    observer.observe(video);
+    return () => { observer.disconnect(); video.pause(); window.removeEventListener("scriptfx-intro-complete", play); };
+  }, [videoSrc]);
 
   return (
     <div
       ref={containerRef}
-      className="relative -mt-28"
-      style={{ height: `${(slides.length + 0.5) * 100}svh` }}
+      className="relative"
+      style={{ height: "calc(100dvh - var(--masthead-height))", width: "100vw", marginLeft: "calc(50% - 50vw)" }}
     >
-      {/* Fixed wrapper for all panels and UI - fades out after hero */}
-      <div className="hero-wrapper fixed left-0 top-0 h-[100svh] w-full opacity-0">
-        {/* Vertical progress indicator */}
-        <div className="fixed right-6 top-1/2 z-50 flex -translate-y-1/2 flex-col gap-3 md:right-12">
-          {slides.map((_, i) => (
-            <div
-              key={i}
-              className={`indicator-dot h-1 w-1 rounded-full ${
-                currentIndex === i ? "bg-white" : "bg-white/30"
-              }`}
-            />
-          ))}
-        </div>
+      {/* One background with a subtle scroll transition. */}
+      <div className="hero-wrapper relative left-0 top-0 w-full opacity-100" style={{ top: 0, height: "100%" }}>
 
-        {/* Fixed headline overlay - always visible */}
+        {/* Headline stays within the hero. */}
         <div 
-          className="hero-headline fixed bottom-4 left-4 z-50 max-w-[520px] pb-12 pl-12 text-white md:bottom-12 md:left-12 md:max-w-[760px]"
+          className="hero-headline absolute z-50 text-center text-white"
         >
-          <h1 className="font-display text-[36px] font-medium leading-[34px] tracking-[-1.2px] not-italic md:text-[60px] md:leading-[46px] md:tracking-[-2.4px]">
-            <span className="hero-line-1 mb-2 block md:mb-4">Write Your Screenplay.</span>
-            <span className="hero-line-2 block">
-              Watch It Come{" "}
-              <span className="font-display italic font-medium">Alive.</span>
-            </span>
+          <h1 className="font-display font-medium">
+            <span className="hero-line-1 block">Write your screenplay.</span>
+            <span className="hero-line-2 block">Watch it come <em className="hero-alive">alive</em>.</span>
           </h1>
-          <p className="hero-tagline mt-3 font-body text-[16px] leading-[22px] tracking-[-0.16px] text-white/90 md:mt-6 md:text-[18px] md:leading-[24px] md:tracking-[-0.18px]">
-            From screenplay to cinema — without leaving the page.
+          <p className="hero-tagline mt-6 font-body text-[16px] leading-[22px] text-white/90 md:text-[18px] md:leading-[24px]">
+            From screenplay to audio drama and cinema — all on one page.
           </p>
+          <div className="hero-actions">
+            <Button asChild size="lg" className="hero-cta" style={{ background: "#fff", color: "#111" }}><Link href="/get-access">Get access</Link></Button>
+        <div className="hero-playback">
+          <button className="hero-play-button" type="button" onClick={() => { const video = videoRef.current; if (video) { if (video.paused) void video.play().catch(() => {}); else video.pause(); } }} aria-label={playing ? "Pause film" : "Play film"}>{playing ? <Pause size={18} aria-hidden="true" /> : <Play size={18} aria-hidden="true" />}</button>
+          <button type="button" onClick={() => setMuted(!muted)} aria-label={muted ? "Unmute film" : "Mute film"} aria-pressed={!muted}>{muted ? <VolumeX size={18} aria-hidden="true" /> : <Volume2 size={18} aria-hidden="true" />}</button>
+        </div>
+          </div>
+
         </div>
 
-        {/* Panels - each positioned absolutely, fade/scale transitions */}
-        {slides.map((src, i) => (
-          <section
-            key={src}
-            className="panel absolute left-0 top-0 h-full w-full"
-          >
-            <div className="relative h-full w-full px-6 py-6 md:px-12 md:py-12">
-              <div className="relative h-full w-full overflow-hidden rounded-[16px]">
-                <Image
-                  alt=""
-                  src={src}
-                  fill
-                  sizes="100vw"
-                  className="pointer-events-none object-cover"
-                  priority={i === 0}
-                />
+        <section className="panel absolute inset-0 h-full w-full" style={{ opacity: 1, visibility: "visible" }}>
+          <div className="relative h-full w-full overflow-hidden">
+            {videoSrc ? <video
+              key={videoSrc}
+              ref={videoRef}
+              src={videoSrc}
+              poster={clip === 0 ? "/video/mountain-scene-poster.jpg" : "/video/bakers-dozen-poster.jpg"}
+              muted={muted}
+              onTimeUpdate={(event) => { if (typeof event.currentTarget.requestVideoFrameCallback !== "function") setTime(event.currentTarget.currentTime); }}
+              onSeeked={(event) => setTime(event.currentTarget.currentTime)}
+              onPlay={() => setPlaying(true)}
+              onPause={() => setPlaying(false)}
+              onEnded={() => { setTime(0); setClip((current) => (current + 1) % 2); }}
+              playsInline
+              preload="metadata"
+              aria-hidden="true"
+              className="hero-media pointer-events-none h-full w-full object-cover"
+            /> : <Image
+              alt=""
+              src="/placeholder/video-poster.png"
+              fill
+              sizes="100vw"
+              className="hero-media pointer-events-none object-cover"
+              priority
+            />}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0"
+              style={{ backgroundImage: "linear-gradient(90deg, transparent 25%, rgba(5,10,12,0.28) 58%, rgba(5,10,12,0.65) 100%), linear-gradient(0deg, rgba(0,0,0,0.8), transparent 55%)" }}
+            />
+          </div>
+        </section>
+        <HeroScreenplay key={videoSrc} time={time} videoRef={videoRef} bakers={clip === 1} />
 
-                {/* Gradient overlay */}
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-0"
-                  style={{
-                    backgroundImage:
-                      "linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.25) 65.968%, rgba(0, 0, 0, 0.75) 79.979%, rgba(0, 0, 0, 0.8) 100%)",
-                  }}
-                />
-
-                {/* Film grain / noise overlay */}
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-0"
-                  style={{
-                    backgroundImage: 'url("/brand/grain.png")',
-                    backgroundRepeat: "repeat",
-                    backgroundSize: "220px",
-                    backgroundPosition: "center",
-                    opacity: 0.15,
-                    mixBlendMode: "soft-light",
-                  }}
-                />
-              </div>
-            </div>
-          </section>
-        ))}
       </div>
     </div>
   );

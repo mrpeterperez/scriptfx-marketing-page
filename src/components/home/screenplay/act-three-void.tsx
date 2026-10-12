@@ -5,17 +5,20 @@ import { gsap } from "gsap";
 
 interface ActThreeVoidProps {
   timeline: gsap.core.Timeline | null;
+  renderCurtains?: boolean;
+  beforeReveal?: (timeline: gsap.core.Timeline) => void;
   grayBoxRef?: React.RefObject<HTMLDivElement | null>;
   paddingContainerRef?: React.RefObject<HTMLDivElement | null>;
 }
 
-export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActThreeVoidProps) {
+export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef, beforeReveal, renderCurtains = true }: ActThreeVoidProps) {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const sourceTextRef = React.useRef<HTMLDivElement>(null);
   const targetTextRef = React.useRef<HTMLDivElement>(null);
   const leftColumnRef = React.useRef<HTMLDivElement>(null);
   const rightColumnRef = React.useRef<HTMLDivElement>(null);
   const leftMarginRef = React.useRef<HTMLDivElement>(null);
+  const rightMarginRef = React.useRef<HTMLDivElement>(null);
   const dividerRef = React.useRef<HTMLDivElement>(null);
   const grainRef = React.useRef<HTMLDivElement>(null);
   const shakeRef = React.useRef<HTMLDivElement>(null);
@@ -57,8 +60,9 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
     const leftColumn = leftColumnRef.current;
     const rightColumn = rightColumnRef.current;
     
-    // Get left margin line
+    // Get margin lines
     const leftMargin = leftMarginRef.current;
+    const rightMargin = rightMarginRef.current;
 
     // Get all target character spans
     const allTargetChars = Array.from(
@@ -79,9 +83,13 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
         gsap.set(rightColumn, { autoAlpha: 0, x: isDesktop ? 40 : 0 });
       }
       
-      // Hide left margin initially (will draw from top like a pen)
+      // Hide margin lines initially (will draw from top like a pen)
       if (leftMargin) {
         gsap.set(leftMargin, { autoAlpha: 0, scaleY: 0, transformOrigin: "top center" });
+      }
+      // Right margin line — mobile only (desktop uses the divider as right margin)
+      if (rightMargin) {
+        gsap.set(rightMargin, { autoAlpha: 0, scaleY: 0, transformOrigin: "top center" });
       }
       
       // Calculate offset to center the left column
@@ -177,6 +185,26 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
           "margins+=0.1"
         );
       }
+      // Right margin line draws in (mobile — mirrors the desktop divider stagger)
+      if (rightMargin) {
+        timeline.to(
+          rightMargin,
+          {
+            autoAlpha: 1,
+            duration: 0.1,
+          },
+          "margins+=0.15"
+        );
+        timeline.to(
+          rightMargin,
+          {
+            scaleY: 1,
+            duration: 0.6,
+            ease: "power1.out",
+          },
+          "margins+=0.25"
+        );
+      }
       // Divider draws as RIGHT MARGIN
       if (divider) {
         timeline.to(
@@ -231,6 +259,19 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
               ease: "power2.in",
             },
             "shift+=0.4" // Starts fading partway through the shift
+          );
+        }
+        // Right margin line fades out alongside it (mobile)
+        if (rightMargin) {
+          timeline.to(
+            rightMargin,
+            {
+              autoAlpha: 0,
+              scaleY: 0,
+              duration: 0.5,
+              ease: "power2.in",
+            },
+            "shift+=0.4"
           );
         }
         
@@ -349,6 +390,7 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
       timeline.to({}, { duration: 1.0 }, ">");
       
       // Bring in target text (NO SHAKE during this)
+      beforeReveal?.(timeline);
       timeline.addLabel("reveal");
       
       // Soft chime for "That era is ending."
@@ -414,7 +456,7 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
       timeline.addLabel("curtainClose");
       
       // Fade out "That era is ending." text
-      timeline.to(
+      if (renderCurtains) timeline.to(
         targetTextEl,
         {
           autoAlpha: 0,
@@ -473,7 +515,7 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
           grayBox,
           {
             borderColor: "transparent",
-            backgroundColor: "black",
+            backgroundColor: "white",
             borderRadius: 0,
             duration: 1.0,
             ease: "power2.inOut",
@@ -539,7 +581,7 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
       }
       ctx.revert();
     };
-  }, [timeline, grayBoxRef]);
+  }, [timeline, grayBoxRef, beforeReveal, renderCurtains]);
 
   return (
     <div
@@ -553,15 +595,20 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
           ref={sourceTextRef}
           className="pointer-events-auto flex w-full max-w-4xl flex-col items-center justify-center gap-8 px-6 md:flex-row md:gap-16 md:px-12"
         >
-        {/* Left column with left margin line */}
-        <div ref={leftColumnRef} className="relative w-full select-text text-center md:w-auto md:text-left">
+        {/* Left column with margin lines flanking the text */}
+        <div ref={leftColumnRef} className="relative w-auto select-text text-center md:text-left">
           {/* Left margin line */}
           <div
             ref={leftMarginRef}
-            className="absolute -left-6 top-1/2 hidden h-32 w-px -translate-y-1/2 bg-on-surface/30 md:block"
+            className="absolute -left-6 top-1/2 h-32 w-px -translate-y-1/2 bg-on-surface/30"
           />
-          
-          <p className="font-body text-[18px] font-normal leading-[1.5] text-on-surface/90 md:text-[24px]">
+          {/* Right margin line — mobile only (desktop uses the divider) */}
+          <div
+            ref={rightMarginRef}
+            className="absolute -right-6 top-1/2 h-32 w-px -translate-y-1/2 bg-on-surface/30 md:hidden"
+          />
+
+          <p className="font-body text-[18px] font-light leading-[1.5] text-on-surface/90 md:text-[24px]">
             {leftLines.map((line, lineIdx) => (
               <span key={lineIdx} className="block">
                 {line.split("").map((char, charIdx) => (
@@ -586,9 +633,9 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
 
         {/* Right column */}
         <div ref={rightColumnRef} className="w-full select-text text-center md:w-auto md:text-right">
-          <p className="font-display text-5xl font-medium leading-[1.15] tracking-tight text-on-surface md:text-6xl md:tracking-tighter">
+          <h2 aria-label="Pitched. Optioned. Noted. Parked." className="font-display text-5xl font-bold leading-[1.15] tracking-tight text-on-surface md:text-6xl md:tracking-tighter">
             {rightLines.map((line, lineIdx) => (
-              <span key={lineIdx} className="block">
+              <span key={lineIdx} className="block" aria-hidden="true">
                 {line.split("").map((char, charIdx) => (
                   <span
                     key={`${lineIdx}-${charIdx}`}
@@ -600,7 +647,7 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
                 ))}
               </span>
             ))}
-          </p>
+          </h2>
         </div>
       </div>
 
@@ -609,11 +656,12 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
           ref={targetTextRef}
           className="pointer-events-none absolute inset-0 flex items-center justify-center px-6"
         >
-          <h2 className="text-center font-display text-5xl font-medium italic leading-[1.15] tracking-tight text-on-surface md:text-6xl md:tracking-tighter">
+          <h2 aria-label={targetText} className="text-center font-display text-5xl font-medium italic leading-[1.15] tracking-tight text-on-surface md:text-6xl md:tracking-tighter">
             {targetText.split("").map((char, i) => (
               <span
                 key={i}
                 className="target-char inline-block"
+                aria-hidden="true"
                 style={{ whiteSpace: char === " " ? "pre" : undefined }}
               >
                 {char}
@@ -624,14 +672,14 @@ export function ActThreeVoid({ timeline, grayBoxRef, paddingContainerRef }: ActT
       </div>
       
       {/* Curtains - slide in from edges to close */}
-      <div
+      {renderCurtains && <div
         ref={leftCurtainRef}
-        className="pointer-events-none absolute inset-y-0 left-0 z-[60] w-1/2 bg-black"
-      />
-      <div
+        className="pointer-events-none absolute inset-y-0 left-0 z-[60] w-1/2 bg-[var(--scriptfx-black)]"
+      />}
+      {renderCurtains && <div
         ref={rightCurtainRef}
-        className="pointer-events-none absolute inset-y-0 right-0 z-[60] w-1/2 bg-black"
-      />
+        className="pointer-events-none absolute inset-y-0 right-0 z-[60] w-1/2 bg-[var(--scriptfx-black)]"
+      />}
     </div>
   );
 }

@@ -6,11 +6,13 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Link from "next/link";
 import Image from "next/image";
+import { submitMarketing } from "@/lib/marketing";
+import { Button } from "@/components/ui/button";
 import { footerLinks } from "@/lib/footer-links";
 
 gsap.registerPlugin(ScrollTrigger);
 
-export function FooterSection() {
+export function FooterSection({ includeFooter = true }: { includeFooter?: boolean }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const showDontTellRef = useRef<HTMLDivElement>(null);
@@ -24,10 +26,12 @@ export function FooterSection() {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
+  const requestId = useRef<string | null>(null);
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
-      if (!containerRef.current) return;
+      if (!containerRef.current || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
       const panel = panelRef.current;
 
@@ -117,10 +121,7 @@ export function FooterSection() {
             if (formRef.current) gsap.set(formRef.current, { autoAlpha: 1, y: 0 });
           }
         },
-        onLeave: (self) => {
-          // Snap back to the end of the pin to prevent scrolling past it
-          window.scrollTo({ top: self.end, behavior: "instant" });
-        },
+
       });
     }, containerRef);
 
@@ -131,9 +132,12 @@ export function FooterSection() {
     e.preventDefault();
     if (!email || isSubmitting) return;
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setSubmitted(true);
-    setIsSubmitting(false);
+    try {
+      requestId.current ??= crypto.randomUUID();
+      await submitMarketing("leads", { email, consent: true, interest: "all", website: "" }, requestId.current);
+      setSubmitted(true);
+    } catch { setError("We couldn’t save your email. Please try again."); }
+    finally { setIsSubmitting(false); }
   };
 
   return (
@@ -154,13 +158,20 @@ export function FooterSection() {
           className="absolute inset-6 md:inset-12 z-[76] rounded-[16px] shadow-2xl transform-gpu will-change-transform border border-border bg-secondary-container"
           style={{
             overflow: "hidden",
-          }}
+            background: "var(--scriptfx-black)",
+            color: "#fff",
+            "--scriptfx-on-surface": "#fff",
+            "--scriptfx-on-surface-variant": "rgba(255,255,255,.7)",
+            "--scriptfx-border": "rgba(255,255,255,.15)",
+            "--scriptfx-primary": "#fff",
+            "--scriptfx-on-primary": "#111",
+          } as React.CSSProperties}
         >
           <div className="relative z-10 w-full h-full flex flex-col p-8 md:p-20 overflow-hidden">
             {/* Launch date - top right */}
             <div className="absolute top-8 right-8 md:top-12 md:right-12">
               <p className="font-body text-[11px] tracking-[0.3px] text-on-surface-variant text-right leading-tight">
-                Launching Q1 2026
+                Get access
               </p>
             </div>
 
@@ -191,6 +202,7 @@ export function FooterSection() {
                   <>
                     <input
                       type="email"
+                      aria-label="Email"
                       placeholder="Enter your email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -198,13 +210,14 @@ export function FooterSection() {
                       disabled={isSubmitting}
                       required
                     />
-                    <button
+                    <Button
+                      size="lg"
                       type="submit"
                       disabled={isSubmitting || !email}
-                      className="w-full px-8 bg-on-surface text-surface py-3 rounded-full font-body text-[12px] tracking-[1px] uppercase transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-on-surface/90 hover:scale-[1.02] active:scale-[0.98]"
+                      className="w-full"
                     >
-                      {isSubmitting ? "Submitting..." : "Submit"}
-                    </button>
+                      {isSubmitting ? "Submitting..." : "Join the waitlist"}
+                    </Button>
                   </>
                 ) : (
                   <div className="text-center animate-in fade-in slide-in-from-bottom-2 duration-500">
@@ -212,17 +225,19 @@ export function FooterSection() {
                     <p className="text-on-surface-variant font-body text-[12px]">We&apos;ll be in touch soon.</p>
                   </div>
                 )}
+              <p className="text-xs">Submitting requests access updates. <Link href="/privacy">Privacy notice</Link></p>
+                {error && <p role="alert">{error}</p>}
               </form>
             </div>
 
             {/* Footer content */}
-            <div ref={footerContentRef} className="grid grid-cols-3 lg:grid-cols-4 gap-4 text-on-surface pt-8 border-t border-border">
+            {includeFooter && <div ref={footerContentRef} className="grid grid-cols-3 lg:grid-cols-4 gap-4 text-on-surface pt-8 border-t border-border">
               <div className="col-span-3 lg:col-span-1 flex flex-col justify-between h-full order-first mb-4 lg:mb-0">
                 <Link href="/" className="hover:opacity-80 transition-opacity">
                   <Image
-                    src="/brand/scriptfx-logo.svg"
+                    src="/brand/ScriptFXLogo.svg"
                     alt="ScriptFX"
-                    width={88}
+                    width={102}
                     height={21}
                   />
                 </Link>
@@ -243,7 +258,7 @@ export function FooterSection() {
                   ))}
                 </div>
               ))}
-            </div>
+            </div>}
           </div>
         </div>
       </div>

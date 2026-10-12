@@ -1,0 +1,122 @@
+[
+  {
+    "text": "Ninety percent off.",
+    "words": [
+      {
+        "word": "Ninety",
+        "start": 1.66,
+        "end": 2.01
+      },
+      {
+        "word": "percent",
+        "start": 2.01,
+        "end": 2.36
+      },
+      {
+        "word": "off.",
+        "start": 2.36,
+        "end": 2.8
+      }
+    ]
+  },
+  {
+    "text": "Executive retreat program.",
+    "words": [
+      {
+        "word": "Executive",
+        "start": 2.92,
+        "end": 3.32
+      },
+      {
+        "word": "retreat",
+        "start": 3.32,
+        "end": 3.68
+      },
+      {
+        "word": "program.",
+        "start": 3.68,
+        "end": 4.2
+      }
+    ]
+  },
+  {
+    "text": "Stop laying pipe. We're already driving up the creepy mountain. People get it.",
+    "words": [
+      {
+        "word": "Stop",
+        "start": 4.22,
+        "end": 4.86
+      },
+      {
+        "word": "laying",
+        "start": 4.86,
+        "end": 5.24
+      },
+      {
+        "word": "pipe.",
+        "start": 5.24,
+        "end": 5.6
+      },
+      {
+        "word": "We're",
+        "start": 5.6,
+        "end": 5.82
+      },
+      {
+        "word": "already",
+        "start": 5.82,
+        "end": 6.16
+      },
+      {
+        "word": "driving",
+        "start": 6.16,
+        "end": 6.54
+      },
+      {
+        "word": "up",
+        "start": 6.54,
+        "end": 6.72
+      },
+      {
+        "word": "the",
+        "start": 6.72,
+        "end": 6.86
+      },
+      {
+        "word": "creepy",
+        "start": 6.86,
+        "end": 7.08
+      },
+      {
+        "word": "mountain.",
+        "start": 7.08,
+        "end": 7.5
+      },
+      {
+        "word": "People",
+        "start": 7.5,
+        "end": 7.8
+      },
+      {
+        "word": "get",
+        "start": 7.8,
+        "end": 8.06
+      },
+      {
+        "word": "it.",
+        "start": 8.06,
+        "end": 8.36
+      }
+    ]
+  },
+  {
+    "text": "What?",
+    "words": [
+      {
+        "word": "What?",
+        "start": 9.84,
+        "end": 10.38
+      }
+    ]
+  }
+]

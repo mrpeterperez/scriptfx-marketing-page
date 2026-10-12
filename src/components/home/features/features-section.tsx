@@ -3,9 +3,8 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Image from "next/image";
 import { features } from "./features-data";
-import { yourWayFrames } from "../your-way/your-way-data";
+import { YourWayStack } from "../your-way/your-way-stack";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -37,7 +36,7 @@ export function FeaturesSection() {
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
-      if (!containerRef.current) return;
+      if (!containerRef.current || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
       const isDesktop = window.innerWidth >= 768;
 
@@ -353,6 +352,7 @@ export function FeaturesSection() {
   return (
     <section
       ref={containerRef}
+      data-cinematic-features="true"
       data-scriptfx-features="true"
       className="relative z-[80] h-screen w-screen bg-transparent"
       style={{
@@ -366,7 +366,7 @@ export function FeaturesSection() {
         {/* ===== PANEL: Features ===== */}
         <div
           ref={panel1Ref}
-          className="absolute inset-6 md:inset-12 z-[75] rounded-[16px] border border-white/10 bg-black/40 backdrop-blur-3xl shadow-2xl ring-1 ring-white/5 overflow-hidden"
+          className="absolute inset-x-6 inset-y-[calc(5%+21.6px)] md:inset-x-12 md:inset-y-[calc(5%+43.2px)] z-[75] rounded-[16px] border border-white/10 bg-black/40 backdrop-blur-3xl shadow-2xl ring-1 ring-white/5 overflow-hidden"
         >
           {/* ===== MOBILE LAYOUT ===== */}
           <div ref={mobileContentRef} className="flex h-full w-full flex-col overflow-y-auto p-4 md:hidden">
@@ -518,7 +518,7 @@ export function FeaturesSection() {
                 <span ref={yourWayHeadline2Ref} className="block transform-gpu will-change-transform">Any <span className="italic">Setup.</span></span>
               </h2>
               <p ref={yourWaySubtextRef} className="mt-4 font-body text-[16px] font-light leading-[1.5] tracking-[-0.16px] text-on-surface/80 md:mt-6 md:text-[18px]">
-                From text on the page to finished scenes — however you work.
+                Generate it straight from the script, or shoot it for real.
               </p>
             </div>
 
@@ -527,36 +527,7 @@ export function FeaturesSection() {
               ref={yourWayColumnsRef}
               className="w-full px-6 md:px-12 lg:px-20"
             >
-              <div className="mx-auto grid max-w-5xl grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
-                {yourWayFrames.map((frame, i) => (
-                  <div
-                    key={frame.id}
-                    ref={(el) => { yourWayColumnRefs.current[i] = el; }}
-                    className="group flex flex-col overflow-hidden rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm transform-gpu will-change-transform"
-                  >
-                    {/* Image */}
-                    <div className="relative aspect-[16/9] w-full overflow-hidden">
-                      <Image
-                        src={frame.image}
-                        alt={frame.headline}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    </div>
-
-                    {/* Text */}
-                    <div className="p-5 md:p-6">
-                      <h3 className="font-display text-xl font-medium tracking-tight text-on-surface md:text-2xl">
-                        {frame.headline}
-                      </h3>
-                      <p className="mt-1 font-body text-sm font-light text-on-surface-variant">
-                        {frame.subtext}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <YourWayStack registerCard={(i, el) => { yourWayColumnRefs.current[i] = el; }} />
             </div>
           </div>
         </div>

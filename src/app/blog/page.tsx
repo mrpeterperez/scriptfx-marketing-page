@@ -1,10 +1,4 @@
 import { BlogIndex } from "@/components/blog";
-
-export const metadata = {
-  title: "Blog",
-  description: "Updates, guides, and product notes from ScriptFX.",
-};
-
-export default function BlogIndexPage() {
-  return <BlogIndex />;
-}
+import { pageMetadata } from "@/lib/site/config";
+export const metadata = pageMetadata("Screenwriting journal", "Practical notes on writing scenes, revising dialogue, and preparing a table read.", "/blog");
+export default function BlogIndexPage() { return <BlogIndex />; }

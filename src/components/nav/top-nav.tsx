@@ -1,64 +1,36 @@
 "use client";
-
-import * as React from "react";
-import Link from "next/link";
-import { gsap } from "gsap";
-import { Button } from "@/components/ui/button";
+import { useRef, useState } from "react";
 import { Menu } from "lucide-react";
-import { TopNavMenu } from "@/components/nav/top-nav-menu";
-import { NavLogo } from "@/components/nav/nav-logo";
+import Link from "next/link";
+import { ProductMenuIcon, menuMaterialFor } from "./product-menu-icon";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { TopNavMenu } from "./top-nav-menu";
+import { Button } from "@/components/ui/button";
+import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuTrigger, NavigationMenuContent, NavigationMenuLink } from "@/components/ui/navigation-menu";
+import { menuGroups } from "@/lib/site/catalog";
 
 export function TopNav() {
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-  const [isHidden, setIsHidden] = React.useState(false);
-  const navRef = React.useRef<HTMLElement | null>(null);
-
-  React.useEffect(() => {
-    const handleToggle = (e: CustomEvent<{ visible: boolean }>) => {
-      setIsHidden(!e.detail.visible);
-    };
-
-    window.addEventListener("scriptfx-toggle-nav", handleToggle as EventListener);
-    return () => {
-      window.removeEventListener("scriptfx-toggle-nav", handleToggle as EventListener);
-    };
-  }, []);
-
-
-
-  if (isMenuOpen) {
-    return <TopNavMenu onClose={() => setIsMenuOpen(false)} />;
-  }
-
-  return (
-    <header
-      ref={navRef}
-      className={`fixed left-0 right-0 top-5 z-[200] mx-auto w-full max-w-[600px] px-4 transition-all duration-500 ${
-        isHidden ? "-translate-y-32 opacity-0 pointer-events-none" : "translate-y-0 opacity-100"
-      }`}
-    >
-      <div className="relative flex h-14 items-center justify-between rounded-lg bg-black/60 px-4 backdrop-blur-xl shadow-[-11.15px_-10.392px_48px_-12px_rgba(0,0,0,0.15),-1.858px_-1.732px_12px_-8px_rgba(0,0,0,0.15)]">
-        <div className="pointer-events-none absolute inset-[-1px] rounded-[8px] shadow-[inset_2.1px_1.957px_9.04px_0px_rgba(255,255,255,0.05),inset_1.171px_1.091px_4.52px_0px_rgba(255,255,255,0.03)]" />
-
-        <NavLogo />
-
-        <nav className="relative flex items-center gap-4 text-sm font-medium">
-          <Link href="/sign-in" className="text-on-surface/90 hover:text-on-surface">
-            Sign In
-          </Link>
-          <Button href="/get-access" variant="solid" size="sm">
-            Get Access
-          </Button>
-          <button
-            type="button"
-            aria-label="Open menu"
-            onClick={() => setIsMenuOpen(true)}
-            className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-transparent text-on-surface hover:bg-container/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-          >
-            <Menu className="h-5 w-5" aria-hidden="true" />
-          </button>
-        </nav>
-      </div>
-    </header>
-  );
+  const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [open, setOpen] = useState("");
+  const pinned = useRef("");
+  const closeMenu = () => { pinned.current = ""; setOpen(""); };
+  const mobileTrigger = useRef<HTMLButtonElement>(null);
+  return <header className="global-masthead catalog-masthead">
+    <div className="global-masthead-inner">
+      <Button ref={mobileTrigger} variant="ghost" size="icon" className="global-mobile-menu" aria-label="Open menu" aria-expanded={mobileOpen} onClick={() => { closeMenu(); setMobileOpen(true); }}><Menu size={26} /></Button>
+      <Link href="/" className="global-masthead-logo" aria-label="ScriptFX home" onClick={event => {
+        closeMenu();
+        if (pathname !== "/" || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        window.scrollTo({ top: 0, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+      }}><Image src="/brand/ScriptFXLogo.svg" alt="ScriptFX" width={110} height={23} priority /></Link>
+      <NavigationMenu viewport={false} value={open} onValueChange={value => { if (!pinned.current) setOpen(value); }} delayDuration={100} skipDelayDuration={200} className="catalog-navigation-left" aria-label="Product navigation"><NavigationMenuList>
+        {menuGroups.map(group => <NavigationMenuItem value={group.label} key={group.label}><NavigationMenuTrigger onClick={event => { event.preventDefault(); if (pinned.current === group.label) closeMenu(); else { pinned.current = group.label; setOpen(group.label); } }}>{group.label}</NavigationMenuTrigger><NavigationMenuContent className="catalog-dropdown" onEscapeKeyDown={closeMenu} onInteractOutside={event => { if (!(event.target instanceof Element && event.target.closest('[data-slot="navigation-menu-trigger"]'))) closeMenu(); }}><div className="catalog-dropdown-heading"><div><span className="catalog-kicker">{group.label}</span><p>{group.intro}</p></div><NavigationMenuLink asChild><Link href={group.href} onClick={closeMenu}>Explore all {group.label.toLowerCase()}</Link></NavigationMenuLink></div><div className="catalog-dropdown-grid">{group.links.map(item => <NavigationMenuLink asChild key={item.href}><Link href={item.href} onClick={closeMenu} className={(group.label === "Products" || group.label === "Solutions") ? `product-menu-item product-card-${menuMaterialFor(item.href.split("/").pop() || "")}` : undefined}>{(group.label === "Products" || group.label === "Solutions") && <ProductMenuIcon href={item.href} />}<div className="menu-item-copy"><strong>{item.title}</strong><span>{item.description}</span></div></Link></NavigationMenuLink>)}</div><div className="catalog-dropdown-bottom">Write it. Hear it. See where it goes.<NavigationMenuLink asChild><Link href="/get-access" onClick={closeMenu}>Get access</Link></NavigationMenuLink></div></NavigationMenuContent></NavigationMenuItem>)}
+      </NavigationMenuList></NavigationMenu>
+      <div className="catalog-header-right"><nav className="catalog-navigation" aria-label="Company navigation">{[{ title: "Enterprise", href: "/enterprise" }, { title: "Pricing", href: "/pricing" }, { title: "Contact Sales", href: "/contact-sales" }].map(item => <Link key={item.href} href={item.href} aria-current={pathname === item.href ? "page" : undefined} onPointerEnter={() => { if (!pinned.current) setOpen(""); }} onClick={closeMenu}>{item.title}</Link>)}</nav><nav className="global-account" aria-label="Account"><Link href="/sign-in">Sign In</Link><Button asChild size="sm" className="global-access"><Link href="/get-access" onClick={closeMenu}>Get Access</Link></Button></nav></div>
+    </div>
+    <TopNavMenu open={mobileOpen} onOpenChange={setMobileOpen} onCloseAutoFocus={() => mobileTrigger.current?.focus()} />
+  </header>;
 }

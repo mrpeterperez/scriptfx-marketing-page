@@ -8,7 +8,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { features } from "./features-data";
 import { footerLinks } from "@/lib/footer-links";
-import { yourWayFrames } from "./your-way/your-way-data";
+import { YourWayStack } from "./your-way/your-way-stack";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -566,36 +566,7 @@ export function StackingFinale() {
               ref={yourWayColumnsRef}
               className="absolute inset-x-0 bottom-8 md:bottom-12 lg:bottom-16 px-6 md:px-12 lg:px-20"
             >
-              <div className="mx-auto grid max-w-5xl grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
-                {yourWayFrames.map((frame, i) => (
-                  <div
-                    key={frame.id}
-                    ref={(el) => { yourWayColumnRefs.current[i] = el; }}
-                    className="group flex flex-col overflow-hidden rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm transform-gpu will-change-transform"
-                  >
-                    {/* Image */}
-                    <div className="relative aspect-[16/10] w-full overflow-hidden">
-                      <Image
-                        src={frame.image}
-                        alt={frame.headline}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    </div>
-
-                    {/* Text */}
-                    <div className="p-4 md:p-5">
-                      <h3 className="font-display text-xl font-medium tracking-tight text-on-surface md:text-2xl">
-                        {frame.headline}
-                      </h3>
-                      <p className="mt-1 font-body text-sm font-light text-on-surface-variant">
-                        {frame.subtext}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <YourWayStack registerCard={(i, el) => { yourWayColumnRefs.current[i] = el; }} />
             </div>
           </div>
         </div>
@@ -672,7 +643,7 @@ export function StackingFinale() {
               <div className="col-span-3 lg:col-span-1 flex flex-col justify-between h-full order-first mb-4 lg:mb-0">
                 <Link href="/" className="hover:opacity-80 transition-opacity">
                   <Image
-                    src="/brand/scriptfx-logo.svg"
+                    src="/brand/ScriptFXLogo.svg"
                     alt="ScriptFX"
                     width={88}
                     height={21}

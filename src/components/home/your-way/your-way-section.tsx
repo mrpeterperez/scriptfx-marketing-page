@@ -1,10 +1,9 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { yourWayFrames } from "./your-way-data";
+import { YourWayStack } from "./your-way-stack";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -200,36 +199,7 @@ export function YourWaySection() {
               ref={columnsRef}
               className="w-full max-w-5xl"
             >
-              <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
-                {yourWayFrames.map((frame, i) => (
-                  <div
-                    key={frame.id}
-                    ref={(el) => { columnRefs.current[i] = el; }}
-                    className="group flex flex-col overflow-hidden rounded-xl border border-border/50 bg-surface-container transform-gpu will-change-transform"
-                  >
-                    {/* Image */}
-                    <div className="relative aspect-[4/3] w-full overflow-hidden">
-                      <Image
-                        src={frame.image}
-                        alt={frame.headline}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                    </div>
-
-                    {/* Text */}
-                    <div className="p-5 md:p-6">
-                      <h3 className="font-display text-2xl font-medium tracking-tight text-on-surface md:text-3xl">
-                        {frame.headline}
-                      </h3>
-                      <p className="mt-1 font-body text-sm font-light text-on-surface-variant md:text-base">
-                        {frame.subtext}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <YourWayStack registerCard={(i, el) => { columnRefs.current[i] = el; }} />
             </div>
           </div>
         </div>

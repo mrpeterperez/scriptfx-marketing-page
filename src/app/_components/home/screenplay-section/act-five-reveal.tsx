@@ -280,7 +280,7 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
               className="block relative"
             >
               <img
-                src="/brand/scriptfxlogolarge.svg"
+                src="/brand/ScriptFXLogo.svg"
                 alt="ScriptFX"
                 className="relative z-10 mx-auto h-auto w-full max-w-[300px] drop-shadow-[0_0_8px_rgba(255,255,255,0.15)] md:max-w-[500px]"
               />

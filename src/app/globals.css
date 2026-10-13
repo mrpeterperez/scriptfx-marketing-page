@@ -74,6 +74,7 @@ html[data-site-font="satoshi"] {
 }
 
 @theme inline {
+  --container-site: calc(1176px + 3rem);
   /* Expose ScriptFX tokens as Tailwind colors (bg-surface, text-on-surface, etc.) */
   --color-primary: var(--scriptfx-primary);
   --color-on-primary: var(--scriptfx-on-primary);

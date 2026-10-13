@@ -1,14 +1,31 @@
 "use client";
 import { useState } from "react";
-import Link from "next/link";
+import { ToggleLeft, ToggleRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-const plans = [
-  { name: "Writer", label: "Start with the page", description: "A focused place to write and revise.", monthly: 12, annual: 9, items: ["3 active screenplays", "Screenplay editor & revisions", "PDF export", "30 minutes of table reads / month"], featured: false },
-  { name: "Creator", label: "For your next production", description: "Give every character a voice.", monthly: 29, annual: 23, items: ["Unlimited screenplays", "Everything in Writer", "180 minutes of table reads / month", "Character voice library", "Audio export"], featured: true },
-  { name: "Studio", label: "Create together", description: "More room for the whole team.", monthly: 79, annual: 63, items: ["Everything in Creator", "5 team members", "600 minutes of table reads / month", "Shared project workspace", "Priority support"], featured: false },
-];
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { formatPricingAmount, pricingCurrencies, pricingRateDate, type PricingBilling, type PricingCurrency } from "@/lib/site/pricing-display";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { pricingPlans } from "@/lib/site/pricing";
+import { PricingPlanCard } from "./pricing-plan-card";
+
 export function PricingPlans() {
-  const [annual, setAnnual] = useState(false);
-  return <><Tabs value={annual ? "annual" : "monthly"} onValueChange={value => setAnnual(value === "annual")}><TabsList className="pricing-kit-tabs" aria-label="Billing interval"><TabsTrigger value="monthly">Monthly</TabsTrigger><TabsTrigger value="annual">Annual · Save up to 25%</TabsTrigger></TabsList></Tabs><p className="pricing-preview-note">Design preview · Sample prices and plan details</p><div className="pricing-grid">{plans.map(plan => <article key={plan.name} className={`pricing-card${plan.featured ? " pricing-card-featured" : ""}`} data-visual-reveal><p className="site-eyebrow">{plan.label}</p><h2>{plan.name}</h2><p className="plan-description">{plan.description}</p><div className="plan-price" aria-live="polite"><strong>${annual ? plan.annual : plan.monthly}</strong><small> / month</small><span>{annual ? `$${plan.annual * 12} billed annually` : "Billed monthly"}</span></div><Button asChild><Link href="/get-access">Choose {plan.name}</Link></Button><div className="plan-includes"><p>What’s included</p><ul>{plan.items.map(item => <li key={item}><span aria-hidden="true">✓</span>{item}</li>)}</ul></div></article>)}</div></>;
+  const [audience, setAudience] = useState("individuals");
+  const [textured, setTextured] = useState(true);
+  const [billing, setBilling] = useState<PricingBilling>("month");
+  const [currency, setCurrency] = useState<PricingCurrency>("USD");
+  return <Tabs value={audience} onValueChange={setAudience}>
+    <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+      <TabsList className="pricing-audience h-auto p-1.5" aria-label="Choose your plan type"><TabsTrigger value="individuals">Individuals</TabsTrigger><TabsTrigger value="students">Students</TabsTrigger><TabsTrigger value="teams">Teams</TabsTrigger></TabsList>
+      <div className="flex flex-wrap items-center gap-3">
+        <Tabs value={billing} onValueChange={value => setBilling(value as PricingBilling)} className="gap-0"><TabsList aria-label="Billing frequency" className="h-auto p-1"><TabsTrigger value="month" className="min-h-10 px-4">Monthly</TabsTrigger><TabsTrigger value="year" className="min-h-10 px-4">Yearly</TabsTrigger></TabsList><TabsContent value="month" className="sr-only">Monthly prices, billed monthly.</TabsContent><TabsContent value="year" className="sr-only">Yearly prices include two months free, billed upfront.</TabsContent></Tabs>
+        <Badge variant="secondary">2 months free yearly</Badge>
+        <Select value={currency} onValueChange={value => setCurrency(value as PricingCurrency)}><SelectTrigger aria-label="Pricing currency" className="pricing-currency w-auto cursor-pointer border-0 bg-container px-4 shadow-none"><SelectValue /></SelectTrigger><SelectContent position="popper" align="end" className="border-0">{pricingCurrencies.map(item => <SelectItem key={item.code} value={item.code}>{item.label}</SelectItem>)}</SelectContent></Select>
+      </div>
+    </div>
+    {(["individuals", "students", "teams"] as const).map(group => <TabsContent key={group} value={group}><div className={`grid gap-4 ${group === "individuals" ? "sm:grid-cols-2 lg:grid-cols-4" : group === "teams" ? "mx-auto max-w-2xl sm:grid-cols-2" : "mx-auto max-w-sm"}`}>{pricingPlans.filter(plan => plan.audience === group).map(plan => <PricingPlanCard key={plan.name} plan={plan} textured={textured} billing={billing} currency={currency} />)}</div>{group === "students" ? <p className="mx-auto mt-5 max-w-md text-center text-sm leading-6 text-muted-foreground">Only writing? Verified students and educators get Writer at no charge. Explore education access below.</p> : null}</TabsContent>)}
+    <p className="mt-5 text-center text-sm leading-6 text-muted-foreground">Need more? Add 1,000 credits for {formatPricingAmount(10, currency)} on any plan. No upgrade required.</p>
+    {currency !== "USD" ? <p className="text-center text-xs leading-5 text-muted-foreground">Estimated local prices · Billed in USD · <a href="https://frankfurter.dev/" target="_blank" rel="noreferrer" className="underline underline-offset-4">Exchange rates: {pricingRateDate}</a></p> : null}
+    <Button type="button" variant="secondary" size="sm" aria-pressed={textured} onClick={() => setTextured(value => !value)} className="fixed bottom-4 left-4 z-50 shadow-md">{textured ? <ToggleRight aria-hidden="true" /> : <ToggleLeft aria-hidden="true" />}Textured cards</Button>
+  </Tabs>;
 }

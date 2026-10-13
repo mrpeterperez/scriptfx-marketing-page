@@ -109,6 +109,19 @@
 .material-frame { background-size: cover; background-position: center; border-radius: var(--kit-radius,24px); padding: clamp(24px,5vw,64px); overflow: hidden; }
 .material-velvet { background-color: #780d20; background-image: url('/art/materials/theater-velvet-v2.png'); }
 .material-gold { background-color: #c4a15e; background-image: url('/art/materials/warm-gold.png'); }
+.material-charcoal { background-color: #202020; background-image: url('/art/materials/film-charcoal.png'); }
+.pricing-plan:is(:hover,:focus-within) .pricing-plan-material { opacity: 1; }
+.pricing-plan .pricing-plan-material { background-blend-mode: normal; }
+.pricing-plan-material::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top right, rgb(65 35 8 / 88%), rgb(126 76 17 / 64%) 38%, rgb(210 158 63 / 28%) 68%, transparent 92%), url('/art/materials/warm-gold.png') center / cover; background-blend-mode: multiply; mask-image: linear-gradient(to top right, #000 8%, rgb(0 0 0 / 78%) 42%, transparent 90%); }
+.pricing-plan-heading, .pricing-plan-heading .text-muted-foreground { transition: color 300ms; }
+.pricing-plan-film { background-size: cover; background-position: center; background-blend-mode: multiply; }
+.pricing-currency[data-slot="select-trigger"] { width: auto; min-width: 104px; min-height: 44px; font-size: 14px; background: var(--scriptfx-container); }
+[data-slot="tabs-list"][data-variant="default"] [data-slot="tabs-trigger"][data-state="active"] { background: white; color: var(--scriptfx-black); }
+.pricing-audience { min-height: 60px; }
+.pricing-audience [data-slot="tabs-trigger"] { height: 48px; padding-inline: 22px; font-size: 16px; }
+@media (max-width: 640px) { .pricing-audience [data-slot="tabs-trigger"] { padding-inline: 14px; } }
+.pricing-plan:is(:hover,:focus-within) .pricing-plan-heading, .pricing-plan:is(:hover,:focus-within) .pricing-plan-heading .text-muted-foreground { color: white; text-shadow: 0 1px 3px rgb(0 0 0 / 75%), 0 0 1px black; }
+@media (prefers-reduced-motion: reduce) { .pricing-plan-heading, .pricing-plan-heading .text-muted-foreground { transition: none; } }
 .material-frame.product-menu-art { padding: 7px; border-radius: 12px; }
 .product-menu-drawing { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 7px; background: #faf9f6; }
 .catalog-feature-page { position: relative; isolation: isolate; }
@@ -126,25 +139,14 @@
 .material-paper-sample { padding: 32px 12px; border-radius: 16px; background: #faf9f6; color: #202020; text-align: center; }
 @media(max-width:640px) { .feature-showcase { padding: 20px 12px; gap: 16px; }.material-glass { flex-direction: column; gap: 4px; }.kit-material-grid { grid-template-columns: 1fr; }.catalog-feature-page .catalog-detail-hero { gap: 28px; } }
 
-/* Quiet navigation cards reveal their cinema material on interaction. */
-.catalog-dropdown-grid > a.product-menu-item, .scriptfx-mobile-sheet a.product-menu-item { background: #f3f2ef; color: #202020; border: 1px solid transparent; transition: color 180ms ease, border-color 180ms ease; }
-.product-menu-item::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--menu-material) center/cover; opacity: 0; transition: opacity 180ms ease; pointer-events: none; }
-.product-card-gold { --menu-material: linear-gradient(#fff9e850, #fff9e850), url('/art/materials/warm-gold.png'); }
-.product-card-velvet { --menu-material: url('/art/materials/theater-velvet-v2.png'); }
-.product-card-black { --menu-material: url('/art/materials/film-charcoal.png'); }
-.catalog-dropdown-grid > a.product-menu-item:focus-visible, .scriptfx-mobile-sheet a.product-menu-item:focus-visible { outline: 2px solid #b99147; outline-offset: 3px; }
-.product-menu-item:focus-visible::before { opacity: 1; }
-.catalog-dropdown-grid > a.product-menu-item:focus-visible, .scriptfx-mobile-sheet a.product-menu-item:focus-visible { color: #202020; }
-.catalog-dropdown-grid > a:is(.product-card-velvet, .product-card-black):focus-visible, .scriptfx-mobile-sheet a:is(.product-card-velvet, .product-card-black):focus-visible { color: #fff; }
-.product-menu-item .menu-item-copy span, .product-menu-item .menu-item-copy small { color: inherit; opacity: .8; }
-.catalog-dropdown-grid > a.product-menu-item:is(:hover, :focus-visible) .menu-item-copy :is(span, small) { color: inherit; }
-.product-menu-item .material-frame.product-menu-art { padding: 0; background: #faf9f6; }
-@media (hover: hover) {
- .product-menu-item:hover::before { opacity: 1; }
- .catalog-dropdown-grid > a.product-menu-item:hover, .scriptfx-mobile-sheet a.product-menu-item:hover { color: #202020; }
- .catalog-dropdown-grid > a:is(.product-card-velvet, .product-card-black):hover, .scriptfx-mobile-sheet a:is(.product-card-velvet, .product-card-black):hover { color: #fff; }
-}
-@media (prefers-reduced-motion: reduce) { .product-menu-item::before { transition: none; } }
+/* Shared navigation card states for every catalog group, desktop and mobile. */
+.catalog-dropdown-grid > a.catalog-menu-card, .scriptfx-mobile-sheet [data-slot="accordion-content"] a.catalog-menu-card { background: var(--scriptfx-surface); color: var(--scriptfx-on-surface); border: 1px solid var(--scriptfx-border); border-radius: var(--radius); transition: background-color 180ms ease; }
+.catalog-dropdown-grid > a.catalog-menu-card:is(:hover, :focus-visible), .scriptfx-mobile-sheet [data-slot="accordion-content"] a.catalog-menu-card:is(:hover, :focus-visible) { background: var(--scriptfx-container); color: var(--scriptfx-on-surface); }
+.catalog-dropdown-grid > a.catalog-menu-card .menu-item-copy :is(span, small), .scriptfx-mobile-sheet a.catalog-menu-card .menu-item-copy :is(span, small) { color: var(--scriptfx-on-surface-variant); }
+.catalog-menu-card:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+.scriptfx-mobile-sheet [data-slot="accordion-content"] a.catalog-menu-card { margin-block: 8px; padding: 12px; }
+.product-menu-item .material-frame.product-menu-art { padding: 0; background: var(--scriptfx-surface); }
+@media (prefers-reduced-motion: reduce) { .catalog-menu-card { transition: none !important; } }
 .writing-intro { text-align: center; max-width: 760px; margin: 120px auto 80px; }
 .catalog-page .writing-intro h2 { font-size: clamp(40px, 5vw, 64px); line-height: 1.05; letter-spacing: -.055em; margin: 24px 0; }
 .writing-intro > p:not(.catalog-kicker) { font-size: 20px; line-height: 1.65; color: #666; max-width: 580px; margin-inline: auto; }

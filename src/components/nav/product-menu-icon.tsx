@@ -10,5 +10,5 @@ export function menuMaterialFor(slug: string) {
 export function ProductMenuIcon({ href }: { href: string }) {
   const art = [...productArtSubjects, ...solutionArtSubjects].find(item => href === `/products/${item.slug}` || href === `/solutions/${item.slug}`);
   if (!art) return null;
-  return <MaterialFrame slug={art.slug} className="product-menu-art"><Image src={art.src} alt="" width={80} height={80} className="product-menu-drawing" sizes="80px" /></MaterialFrame>;
+  return <MaterialFrame slug={art.slug} className="product-menu-art"><Image src={art.src} alt="" width={80} height={80} unoptimized className="product-menu-drawing" sizes="80px" /></MaterialFrame>;
 }

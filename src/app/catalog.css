@@ -26,6 +26,8 @@
 .catalog-dropdown-heading p { margin-top: 6px; font-size: 22px; letter-spacing: -.025em; }
 .catalog-dropdown-heading > a { font-size: 14px; text-decoration: underline; text-underline-offset: 4px; }
 .catalog-dropdown-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px 24px; padding: 20px 0; }
+/* A seventh product (Live Directing) takes the full row under the other six. */
+.catalog-dropdown-grid > a:nth-child(7):last-child { grid-column: 1 / -1; }
 .catalog-dropdown-grid > a { display: flex; flex-direction: column; gap: 6px; padding: 16px; border-radius: 12px; background: #8080800c; transition: background 160ms, color 160ms; }
 .catalog-dropdown-grid > a:hover, .catalog-dropdown-grid > a:focus-visible { background: var(--scriptfx-black); color: #fff; }
 .catalog-dropdown-grid > a:is(:hover, :focus-visible) :is(span, small) { color: #fff; }
@@ -243,3 +245,6 @@ html[data-design-kit="active"] .global-access { border-radius: var(--kit-button-
   .catalog-page *, .catalog-navigation * { transition: none !important; }
   .kit-motion-demo:hover i, .kit-motion-demo:focus i { transform: none; }
 }
+
+.catalog-dropdown-grid strong { display: flex; align-items: center; gap: 8px; }
+.products-menu-tag { padding: 2px 8px; border-radius: 999px; background: var(--scriptfx-black, #202020); color: white; font-size: 11px; font-style: normal; font-weight: 600; letter-spacing: 0; }

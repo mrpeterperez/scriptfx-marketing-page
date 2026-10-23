@@ -1,0 +1,8 @@
+{
+  "model": "flux-2-pro",
+  "prompt": "Image 1 is the painting. Image 2 is a photo of a Krasnogorsk-3 16mm film camera. Keep image 1 exactly: its old-master oil painting style, muted palette, canvas texture, cracked green plaster wall, wooden school desk and the two clothbound books. Remove the camera and film reel from image 1 and place the exact camera from image 2 in its place, same side profile and proportions as image 2: black pebbled body with the tall rounded rear hump, the flat chrome wing-shaped wind crank, the round chrome speed dial, the small knob near the bottom, the eyepiece on the right end, and the long black zoom lens pointing to the LEFT. Camera rests level and centered on top of the book stack, about 55 percent of the image width. Paint the camera in the same old-master oil technique as the rest of the painting, soft daylight, gentle brushwork. No lettering, numbers, scale markings, dates, logos or signatures anywhere.",
+  "input": [
+    "students.jpg",
+    "Wikimedia Commons: Krasnogorsk-3 camera (right side).jpg, CC BY 2.0 chrishimself, mirrored"
+  ]
+}

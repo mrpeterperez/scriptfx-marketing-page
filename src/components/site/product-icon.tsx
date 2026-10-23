@@ -1,11 +1,15 @@
-import { AudioLines, Clapperboard, FileText, Headphones, SlidersHorizontal } from "lucide-react";
+import { AudioWaveform, Clapperboard, FileText, Headphones, Megaphone, Mic, Music, Orbit, SlidersHorizontal } from "lucide-react";
 
 export const scriptfxProducts = [
-  { id: "screenplay", name: "Screenplay", description: "Write & revise", icon: FileText },
-  { id: "audio", name: "Audio", description: "Voices & table reads", icon: AudioLines },
-  { id: "immersion", name: "Full immersion", description: "Music, FX & spatial audio", icon: Headphones },
-  { id: "video", name: "Video", description: "Generate shots & scenes", icon: Clapperboard },
-  { id: "post", name: "Post-production", description: "AI edits & finishing", icon: SlidersHorizontal },
+  { id: "screenplay", name: "Screenplay", icon: FileText },
+  { id: "video", name: "Video", icon: Clapperboard },
+  { id: "directing", name: "Live Directing", icon: Megaphone },
+  { id: "voices", name: "Voices", icon: Mic },
+  { id: "sfx", name: "Sound effects", icon: AudioWaveform },
+  { id: "music", name: "Music", icon: Music },
+  { id: "drama", name: "Audio dramas", icon: Headphones },
+  { id: "immersive", name: "Immersive", icon: Orbit },
+  { id: "post", name: "Post-production", icon: SlidersHorizontal },
 ] as const;
 
 export type ScriptFXProduct = typeof scriptfxProducts[number]["id"];

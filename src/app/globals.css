@@ -392,7 +392,7 @@ html {
 .desktop-site-links a:hover, .desktop-site-links [aria-current] { color: #242424; }
 .site-menu-toggle { display: none; }
 .site-menu { border: 0; border-radius: 28px; }
-.editorial-page { padding: 3rem 0 6rem; }
+.editorial-page { padding: 0 0 6rem; }
 .editorial-heading { text-align: center; max-width: 720px; margin: 0 auto 4rem; }
 .editorial-heading h1 { font-size: clamp(2.6rem,5vw,4.2rem); line-height: 1.08; text-wrap: balance; }
 .editorial-heading > p:last-child:not(.site-eyebrow) { color: #666; font-size: 1rem; line-height: 1.8; max-width: 480px; margin: 1.5rem auto 0; }
@@ -428,7 +428,7 @@ html {
 .pricing-faq h2 { font-size: 2rem; margin-bottom: 2rem; }
 @media(max-width:900px) { .desktop-site-links { display: none; } .site-menu-toggle { display: inline-flex; } }
 @media(max-width:640px) {
- .editorial-page { padding-top: 2rem; }
+ .editorial-page { padding-top: 0; }
  .editorial-heading { margin-bottom: 3rem; }
  .blog-grid,.pricing-grid { grid-template-columns: 1fr; }
  .pricing-contact { flex-direction: column; align-items: flex-start; }

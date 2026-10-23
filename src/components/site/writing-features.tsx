@@ -2,18 +2,26 @@
 
 import { useEffect, useRef, useState } from "react";
 import { SpatialBlob } from "./spatial-blob";
+import { ImmersiveStage, MoreBento, SceneBuilder, ToolsStory, WriteListenRewrite } from "./feature-showcases";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Bold, Italic, Underline, Strikethrough, ChevronDown, Search, Plus, Users, MessageSquare, LayoutGrid, Check, FileText, MousePointer2 } from "lucide-react";
+import { Bold, Italic, Underline, Strikethrough, ChevronDown, Search, Plus, Users, MessageSquare, LayoutGrid, Check, FileText, MousePointer2, Lock } from "lucide-react";
 
-const features = [
-  { label: "Write", title: "Write like you always have.", text: "Familiar. Focused. Out of your way." },
-  { label: "Import", title: "Bring your script.", text: "Final Draft. Fountain. Copy and paste." },
-  { label: "Structure", title: "See the whole story.", text: "Arrange scenes. Follow Save the Cat!® or your own beats." },
-  { label: "Versions", title: "Try another version.", text: "Keep the original. Use the take you like." },
-  { label: "Audience", title: "Test the read.", text: "Simulated AI reactions to your scene." },
-  { label: "Collaborate", title: "Collaborate with your team.", text: "Annotate. Comment. Keep writing." },
-];
+/** A real-looking screenplay page being written, with the element picker floating over the line in progress. */
+function ScreenplayShortcuts() {
+  return <div className="basics-script-art" aria-label="A screenplay page in standard format, with Dialogue chosen in the element picker">
+    <div className="basics-page">
+      <span className="basics-page-number">1.</span>
+      <p>FADE IN:</p>
+      <p className="basics-slug">INT. DINER – NIGHT</p>
+      <p>Rain streaks the glass. MARA (30s), soaked, slides into the booth across from LEO. She doesn’t take off her coat.</p>
+      <p className="basics-cue">MARA</p>
+      <p className="basics-paren">(quietly)</p>
+      <p className="basics-line">I want the car, Leo.<i className="basics-caret" aria-hidden="true" /></p>
+      <span className="basics-picker" aria-hidden="true">Dialogue<kbd>⌘5</kbd><ChevronDown size={12}/></span>
+    </div>
+  </div>;
+}
 
 function Skeleton({ rows = 3 }: { rows?: number }) {
   return <div className="platform-skeleton" aria-hidden="true">{Array.from({ length: rows }, (_, i) => <i key={i} />)}</div>;
@@ -55,18 +63,6 @@ function Workspace({ active: initialActive, toolsOpen, aiOpen }: { active: numbe
       </div>);
 }
 
-function FeatureArt({ kind }: { kind: string }) {
-  return <div className={`writing-feature-art art-${kind}`} aria-hidden="true">
-    {kind === "format" && <div className="feature-mini-paper"><Skeleton rows={2}/><div className="sk-character"><Skeleton rows={1}/></div><div className="sk-dialogue"><Skeleton rows={3}/></div><div className="feature-shortcut"><kbd>Tab</kbd><span>Dialogue</span></div></div>}
-    {kind === "import" && <div className="feature-file-stack"><div><FileText size={24}/><strong>.fdx</strong></div><div><FileText size={24}/><strong>.fountain</strong></div></div>}
-    {kind === "versions" && <div className="feature-mini-paper"><div className="feature-version-tabs"><span>Original</span><span>Version 2</span></div><Skeleton rows={4}/></div>}
-    {kind === "comments" && <div className="feature-mini-paper"><Skeleton rows={4}/><div className="feature-small-note"><span className="team-note-dot"/><Skeleton rows={2}/></div></div>}
-    {kind === "structure" && <div className="feature-map"><span>ACT I</span><div className="feature-map-cards">{["Opening image", "Setup", "Catalyst"].map(label => <div key={label}><strong>{label}</strong><Skeleton rows={3}/></div>)}</div><div className="feature-map-footer"><span>Screenplay</span><strong>Story Map</strong></div></div>}
-    {kind === "audience" && <div className="feature-audience"><div className="feature-art-heading"><Users size={22}/><strong>Audience</strong></div>{["Genre fan", "Casual viewer", "Character fan"].map(label => <div className="feature-reader" key={label}><span className="platform-skeleton-avatar"/><div><strong>{label}</strong><Skeleton rows={2}/></div></div>)}</div>}
-    {kind === "collaborate" && <div className="feature-mini-paper"><Skeleton rows={2}/><div className="sk-character"><Skeleton rows={1}/></div><div className="sk-dialogue sk-annotated"><Skeleton rows={3}/></div><div className="team-cursor team-kim"><MousePointer2 size={24}/><span>Kim</span></div><div className="team-cursor team-alex"><MousePointer2 size={24}/><span>Alex</span></div><div className="feature-small-note"><span className="team-note-dot"/><Skeleton rows={2}/></div></div>}
-  </div>;
-}
-
 export function WritingFeatures() {
   const [mode, setMode] = useState<"classic" | "tools" | "ai">("classic");
   const [cycle, setCycle] = useState(0);
@@ -91,7 +87,7 @@ export function WritingFeatures() {
       };
       const header = scope.querySelector(".writing-basics > header");
       if (header) reveal(Array.from(header.children), header);
-      const cards = Array.from(scope.querySelectorAll(".writing-basics-grid > article"));
+      const cards = Array.from(scope.querySelectorAll(".basics-layout article"));
       cards.forEach((card, index) => {
         gsap.from(card, {
           y: 24, opacity: 0, duration: 0.7,
@@ -100,35 +96,6 @@ export function WritingFeatures() {
           scrollTrigger: { trigger: card, start: "top 90%", once: true },
         });
       });
-      scope.querySelectorAll(".writing-simple-rows > article").forEach(row => {
-        const copy = row.firstElementChild;
-        const art = row.lastElementChild;
-        if (copy) reveal(Array.from(copy.children), copy);
-        if (art) {
-          reveal([art], art);
-          const details = art.querySelectorAll(".feature-map-cards > div, .feature-reader, .team-cursor, .feature-small-note");
-          gsap.from(details, {
-            y: 10, opacity: 0, duration: 0.5, stagger: 0.1, delay: 0.18,
-            ease: "power2.out", clearProps: "transform,opacity",
-            scrollTrigger: { trigger: art, start: "top 80%", once: true },
-          });
-        }
-      });
-      const collaboration = scope.querySelector(".art-collaborate");
-      if (collaboration) {
-        const kim = collaboration.querySelector(".team-kim");
-        const alex = collaboration.querySelector(".team-alex");
-        const cursors = gsap.timeline({
-          repeat: -1, repeatDelay: 0.8, defaults: { ease: "power2.inOut" },
-          scrollTrigger: { trigger: collaboration, start: "top 80%", end: "bottom top", toggleActions: "play pause resume pause" },
-        });
-        cursors.to(kim, { left: "34%", top: "32%", duration: 1.6 }, 0.7)
-          .to(alex, { left: "42%", top: "52%", duration: 1.9 }, 1.3)
-          .to(kim, { left: "50%", top: "44%", duration: 1.4 }, 3.4)
-          .to(alex, { left: "20%", top: "38%", duration: 1.6 }, 4.2)
-          .to(kim, { left: "62%", top: "25%", duration: 1.8 }, 6.2)
-          .to(alex, { left: "13%", top: "56%", duration: 1.7 }, 6.9);
-      }
     }, sectionRef);
     return () => media.revert();
   }, []);
@@ -157,7 +124,7 @@ export function WritingFeatures() {
         {([
           ["classic", "Classic", "Just you and the page."],
           ["tools", "With tools", "Structure, versions, and feedback."],
-          ["ai", "With AI", "Talk through ideas. Give it direction."],
+          ["ai", "With AI", "You direct. It helps."],
         ] as const).map(([value, title, description]) => <button key={value} type="button" aria-pressed={mode === value} onClick={() => { setMode(value); setCycle(n => n + 1); }}><span className="writing-mode-progress" aria-hidden="true">{mode === value && <span ref={progressRef}/>}</span><strong>{title}</strong><span>{description}</span></button>)}
       </div>
       <div ref={previewRef} className={`writing-simple-demo platform-pinned ${toolsOpen ? "writing-tools-open" : ""} ${mode === "ai" ? "writing-ai-open" : ""}`}><Workspace active={0} toolsOpen={toolsOpen} aiOpen={mode === "ai"}/></div>
@@ -165,18 +132,23 @@ export function WritingFeatures() {
 
     </div>
 
-    <section className="writing-basics"><header><h2>Everything you need to keep writing.</h2><p>Your script. Your shortcuts. A few useful extras.</p></header><div className="writing-basics-grid">{[
-      { kind: "format", title: "Familiar formatting", text: "Tab. Enter. Action. Dialogue. You know this." },
-      { kind: "import", title: "Bring your script", text: "Import Final Draft or Fountain. Copy and paste, too." },
-      { kind: "versions", title: "Keep every version", text: "Try another take. Keep the original." },
-      { kind: "comments", title: "Keep notes together", text: "Feedback stays with the scene." },
-    ].map(item => <article key={item.kind}><FeatureArt kind={item.kind}/><h3>{item.title}</h3><p>{item.text}</p></article>)}</div></section>
-    <div className="writing-simple-rows">{[
-      { kind: "structure", title: "See the whole story.", text: "Move scenes. Find the beats. Use Save the Cat!®, three-act structure, or your own method." },
-      { kind: "ai", title: "Talk it through.", text: "Talk through a scene. Explore a beat. Try another direction. You decide what stays." },
-      { kind: "audience", title: "Test the read.", text: "Get simulated AI perspectives on pacing, clarity, and character." },
-      { kind: "collaborate", title: "Collaborate with your team.", text: "Annotate the screenplay. Leave a comment. Keep everyone on the same page." },
-    ].map(item => <article key={item.kind}><div><h2>{item.title}</h2><p>{item.text}</p></div>{item.kind === "ai" ? <div className="writing-feature-art art-ai"><WritingPartner/></div> : <FeatureArt kind={item.kind}/>}</article>)}</div>
+    <section className="writing-basics"><header><h2>Everything you expect.</h2><p>None of what you hate.</p></header>
+      <div className="basics-layout">
+        <article className="basics-script"><ScreenplayShortcuts /><h3>Familiar formatting</h3><p>The same shortcuts as Final Draft. Tab and Enter move you to the next element, and it fills in names and sluglines as you type.</p></article>
+        <div className="basics-list">{[
+          { art: <span className="grid justify-items-start gap-1"><strong className="text-4xl font-semibold tracking-tight">$0</strong><span className="text-xs text-[#9a9a9a] line-through">Upgrade · $99.99</span></span>, title: "No $99 upgrades", text: "Writing is free forever. Unlimited screenplays." },
+          { art: <span className="grid w-full gap-2"><span className="flex gap-1.5 text-xs"><span className="rounded-md px-2 py-1 text-[#9a9a9a]">Draft 2</span><span className="flex items-center gap-1 rounded-md bg-[#f0f0f0] px-2 py-1"><Check size={12}/>Draft 3 · saved</span></span><i className="h-1.5 w-11/12 rounded-full bg-[#ececec]"/><i className="h-1.5 w-3/4 rounded-full bg-[#ececec]"/></span>, title: "Never lose a word", text: "Saves as you type. Every draft kept." },
+          { art: <span className="flex flex-wrap justify-center gap-1.5 text-xs">{["Mac", "Windows", "Chromebook"].map(device => <span key={device} className="rounded-full bg-[#f0f0f0] px-2.5 py-1">{device}</span>)}</span>, title: "No license keys", text: "Any browser. No two-computer limit." },
+          { art: <span className="flex gap-2">{[".fdx", ".fountain", ".pdf"].map((file, i) => <span key={file} className="grid w-[64px] justify-items-center gap-2 rounded-lg border border-[#e6e6e6] bg-white py-3 text-[11px] shadow-sm" style={{ transform: `rotate(${(i - 1) * 6}deg)` }}><FileText size={18}/>{file}</span>)}</span>, title: "No lock-in", text: "Final Draft, Fountain, and PDF, in and out, with revision colors and notes." },
+        ].map(item => <article key={item.title}><div className="basics-tile-art" aria-hidden="true">{item.art}</div><h3>{item.title}</h3><p>{item.text}</p></article>)}</div>
+      </div>
+      <p className="basics-promise"><Lock size={16}/>We never train AI on your script.</p>
+    </section>
+    <WriteListenRewrite />
+    <SceneBuilder />
+    <ImmersiveStage />
+    <ToolsStory />
+    <MoreBento />
     <p className="writing-trademark">Illustrative product previews. Save the Cat!® is a trademark of its respective owner. ScriptFX is not affiliated with Save the Cat!.</p>
   </section>;
 }

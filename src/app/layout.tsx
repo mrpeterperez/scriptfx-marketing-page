@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { site, pageMetadata } from "@/lib/site/config";
 import { Analytics } from "@/components/site/analytics";
 import { SiteFrame } from "@/components/site/site-frame";
@@ -30,6 +30,9 @@ const satoshi = localFont({
   variable: "--font-satoshi",
   display: "swap",
 });
+
+/** Phone browsers paint their own bar in the brand black, so it meets the header. */
+export const viewport: Viewport = { themeColor: "#202020" };
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),

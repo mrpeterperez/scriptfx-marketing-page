@@ -21,6 +21,7 @@ export function formatPricingAmount(amountUsd: number, currency: PricingCurrency
   return new Intl.NumberFormat("en-US", { style: "currency", currency, currencyDisplay: "narrowSymbol", minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(amount);
 }
 
+/** A year billed upfront: one month free, so every plan stays profitable even at full use. */
 export function annualPricingAmount(monthlyUsd: number) {
-  return monthlyUsd * 10;
+  return monthlyUsd * 11;
 }

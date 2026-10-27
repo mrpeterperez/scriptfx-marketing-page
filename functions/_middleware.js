@@ -30,8 +30,26 @@ function gate(error = false, status = 401) {
   });
 }
 
+// The ScriptFX app runs on Railway; scriptfx.com forwards its pages and files there, so the app and this site share one address.
+const APP_ORIGIN = "https://scriptfx-web-production.up.railway.app";
+const APP_PATH = /^\/(?:dashboard|projects|login|signup|forgot-password|reset-password|settings|new-script|help|listen|design-system|assets|fonts|lenses)(?:\/|$)|^\/(?:scriptfx-logo|scriptfx|vite)\.svg$|^\/@/;
+// Legal pages and the files they load stay public: the app's sign-up page links to them.
+const PUBLIC_PATH = /^\/(?:privacy|terms)(?:\.html|\.txt|\/.*)?$|^\/_next\/static\//;
+
+function toApp(request, url) {
+  return fetch(new Request(new URL(url.pathname + url.search, APP_ORIGIN), { method: request.method, headers: request.headers, body: request.body, redirect: "manual" }));
+}
+
 export async function onRequest({ request, env, next }) {
   const url = new URL(request.url);
+  if (APP_PATH.test(url.pathname)) return toApp(request, url);
+  if (url.pathname === "/sign-in") return Response.redirect(new URL("/login", url), 302);
+  // Both sites keep artwork under /art; this site's copy wins, and the app's own files come from the app.
+  if (url.pathname.startsWith("/art/")) {
+    const own = await next();
+    return own.status === 404 ? toApp(request, url) : own;
+  }
+  if (PUBLIC_PATH.test(url.pathname)) return next();
   if (!env.PREVIEW_PASSWORD || !env.PREVIEW_SESSION_SECRET) return new Response("Private preview unavailable.", { status: 503, headers });
   if (url.pathname === "/robots.txt") return new Response("User-agent: *\nDisallow: /\n", { headers: { ...headers, "Content-Type": "text/plain" } });
 

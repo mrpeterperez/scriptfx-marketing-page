@@ -1,14 +1,15 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { features } from "./features-data";
+import { features as originalFeatures, type Feature } from "./features-data";
 import { YourWayStack } from "../your-way/your-way-stack";
 
 gsap.registerPlugin(ScrollTrigger);
 
-export function FeaturesSection() {
+export function FeaturesSection({ items = originalFeatures, renderPreview, modern = false }: { items?: Feature[]; renderPreview?: (index: number) => ReactNode; modern?: boolean }) {
+  const features = items;
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollTriggerRef = useRef<ScrollTrigger | null>(null);
 
@@ -80,7 +81,7 @@ export function FeaturesSection() {
       const st = ScrollTrigger.create({
         trigger: containerRef.current,
         start: "top top",
-        end: `+=${totalPhases * 100}vh`,
+        end: modern ? () => `+=${totalPhases * window.innerHeight * .4}` : `+=${totalPhases * 100}vh`,
         pin: true,
         scrub: 1.2,
         onUpdate: (self) => {
@@ -334,16 +335,24 @@ export function FeaturesSection() {
         },
       });
       scrollTriggerRef.current = st;
+      if (modern) void document.fonts.ready.then(() => {
+        if (scrollTriggerRef.current !== st || location.hash !== "#legacy-features") return;
+        requestAnimationFrame(() => {
+          if (scrollTriggerRef.current !== st) return;
+          ScrollTrigger.refresh();
+          window.scrollTo({ top: st.start + (st.end - st.start) / 52, behavior: "instant" });
+        });
+      });
     }, containerRef);
 
-    return () => ctx.revert();
-  }, []);
+    return () => { scrollTriggerRef.current = null; ctx.revert(); };
+  }, [items, modern]);
 
   const handleFeatureClick = (index: number) => {
     const st = scrollTriggerRef.current;
-    if (!st || !st.end) return;
+    if (!st || !st.end) { if (modern) setActiveFeature(index); return; }
     const totalDistance = st.end - st.start;
-    const progressPerFeature = 1 / 16;
+    const progressPerFeature = 1 / (modern ? 26 : 16);
     const targetProgress = index * progressPerFeature + progressPerFeature / 2;
     const scrollPos = st.start + totalDistance * targetProgress;
     window.scrollTo({ top: scrollPos, behavior: "smooth" });
@@ -352,6 +361,7 @@ export function FeaturesSection() {
   return (
     <section
       ref={containerRef}
+      id={modern ? "legacy-features" : undefined}
       data-cinematic-features="true"
       data-scriptfx-features="true"
       className="relative z-[80] h-screen w-screen bg-transparent"
@@ -366,10 +376,15 @@ export function FeaturesSection() {
         {/* ===== PANEL: Features ===== */}
         <div
           ref={panel1Ref}
+          data-feature-panel={modern ? "modern" : undefined}
           className="absolute inset-x-6 inset-y-[calc(5%+21.6px)] md:inset-x-12 md:inset-y-[calc(5%+43.2px)] z-[75] rounded-[16px] border border-white/10 bg-black/40 backdrop-blur-3xl shadow-2xl ring-1 ring-white/5 overflow-hidden"
         >
           {/* ===== MOBILE LAYOUT ===== */}
-          <div ref={mobileContentRef} className="flex h-full w-full flex-col overflow-y-auto p-4 md:hidden">
+          {modern ? <div ref={mobileContentRef} className="modern-feature-mobile md:hidden">
+            <h2>{features[activeFeature].title}</h2>
+            {renderPreview?.(activeFeature)}
+            <nav aria-label="Feature sequence">{features.map((feature, index) => <button key={feature.id} type="button" aria-label={feature.title} aria-current={index === activeFeature ? "step" : undefined} onClick={() => handleFeatureClick(index)}>{feature.id}</button>)}</nav>
+          </div> : <div ref={mobileContentRef} className="flex h-full w-full flex-col overflow-y-auto p-4 md:hidden">
             {/* Hero Image/Visual Area */}
             <div className="flex aspect-[4/3] w-full shrink-0 items-center justify-center rounded-xl border border-white/10 bg-black/30 mb-4">
               <div className="text-center">
@@ -416,13 +431,14 @@ export function FeaturesSection() {
                 );
               })}
             </div>
-          </div>
+          </div>}
 
           {/* ===== DESKTOP LAYOUT ===== */}
           <div className="relative hidden h-full w-full md:flex">
             {/* Left Panel - Feature List */}
             <div
               ref={leftPanelRef}
+              data-feature-list={modern ? "modern" : undefined}
               className="flex w-[320px] flex-shrink-0 flex-col border-r border-white/10 p-8 md:w-[387px] md:p-12"
             >
               {/* Completed */}
@@ -433,6 +449,10 @@ export function FeaturesSection() {
                     <div
                       key={f.id}
                       onClick={() => handleFeatureClick(originalIndex)}
+                      role={modern ? "button" : undefined}
+                      tabIndex={modern ? 0 : undefined}
+                      aria-label={modern ? `Show ${f.title}` : undefined}
+                      onKeyDown={event => { if (modern && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); handleFeatureClick(originalIndex); } }}
                       className="flex cursor-pointer items-center gap-3 opacity-50 transition-all duration-200 hover:opacity-100 hover:translate-x-1"
                     >
                       <div className="flex h-[34px] w-[42px] items-center justify-center rounded-2xl bg-primary">
@@ -467,6 +487,10 @@ export function FeaturesSection() {
                     <div
                       key={f.id}
                       onClick={() => handleFeatureClick(originalIndex)}
+                      role={modern ? "button" : undefined}
+                      tabIndex={modern ? 0 : undefined}
+                      aria-label={modern ? `Show ${f.title}` : undefined}
+                      onKeyDown={event => { if (modern && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); handleFeatureClick(originalIndex); } }}
                       className="flex cursor-pointer items-center gap-3 opacity-50 transition-all duration-200 hover:opacity-100 hover:translate-x-1"
                     >
                       <div className="flex h-[34px] w-[42px] items-center justify-center rounded-2xl bg-primary">
@@ -482,7 +506,8 @@ export function FeaturesSection() {
             </div>
 
             {/* Right Panel */}
-            <div ref={rightPanelRef} className="flex flex-1 items-center justify-center p-8 relative overflow-hidden group">
+            <div ref={rightPanelRef} className={modern ? "modern-feature-right" : "flex flex-1 items-center justify-center p-8 relative overflow-hidden group"}>
+              {renderPreview ? renderPreview(activeFeature) : <>
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-primary/5 via-transparent to-primary/5 opacity-0 transition-opacity duration-700 group-hover:opacity-100 blur-3xl pointer-events-none" />
               <div key={activeFeature} className="animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
                 <p className="font-display text-[24px] text-on-surface-variant font-light tracking-wide">
@@ -492,6 +517,7 @@ export function FeaturesSection() {
                   {features[activeFeature].title} - Content Placeholder
                 </p>
               </div>
+              </>}
             </div>
           </div>
 

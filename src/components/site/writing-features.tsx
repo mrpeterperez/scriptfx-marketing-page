@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { ProductPreview } from "./product-preview";
 import { SpatialBlob } from "./spatial-blob";
 import { ImmersiveStage, MoreBento, SceneBuilder, ToolsStory, WriteListenRewrite } from "./feature-showcases";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Bold, Italic, Underline, Strikethrough, ChevronDown, Search, Plus, Users, MessageSquare, LayoutGrid, Check, FileText, MousePointer2, Lock } from "lucide-react";
 
 /** A real-looking screenplay page being written, with the element picker floating over the line in progress. */
@@ -31,7 +30,7 @@ function WritingPartner() {
   return <div className="writing-partner partner-visual"><SpatialBlob/><div className="partner-visual-skeleton" aria-hidden="true"><Skeleton rows={2}/></div></div>;
 }
 
-function Workspace({ active: initialActive, toolsOpen, aiOpen }: { active: number; toolsOpen: boolean; aiOpen: boolean }) {
+export function IllustratedWorkspace({ active: initialActive, toolsOpen, aiOpen }: { active: number; toolsOpen: boolean; aiOpen: boolean }) {
   const [storyMapOpen, setStoryMapOpen] = useState(false);
   const active = toolsOpen && storyMapOpen ? 2 : initialActive;
   return (<div className="platform-window-mat">
@@ -63,6 +62,13 @@ function Workspace({ active: initialActive, toolsOpen, aiOpen }: { active: numbe
       </div>);
 }
 
+export function Workspace({ toolsOpen, aiOpen, onInteract }: { active: number; toolsOpen: boolean; aiOpen: boolean; onInteract?: () => void }) {
+  return <div className="platform-window-mat"><div className="platform-shell platform-live-shell">
+    <div className="platform-browser" aria-label="ScriptFX app window"><div className="platform-app-titlebar"><div className="platform-traffic" aria-hidden="true"><i/><i/><i/></div><span>ScriptFX</span></div></div>
+    <div className="platform-live-stage" data-mode={aiOpen ? "ai" : toolsOpen ? "tools" : "classic"}><aside className="platform-preview-orb" aria-hidden={!aiOpen} aria-label="ScriptFX AI writing partner"><WritingPartner /></aside><ProductPreview mode={aiOpen ? "ai" : toolsOpen ? "tools" : "classic"} onInteract={onInteract} /></div>
+  </div></div>;
+}
+
 export function WritingFeatures() {
   const [mode, setMode] = useState<"classic" | "tools" | "ai">("classic");
   const [cycle, setCycle] = useState(0);
@@ -70,46 +76,18 @@ export function WritingFeatures() {
   const progressRef = useRef<HTMLSpanElement>(null);
   const toolsOpen = mode !== "classic";
   const previewRef = useRef<HTMLDivElement>(null);
-  const sectionRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger);
-    const media = gsap.matchMedia();
-    media.add("(prefers-reduced-motion: no-preference)", () => {
-      const scope = sectionRef.current;
-      if (!scope) return;
-      const reveal = (elements: Element[], trigger: Element, stagger = 0.09) => {
-        gsap.from(elements, {
-          y: 22, opacity: 0, duration: 0.7, stagger, ease: "power2.out",
-          scrollTrigger: { trigger, start: "top 88%", once: true },
-          clearProps: "transform,opacity",
-        });
-      };
-      const header = scope.querySelector(".writing-basics > header");
-      if (header) reveal(Array.from(header.children), header);
-      const cards = Array.from(scope.querySelectorAll(".basics-layout article"));
-      cards.forEach((card, index) => {
-        gsap.from(card, {
-          y: 24, opacity: 0, duration: 0.7,
-          delay: window.innerWidth > 1000 ? index * 0.09 : 0,
-          ease: "power2.out", clearProps: "transform,opacity",
-          scrollTrigger: { trigger: card, start: "top 90%", once: true },
-        });
-      });
-    }, sectionRef);
-    return () => media.revert();
-  }, []);
 
   useEffect(() => {
     const preview = previewRef.current;
     if (!preview) return;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const duration = mode === "classic" ? 12000 : 9000;
     let visible = false, frame = 0, elapsed = 0, previous = 0;
     const tick = (now: number) => {
       if (previous && visible && !document.hidden && !paused && !reduced.matches) elapsed += Math.min(now - previous, 100);
       previous = now;
-      if (progressRef.current) progressRef.current.style.transform = `scaleX(${elapsed / 8000})`;
-      if (elapsed >= 8000) { setMode(current => current === "classic" ? "tools" : current === "tools" ? "ai" : "classic"); return; }
+      if (progressRef.current) progressRef.current.style.transform = `scaleX(${elapsed / duration})`;
+      if (elapsed >= duration) { setMode(current => current === "classic" ? "tools" : current === "tools" ? "ai" : "classic"); return; }
       frame = requestAnimationFrame(tick);
     };
     const observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; }, { threshold: .25 });
@@ -118,7 +96,7 @@ export function WritingFeatures() {
     return () => { observer.disconnect(); cancelAnimationFrame(frame); };
   }, [mode, cycle, paused]);
 
-  return <section ref={sectionRef} className="writing-simple" aria-label="Screenwriting software features">
+  return <section className="writing-simple" aria-label="Screenwriting software features">
     <div className={`writing-mode-layout mode-${mode}`}>
       <div className="writing-mode-options" role="group" aria-label="Workspace preview">
         {([
@@ -127,7 +105,7 @@ export function WritingFeatures() {
           ["ai", "With AI", "You direct. It helps."],
         ] as const).map(([value, title, description]) => <button key={value} type="button" aria-pressed={mode === value} onClick={() => { setMode(value); setCycle(n => n + 1); }}><span className="writing-mode-progress" aria-hidden="true">{mode === value && <span ref={progressRef}/>}</span><strong>{title}</strong><span>{description}</span></button>)}
       </div>
-      <div ref={previewRef} className={`writing-simple-demo platform-pinned ${toolsOpen ? "writing-tools-open" : ""} ${mode === "ai" ? "writing-ai-open" : ""}`}><Workspace active={0} toolsOpen={toolsOpen} aiOpen={mode === "ai"}/></div>
+      <div ref={previewRef} className={`writing-simple-demo platform-pinned ${toolsOpen ? "writing-tools-open" : ""} ${mode === "ai" ? "writing-ai-open" : ""}`}><Workspace active={0} toolsOpen={toolsOpen} aiOpen={mode === "ai"} onInteract={() => setPaused(true)}/></div>
         <button className="writing-cycle-control" type="button" onClick={() => setPaused(value => !value)}>{paused ? "Resume preview" : "Pause preview"}</button>
 
     </div>

@@ -36,7 +36,7 @@ void main(){vec3 v=normalize(cameraPosition-positionW);float fres=pow(1.-abs(dot
  * drag the floor to turn the room, and pinch to zoom. `where` says where each
  * sound is right now, so a sound that walks moves on its own.
  */
-export function ImmersiveWorld({ orbs, where, level, onMove, onSelect, walker, note, label }: { orbs: Orb[]; where: (id: string) => Place; level: (id: string) => number; onMove: (id: string, place: Place) => void; onSelect: (id: string) => void; walker: Walker; note?: React.ReactNode; label: string }) {
+export function ImmersiveWorld({ orbs, where, level, onMove, onSelect, walker, note, label, showControls = true }: { orbs: Orb[]; where: (id: string) => Place; level: (id: string) => number; onMove: (id: string, place: Place) => void; onSelect: (id: string) => void; walker: Walker; note?: React.ReactNode; label: string; showControls?: boolean }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const [view, setView] = useState<View>("angle");
   const live = useRef({ where, level, onMove, onSelect, view, walker });
@@ -354,12 +354,12 @@ export function ImmersiveWorld({ orbs, where, level, onMove, onSelect, walker, n
   }, [orbs]);
 
   return <div className="relative">
-    <div className="relative z-10 flex flex-col items-center gap-2">
-      <div role="group" aria-label="View" className="flex gap-1 rounded-2xl bg-[#303233]/90 p-1 text-xs font-medium text-[#e5e5e5] backdrop-blur">
+    {(showControls || note) && <div className="relative z-10 flex flex-col items-center gap-2">
+      {showControls && <div role="group" aria-label="View" className="flex gap-1 rounded-2xl bg-[#303233]/90 p-1 text-xs font-medium text-[#e5e5e5] backdrop-blur">
         {VIEW_BUTTONS.map(({ id, label: name, Icon }) => <button key={id} type="button" aria-pressed={view === id} onClick={() => setView(id)} className={`flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-2 transition-colors ${view === id ? "bg-[#93acff26] text-[#93acff]" : "hover:bg-white/5"}`}><Icon className="size-4" />{name}</button>)}
-      </div>
+      </div>}
       {note && <div className="text-xs text-white/50">{note}</div>}
-    </div>
+    </div>}
     <canvas ref={canvas} className="mt-2 block aspect-square w-full [mask-image:radial-gradient(ellipse_at_center,black_62%,transparent_98%)] sm:aspect-[5/2]" aria-label={label} />
   </div>;
 }

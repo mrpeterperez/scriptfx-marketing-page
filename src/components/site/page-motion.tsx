@@ -17,11 +17,11 @@ export function PageMotion({ children }: { children: React.ReactNode }) {
     const context = gsap.context(() => {
       media.add("(prefers-reduced-motion: no-preference)", () => {
         gsap.from(".site-page-header > *", {
-          y: 30, autoAlpha: 0, duration: 0.85, stagger: 0.09, ease: "power3.out",
+          y: 14, autoAlpha: 0, duration: 0.5, stagger: 0.05, ease: "power3.out", clearProps: "transform,opacity,visibility",
         });
         gsap.utils.toArray<HTMLElement>("[data-visual-reveal], .site-card, .site-cta, .site-copy > section, .faq-list details").forEach(element => {
           gsap.from(element, {
-            y: 42, autoAlpha: 0, duration: 0.85, ease: "power3.out",
+            y: 18, autoAlpha: 0, duration: 0.5, ease: "power3.out", clearProps: "transform,opacity,visibility",
             scrollTrigger: { trigger: element, start: "top 94%", once: true },
           });
         });

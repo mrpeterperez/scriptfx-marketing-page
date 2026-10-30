@@ -117,4 +117,6 @@ async function bake(key: string, scene: Scene, cutKey: string, cut: Cut) {
   console.log("rendered", out);
 }
 
-for (const [key, scene] of Object.entries(SCENES)) for (const [cutKey, cut] of Object.entries(scene.cuts)) await bake(key, scene, cutKey, cut);
+// Pass scene keys to render only those: `npx tsx scripts/bake-immersive.mts diner`.
+const only = process.argv.slice(2);
+for (const [key, scene] of Object.entries(SCENES)) if (!only.length || only.includes(key)) for (const [cutKey, cut] of Object.entries(scene.cuts)) await bake(key, scene, cutKey, cut);

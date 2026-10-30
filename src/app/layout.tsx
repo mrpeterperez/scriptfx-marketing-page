@@ -7,7 +7,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import "./catalog.css";
 import "./shadcn-theme.css";
-import { GrainOverlay } from "@/components/effects/grain-overlay";
+import "./brand-refinement.css";
 import { DesignProvider } from "@/components/design-kit/design-provider";
 
 const outfit = Outfit({
@@ -32,7 +32,7 @@ const satoshi = localFont({
 });
 
 /** Phone browsers paint their own bar in the brand black, so it meets the header. */
-export const viewport: Viewport = { themeColor: "#202020" };
+export const viewport: Viewport = { themeColor: "#080808" };
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -58,7 +58,6 @@ export default function RootLayout({
         <DesignProvider />
 
         {/* Film grain layer above all content */}
-        <GrainOverlay />
       </body>
     </html>
   );

@@ -5,15 +5,14 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ScreenplayDocument } from "./screenplay-document";
 import { ActFiveReveal } from "./act-five-reveal";
-import { FeaturesSection } from "@/components/home/features";
-import { FooterSection } from "@/components/home/footer";
+import { LandingOverview } from "@/components/home/landing-overview";
 
 // Register plugins
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-export function ScreenplaySection() {
+export function ScreenplaySection({ children }: { children?: React.ReactNode }) {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const grayBoxRef = React.useRef<HTMLDivElement>(null);
   const paddingContainerRef = React.useRef<HTMLDivElement>(null);
@@ -38,7 +37,7 @@ export function ScreenplaySection() {
           // Finish the animation ~1 viewport before the section ends,
           // leaving a "hold" where the final scene can breathe.
           end: () => `bottom-=${window.innerHeight}px bottom`,
-          scrub: 0.4,
+          scrub: 0.6,
           invalidateOnRefresh: true,
         },
       });
@@ -62,9 +61,7 @@ export function ScreenplaySection() {
         ref={containerRef}
         className="cinematic-screenplay relative z-10 bg-transparent opacity-100"
         style={{ 
-          // Add extra hold so the following features section can overlap by 100svh
-          // without shortening the overall scroll.
-          height: "650svh",
+          height: "580svh",
           width: "100vw", 
           marginLeft: "calc(50% - 50vw)" 
         }}
@@ -88,11 +85,7 @@ export function ScreenplaySection() {
         </div>
       </section>
 
-      {/* Features Section (includes Your Way columns) */}
-      <FeaturesSection />
-
-      {/* Footer: Show Don't Tell → Waitlist → Footer */}
-      <FooterSection includeFooter={false} />
+      {children ?? <LandingOverview />}
     </>
   );
 }

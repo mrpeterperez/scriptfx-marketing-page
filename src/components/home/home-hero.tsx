@@ -1,22 +1,32 @@
 "use client";
 
+import { FilmPlate } from "@/components/effects/film-plate";
+
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Play, Pause, Volume2, VolumeX } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useLandingSound } from "./landing-sound";
 import { HeroScreenplay } from "./hero-screenplay";
 
 export function HomeHero({ videoSrc: initialVideoSrc = "/video/mountain-scene.mp4" }: { videoSrc?: string } = {}) {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const videoRef = React.useRef<HTMLVideoElement>(null);
+  const skipRequestedRef = React.useRef(false);
   const [clip, setClip] = React.useState(0);
   const videoSrc = clip === 0 ? initialVideoSrc : "/video/bakers-dozen.mp4";
   const [time, setTime] = React.useState(0);
   const [playing, setPlaying] = React.useState(false);
-  const [muted, setMuted] = React.useState(true);
+  const landingSound = useLandingSound();
+  const muted = !landingSound?.sound;
+  const nextFilm = () => {
+    skipRequestedRef.current = true;
+    setTime(0);
+    setClip((current) => (current + 1) % 2);
+  };
 
   React.useLayoutEffect(() => {
     const container = containerRef.current;
@@ -51,9 +61,11 @@ export function HomeHero({ videoSrc: initialVideoSrc = "/video/mountain-scene.mp
 
   React.useEffect(() => {
     const video = videoRef.current;
-    if (!video || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const skipRequested = skipRequestedRef.current;
+    skipRequestedRef.current = false;
+    if (!video || (!skipRequested && window.matchMedia("(prefers-reduced-motion: reduce)").matches)) return;
     const intro = document.querySelector(".intro-reveal");
-    let introComplete = !intro || getComputedStyle(intro).visibility === "hidden";
+    let introComplete = skipRequested || !intro || getComputedStyle(intro).visibility === "hidden";
     const play = () => {
       introComplete = true;
       if (video.getBoundingClientRect().bottom > 0) void video.play().catch(() => {});
@@ -80,9 +92,10 @@ export function HomeHero({ videoSrc: initialVideoSrc = "/video/mountain-scene.mp
         <div 
           className="hero-headline absolute z-50 text-center text-white"
         >
-          <h1 className="font-display font-medium">
-            <span className="hero-line-1 block">Write your screenplay.</span>
-            <span className="hero-line-2 block">Watch it come <em className="hero-alive">alive</em>.</span>
+          <h1 className="font-display font-medium" aria-label="Write your screenplay. Watch it come alive.">
+            <span className="hero-line-1 block" aria-hidden="true">{Array.from("Write your screenplay.").map((letter, index) => <span key={index} className="hero-type-letter">{letter}</span>)}</span>
+            <span className="hero-line-2 block" aria-hidden="true">{Array.from("Watch it come ").map((letter, index) => <span key={index} className="hero-type-letter">{letter}</span>)}<em className="hero-alive">{Array.from("alive").map((letter, index) => <span key={index} className="hero-type-letter">{letter}</span>)}</em><span className="hero-type-letter">.</span></span>
+            <span className="hero-intro-caret" aria-hidden="true" />
           </h1>
           <p className="hero-tagline mt-6 font-body text-[16px] leading-[22px] text-white/90 md:text-[18px] md:leading-[24px]">
             From screenplay to audio drama and cinema — all on one page.
@@ -91,7 +104,8 @@ export function HomeHero({ videoSrc: initialVideoSrc = "/video/mountain-scene.mp
             <Button asChild size="lg" className="hero-cta" style={{ background: "#fff", color: "#111" }}><Link href="/get-access">Get access</Link></Button>
         <div className="hero-playback">
           <button className="hero-play-button" type="button" onClick={() => { const video = videoRef.current; if (video) { if (video.paused) void video.play().catch(() => {}); else video.pause(); } }} aria-label={playing ? "Pause film" : "Play film"}>{playing ? <Pause size={18} aria-hidden="true" /> : <Play size={18} aria-hidden="true" />}</button>
-          <button type="button" onClick={() => setMuted(!muted)} aria-label={muted ? "Unmute film" : "Mute film"} aria-pressed={!muted}>{muted ? <VolumeX size={18} aria-hidden="true" /> : <Volume2 size={18} aria-hidden="true" />}</button>
+          <button type="button" data-hero-sound onClick={landingSound?.toggleSound} aria-label={muted ? "Unmute film" : "Mute film"} aria-pressed={!muted}>{muted ? <VolumeX size={18} aria-hidden="true" /> : <Volume2 size={18} aria-hidden="true" />}</button>
+          <button type="button" onClick={nextFilm} aria-label="Next film" title="Next film"><ChevronRight size={18} aria-hidden="true" /></button>
         </div>
           </div>
 
@@ -122,6 +136,7 @@ export function HomeHero({ videoSrc: initialVideoSrc = "/video/mountain-scene.mp
               className="hero-media pointer-events-none object-cover"
               priority
             />}
+            <FilmPlate />
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-0"

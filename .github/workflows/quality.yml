@@ -17,8 +17,8 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run build
-      - name: Check production routes
+      - name: Check routes
         run: |
-          npm start -- --hostname 127.0.0.1 --port 3000 > /tmp/scriptfx-site.log 2>&1 &
+          npm run dev -- --hostname 127.0.0.1 --port 3000 > /tmp/scriptfx-site.log 2>&1 &
           node --input-type=module -e "for(let n=0;n<30;n++){try{await fetch('http://127.0.0.1:3000');process.exit(0)}catch{await new Promise(r=>setTimeout(r,1000))}}process.exit(1)"
           npm run check:site

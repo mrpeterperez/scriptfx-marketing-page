@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 const origin = process.env.SITE_TEST_URL || "http://127.0.0.1:3000";
 const paths = ["/design-kit", "/resources/guides", "/products/screenplay-editor", "/products/table-reads", "/products/character-voices", "/products/audio-drama", "/products/storyboards", "/products/video", "/solutions/screenwriters", "/solutions/filmmakers", "/solutions/audio-storytellers", "/solutions/creative-teams", "/products", "/solutions", "/resources", "/enterprise", "/contact-sales", "/", "/writing", "/production", "/market", "/technology", "/pricing", "/about", "/careers", "/faq", "/contact", "/privacy", "/terms", "/get-access", "/blog", "/templates", "/features/screenplay-editor", "/features/table-read", "/features/character-voices", "/features/revisions", "/blog/prepare-a-table-read", "/blog/revise-dialogue-by-listening", "/blog/from-outline-to-scene"];
 const links = new Set();
+paths.push("/preview/landing-scroll", "/preview/landing-tap", "/preview/landing-stacks", "/preview/landing-legacy");
 for (const path of paths) {
   const response = await fetch(new URL(path,origin));
   assert.equal(response.status,200,path);

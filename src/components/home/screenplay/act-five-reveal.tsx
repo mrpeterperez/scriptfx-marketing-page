@@ -1,5 +1,7 @@
 "use client";
 
+import { FilmPlate } from "@/components/effects/film-plate";
+
 import * as React from "react";
 import { createPortal } from "react-dom";
 import { gsap } from "gsap";
@@ -124,7 +126,7 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
         tl.to(
           video,
           {
-            filter: "blur(2px)",
+            filter: "blur(0px)",
             scale: 1,
             duration: 1.2,
             ease: "power2.out",
@@ -300,6 +302,7 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
       {/* Video (pinned/fixed so it can continue beyond later sections) */}
       <div
         ref={videoContainerRef}
+        data-film-reveal="true"
         className="pointer-events-none fixed inset-0 z-[60] overflow-hidden opacity-0"
       >
         <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-40 bg-gradient-to-b from-black via-black/80 to-transparent" />
@@ -317,20 +320,8 @@ export function ActFiveReveal({ timeline, startLabel = "curtainsClosed" }: ActFi
             preload="auto"
             poster="/placeholder/video-poster.png"
           />
+          <FilmPlate />
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/30" />
-          
-          {/* Film grain / noise overlay */}
-          <div 
-            className="pointer-events-none absolute inset-0 z-50"
-            style={{
-              backgroundImage: 'url("/brand/grain.png")',
-              backgroundRepeat: 'repeat',
-              backgroundSize: '220px',
-              backgroundPosition: 'center',
-              opacity: 0.15,
-              mixBlendMode: 'soft-light',
-            }}
-          />
         </div>
       </div>
 

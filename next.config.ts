@@ -5,6 +5,6 @@ const nextConfig: NextConfig = {
   images: { unoptimized: true },
   poweredByHeader: false,
   // Lets phones on the local network load dev scripts (dev server only).
-  allowedDevOrigins: ["192.168.1.202"],
+  allowedDevOrigins: ["127.0.0.1", "192.168.1.202", "192.168.1.197"],
 };
 export default nextConfig;

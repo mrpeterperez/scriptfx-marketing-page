@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { Check, Pause, Play } from "lucide-react";
 import { ImmersiveWorld, insideRoom, type Place } from "./immersive-world";
 import { defaultTrails, EAR, SCENES, tapSquare, walkerAt, type CabinSound, type Cell, type Scene } from "@/lib/site/immersive-scenes";
 import { SpatialBlob } from "./spatial-blob";
+import { useLandingSound } from "@/components/home/landing-sound";
+import { useProductDemo } from "./product-demo";
 import samples from "@/lib/site/audio-samples.json";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AudiencePreview, BeatsPreview, HumanCoveragePreview, InstantNotesPreview, ScriptPageNotesPreview, TogetherPreview } from "./product-previews";
 
 type Word = { w: string; s: number; e: number };
@@ -53,7 +54,7 @@ const FADE = .25;
 /**
  * A room's reverb: Steam Audio's ray-traced response of a furnished wooden
  * room, baked from the spatial editor's renderer.
- * Room size in the debug mix stretches it.
+ * The mix's room size stretches it.
  */
 const roomFiles = new Map<string, Promise<ArrayBuffer>>();
 async function roomResponse(context: BaseAudioContext, scene: Scene, size: number) {
@@ -65,62 +66,22 @@ async function roomResponse(context: BaseAudioContext, scene: Scene, size: numbe
   return stretched;
 }
 
-/** Backdrops and glass levels to try behind the Immersive panel, while developing only. */
-type Look = { "--hear-bg"?: string; "--hear-glass"?: string } & React.CSSProperties;
-const BACKDROPS = [
-  { name: "Velvet", value: '#780d20 url("/art/materials/theater-velvet-v2.png") center / cover' },
-  { name: "Headphones", value: 'url("/art/products/renaissance/audio-drama.jpg") center / cover' },
-  { name: "Gold", value: '#b8892f url("/art/materials/warm-gold.png") center / cover' },
-  { name: "Charcoal", value: '#202020 url("/art/materials/film-charcoal.png") center / cover' },
-  { name: "Theater", value: 'url("/art/cinema/closed-curtain-theater-v2.png") center / cover' },
-  { name: "Black", value: "#202020" },
-];
-const GLASS = [.4, .55, .7, .82, .92, 1];
-function LookPicker({ look, onPick }: { look: Look; onPick: (change: Look) => void }) {
-  const bg = look["--hear-bg"] ?? BACKDROPS[0].value, glass = Number(look["--hear-glass"] ?? .92);
-  const chip = (on: boolean) => `cursor-pointer rounded-lg px-2.5 py-1.5 text-left text-xs ${on ? "bg-white text-[#202020]" : "text-white/80 hover:bg-white/10"}`;
-  return <aside aria-label="Look picker" className="fixed right-3 top-1/2 z-50 hidden w-32 sm:flex -translate-y-1/2 flex-col gap-1 rounded-2xl bg-[#202020]/90 p-2 shadow-xl backdrop-blur">
-    <p className="px-1 pb-1 text-[10px] uppercase tracking-wider text-white/40">Background</p>
-    {BACKDROPS.map(backdrop => <button key={backdrop.name} type="button" onClick={() => onPick({ "--hear-bg": backdrop.value })} className={chip(bg === backdrop.value)}>{backdrop.name}</button>)}
-    <p className="px-1 pb-1 pt-2 text-[10px] uppercase tracking-wider text-white/40">Glass</p>
-    <div className="grid grid-cols-3 gap-1">{GLASS.map(level => <button key={level} type="button" onClick={() => onPick({ "--hear-glass": String(level) })} className={chip(glass === level)}>{level === 1 ? "Solid" : `${Math.round(level * 100)}`}</button>)}</div>
-  </aside>;
-}
-
-/** The mix, tunable while developing: reverb, room size, distance falloff, and a level for each kind of sound. */
+/** The live mix: reverb, room size, distance falloff, and a level for each kind of sound. */
 type Mix = { reverb: number; room: number; falloff: number; voices: number; effects: number; ambience: number; score: number; master: number };
 const MIX: Mix = { reverb: 1, room: 1, falloff: .9, voices: 1, effects: 1, ambience: 1, score: 1, master: 1.25 };
-const MIX_SLIDERS: { key: keyof Mix; label: string; max: number }[] = [
-  { key: "reverb", label: "Reverb", max: 3 }, { key: "room", label: "Room size", max: 3 }, { key: "falloff", label: "Distance falloff", max: 3 },
-  { key: "voices", label: "Voices", max: 2 }, { key: "effects", label: "Effects", max: 2 }, { key: "ambience", label: "Ambience", max: 2 }, { key: "score", label: "Score", max: 2 }, { key: "master", label: "Master", max: 2.5 },
-];
 const AMBIENCE = new Set(["rain", "storm", "window", "diner"]), VOICES = new Set(["narrator", "victim", "intruder", "steve", "john", "waitress", "blonde", "waiter", "kitchen"]), EFFECTS = new Set(["whistle", "steps", "group-steps", "board", "door", "thunder", "whimper", "cheer", "breath"]);
 /** Which mix level a sound rides on: its file says what it is, its orb says who makes it. */
 const mixLevel = (mix: Mix, sound: CabinSound) => sound.orb === "score" || sound.file === "music" ? mix.score : AMBIENCE.has(sound.orb) || sound.file === "room" ? mix.ambience : EFFECTS.has(sound.file) || !VOICES.has(sound.orb) ? mix.effects : mix.voices;
-function MixPanel({ mix, onChange }: { mix: Mix; onChange: (mix: Mix) => void }) {
-  const [copied, setCopied] = useState(false);
-  return <aside aria-label="Mix" className="fixed bottom-3 right-3 z-50 hidden w-56 flex-col gap-2 rounded-2xl bg-[#202020]/90 p-3 text-xs text-white/80 shadow-xl backdrop-blur sm:flex">
-    <p className="text-[10px] uppercase tracking-wider text-white/40">Mix</p>
-    {MIX_SLIDERS.map(({ key, label, max }) => <label key={key} className="grid grid-cols-[1fr_auto] items-center gap-x-2">
-      <span>{label}</span><output className="tabular-nums text-white/50">{mix[key].toFixed(2)}</output>
-      <input type="range" min={0} max={max} step={.05} value={mix[key]} onChange={event => onChange({ ...mix, [key]: Number(event.target.value) })} className="col-span-2 accent-white" />
-    </label>)}
-    <div className="flex gap-2 pt-1">
-      <button type="button" onClick={() => { void navigator.clipboard.writeText(JSON.stringify(mix)); setCopied(true); setTimeout(() => setCopied(false), 1500); }} className="flex-1 cursor-pointer rounded-lg bg-white py-1.5 font-medium text-[#202020]">{copied ? "Copied" : "Copy"}</button>
-      <button type="button" onClick={() => onChange(MIX)} className="flex-1 cursor-pointer rounded-lg bg-white/10 py-1.5">Reset</button>
-    </div>
-  </aside>;
-}
-
 /**
  * Immersive: a thriller on the real ScriptFX sound stage, to play in headphones.
  * The intruder walks around the chair on its own; drag any sound, in the room
  * or out of it, to hear it from somewhere else.
  */
-export function ImmersiveStage() {
-  const [look, setLook] = useState<Look>({});
-  const [mix, setMix] = useState<Mix>(MIX);
-  const mixRef = useRef(mix);
+export function ImmersiveStage({ presentation = false }: { presentation?: boolean } = {}) {
+  const landingSound = useLandingSound();
+  const demo = useProductDemo();
+  const previewTime = useRef(0);
+  previewTime.current = demo?.active ? demo.time : 0;
   const [loading, setLoading] = useState(false);
   // Fetch the scene's sounds as the section comes near, so play is instant.
   const section = useRef<HTMLElement>(null);
@@ -131,9 +92,9 @@ export function ImmersiveStage() {
     watcher.observe(element);
     return () => watcher.disconnect();
   }, []);
-  const [sceneName, setSceneName] = useState<keyof typeof SCENES>("cabin");
+  const [sceneName, setSceneName] = useState<keyof typeof SCENES>(presentation ? "diner" : "cabin");
   const scene = SCENES[sceneName];
-  const [cutName, setCutName] = useState<keyof Scene["cuts"]>("drama");
+  const [cutName, setCutName] = useState<keyof Scene["cuts"]>(presentation ? "read" : "drama");
   const cut = scene.cuts[cutName];
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -148,12 +109,13 @@ export function ImmersiveStage() {
   const setSquares = (change: (current: Cell[]) => Cell[]) => { setTrails(current => ({ ...current, [selected]: change(current[selected] ?? []) })); setPlaces(({ [selected]: _, ...rest }) => rest); };
   type Engine = { output: GainNode; baked: GainNode; context: AudioContext; buffers: Record<string, AudioBuffer>; gains: Record<string, GainNode>; air: Record<string, BiquadFilterNode>; panners: Record<string, PannerNode>; sends: Record<string, GainNode>; meters: Record<string, AnalyserNode>; sink: GainNode; master: GainNode; reverb: ConvolverNode; roomFor: string; sources: AudioBufferSourceNode[]; startedAt: number };
   const audio = useRef<Engine | null>(null);
+  const playRequest = useRef(0);
   /** The mastering chain every sound ends in: a real room's reverb and a limiter that only catches stray peaks. No bus compression, so whispers stay quiet and hits stay loud, like the rendered mix. */
   const engine = (): Engine => {
     if (audio.current) return audio.current;
     const context = new AudioContext(), master = context.createGain(), reverb = context.createConvolver(), wet = context.createGain();
     const limiter = new DynamicsCompressorNode(context, { threshold: -1, knee: 0, ratio: 20, attack: .002, release: .06 });
-    const output = context.createGain(); output.gain.value = editedRef.current ? mixRef.current.master : 0;
+    const output = context.createGain(); output.gain.value = editedRef.current ? MIX.master : 0;
     reverb.connect(wet).connect(master);
     master.connect(limiter).connect(output).connect(context.destination);
     // The Steam Audio render plays on its own bus, already mastered; the live mix fades in once the stage is changed.
@@ -169,7 +131,7 @@ export function ImmersiveStage() {
 
   /** Where the scene is paused, so it picks up there and the intruder stays put meanwhile. */
   const pausedAt = useRef(0);
-  const clock = () => { const live = audio.current; return live?.sources.length ? live.context.currentTime - live.startedAt : pausedAt.current; };
+  const clock = () => { const live = audio.current; return live?.sources.length ? live.context.currentTime - live.startedAt : demo?.active ? previewTime.current % cut.length : pausedAt.current; };
   const where = (id: string): Place => placed.current[id] ?? (walk.current[id]?.length ? walkerAt(id, clock(), walk.current[id], cut, scene) : scene.start[id] ?? { x: -2.2, z: 2.6, y: 1.6 });
 
   /** Every panner sits where its orb is; outside the room, a sound plays as a plain stereo layer. */
@@ -192,12 +154,12 @@ export function ImmersiveStage() {
       live.air[sound.id].frequency.setTargetAtTime(Math.max(1800, 20000 / (1 + distance * distance * .35)), now, .05);
       // Sounds in the room ring in it, more the farther they are; inside a meter the voice drowns its room out, like a whisper at your ear. Layers outside it stay dry.
       const closeness = Math.min(1, Math.max(.3, distance));
-      live.sends[sound.id].gain.setTargetAtTime(inside ? scene.room.wet * mixRef.current.reverb * closeness * (.6 + Math.min(1, distance / 4)) : 0, now, .05);
+      live.sends[sound.id].gain.setTargetAtTime(inside ? scene.room.wet * MIX.reverb * closeness * (.6 + Math.min(1, distance / 4)) : 0, now, .05);
     }
   };
   useEffect(aim, [places]);
   /** Whether anything on the stage differs from how the scene was rendered: then the live mix plays instead of the Steam Audio render. */
-  const edited = JSON.stringify(places) !== JSON.stringify(scene.start) || JSON.stringify(trails) !== JSON.stringify(defaultTrails(scene)) || JSON.stringify(mix) !== JSON.stringify(MIX);
+  const edited = JSON.stringify(places) !== JSON.stringify(scene.start) || JSON.stringify(trails) !== JSON.stringify(defaultTrails(scene));
   const editedRef = useRef(edited);
   useEffect(() => {
     editedRef.current = edited;
@@ -205,25 +167,12 @@ export function ImmersiveStage() {
     if (!live) return;
     const now = live.context.currentTime;
     live.baked.gain.setTargetAtTime(edited ? 0 : 1, now, .15);
-    live.output.gain.setTargetAtTime(edited ? mixRef.current.master : 0, now, .15);
+    live.output.gain.setTargetAtTime(edited ? MIX.master : 0, now, .15);
   }, [edited]);
-  // Live mix changes reach every sound already loaded, mid-play.
-  useEffect(() => {
-    mixRef.current = mix;
-    const live = audio.current;
-    if (!live) return;
-    const now = live.context.currentTime;
-    live.output.gain.setTargetAtTime(editedRef.current ? mix.master : 0, now, .05);
-    for (const each of Object.values(SCENES)) for (const cut of Object.values(each.cuts)) for (const sound of cut.sounds) {
-      live.gains[sound.id]?.gain.setTargetAtTime(sound.gain * mixLevel(mix, sound), now, .05);
-      if (live.panners[sound.id]) live.panners[sound.id].rolloffFactor = mix.falloff;
-    }
-    if (live.roomFor && live.roomFor !== `${sceneName}:${mix.room}`) { live.roomFor = `${sceneName}:${mix.room}`; void roomResponse(live.context, scene, Math.max(.2, mix.room)).then(buffer => { live.reverb.buffer = buffer; }); }
-    aim();
-  }, [mix]);
 
   /** Pause where it is; at the end, rewind to the top. */
   function stop(rewind = false) {
+    playRequest.current++;
     pausedAt.current = rewind ? 0 : clock();
     unmuteElement?.pause();
     audio.current?.sources.forEach(source => { try { source.stop(); } catch {} });
@@ -248,6 +197,7 @@ export function ImmersiveStage() {
 
   async function play() {
     if (playing) { stop(); return; }
+    if (landingSound && !landingSound.sound) landingSound.setSound(true);
     // Start the audio engine inside the tap itself, before any waiting, or phones keep it silent.
     unmuteIOS();
     void engine().context.resume();
@@ -270,20 +220,21 @@ export function ImmersiveStage() {
   const scrubEnd = () => { const resume = scrub.current?.resume; scrub.current = null; if (resume) void begin(); };
   /** Start the scene from where it's paused. */
   async function begin() {
+    const request = ++playRequest.current;
     if (playingClip) playingClip.pause();
     unmuteIOS();
     const live0 = engine();
     // The room's reverb, sized for this scene.
-    if (live0.roomFor !== `${sceneName}:${mixRef.current.room}`) { live0.reverb.buffer = await roomResponse(live0.context, scene, Math.max(.2, mixRef.current.room)); live0.roomFor = `${sceneName}:${mixRef.current.room}`; }
+    if (live0.roomFor !== `${sceneName}:${MIX.room}`) { live0.reverb.buffer = await roomResponse(live0.context, scene, Math.max(.2, MIX.room)); live0.roomFor = `${sceneName}:${MIX.room}`; }
     // Load and wire each sound this cut needs the first time it plays.
     const { context, buffers, gains, air, panners, sends, meters, sink, master, reverb } = live0;
     await Promise.all(cut.sounds.filter(sound => !buffers[sound.id]).map(async sound => {
       prefetchScenes();
       buffers[sound.id] = await context.decodeAudioData((await sceneFiles.get(fileUrl(scene, sound.file))!).slice(0));
-      const gain = context.createGain(); gain.gain.value = sound.gain * mixLevel(mixRef.current, sound); gains[sound.id] = gain;
+      const gain = context.createGain(); gain.gain.value = sound.gain * mixLevel(MIX, sound); gains[sound.id] = gain;
       const meter = context.createAnalyser(); meter.fftSize = 256; gain.connect(meter).connect(sink); meters[sound.id] = meter;
       const filter = context.createBiquadFilter(); filter.type = "lowpass"; filter.frequency.value = 20000; air[sound.id] = filter;
-      const panner = new PannerNode(context, { panningModel: "HRTF", distanceModel: "inverse", refDistance: NEAR, rolloffFactor: mixRef.current.falloff, channelCount: 1, channelCountMode: "explicit" });
+      const panner = new PannerNode(context, { panningModel: "HRTF", distanceModel: "inverse", refDistance: NEAR, rolloffFactor: MIX.falloff, channelCount: 1, channelCountMode: "explicit" });
       const send = context.createGain(); send.gain.value = 0; sends[sound.id] = send;
       gain.connect(filter).connect(panner).connect(master);
       panner.connect(send).connect(reverb);
@@ -293,6 +244,7 @@ export function ImmersiveStage() {
     if (!buffers[bakedKey]) buffers[bakedKey] = await context.decodeAudioData((await sceneFiles.get(fileUrl(scene, bakedFile(cutName)))!).slice(0));
     const live = live0;
     await live.context.resume();
+    if (request !== playRequest.current) return;
     const start = live.context.currentTime + .1, offset = pausedAt.current;
     live.sources = cut.sounds.filter(sound => offset < Math.min(sound.at + live.buffers[sound.id].duration, sound.until ?? Infinity)).map(sound => {
       const source = live.context.createBufferSource(); source.buffer = live.buffers[sound.id];
@@ -336,9 +288,19 @@ export function ImmersiveStage() {
   };
   const pill = (on: boolean) => `cursor-pointer rounded-full px-5 py-2 text-sm font-medium transition-colors ${on ? "bg-white text-[#202020]" : "text-white/70 hover:text-white"}`;
 
-  return <section ref={section} id="immersive" className="hear-stage scroll-mt-20" aria-label="Immersive" style={look}>
-    {process.env.NODE_ENV === "development" && <LookPicker look={look} onPick={change => setLook(current => ({ ...current, ...change }))} />}
-    {process.env.NODE_ENV === "development" && <MixPanel mix={mix} onChange={setMix} />}
+  const syncDemo = useEffectEvent((active: boolean, sound: boolean) => {
+    if (active && sound) void play().catch(() => stop());
+    else stop();
+  });
+  const stopDemo = useEffectEvent(() => stop());
+  const embedded = demo !== null;
+  useEffect(() => {
+    if (!embedded) return;
+    const frame = requestAnimationFrame(() => syncDemo(!!demo?.active, !!demo?.sound));
+    return () => { cancelAnimationFrame(frame); stopDemo(); };
+  }, [embedded, demo?.active, demo?.sound]);
+
+  if (!demo) return <section ref={section} id="immersive" className="hear-stage scroll-mt-20" aria-label="Immersive">
     <div className="hear-panel">
     <div className="relative mx-auto max-w-[1200px] px-6 text-white">
       <header className="mx-auto max-w-2xl text-center"><h2 className="text-5xl font-semibold leading-[1.05] tracking-tight sm:text-6xl">Don’t just hear it. Experience it.</h2><p className="mt-4 flex items-center justify-center gap-2 text-xs text-white/60">Spatial audio · Powered by
@@ -359,6 +321,38 @@ export function ImmersiveStage() {
         walker={{ id: selected, cells: squares, onTap: cell => setSquares(current => tapSquare(current, cell)),
           onStroke: (cells, erase) => setSquares(current => erase ? current.filter(square => !cells.some(cell => cell.x === square.x && cell.z === square.z)) : cells.reduce((path, cell) => path.some(square => square.x === cell.x && square.z === cell.z) ? path : tapSquare(path, cell), current)) }}
         note={<>Tap a sound, then tap the floor to draw its path · <span className="text-white">{scene.orbs.find(orb => orb.id === selected)?.name}</span>{JSON.stringify(trails) !== JSON.stringify(defaultTrails(scene)) && <> · <button type="button" onClick={() => { setTrails(defaultTrails(scene)); setSelected(scene.walker); }} className="cursor-pointer text-white underline underline-offset-2">Reset</button></>}</>} label={`${scene.heading} on the ScriptFX sound stage. Drag any sound to move it, drag the floor to turn the room, and pinch to zoom.`} />
+    </div>
+    <div className="relative mx-auto max-w-[1200px] px-6 text-white">
+      <div className="mt-5 text-center"><Link href="/products/audio-drama" className="inline-flex rounded-full bg-white px-5 py-2.5 text-sm font-medium text-[#202020] transition-colors hover:bg-white/85">Learn more</Link></div>
+      <div className="mt-10"><PoweredBy dark /></div>
+    </div>
+    </div>
+  </section>;
+
+  return <section ref={section} id="immersive" data-presentation={presentation} className="hear-stage scroll-mt-20" aria-label="Immersive">
+    <div className="hear-panel">
+    <div className="relative mx-auto max-w-[1200px] px-6 text-white">
+      <header className="mx-auto max-w-2xl text-center"><h2 className="text-5xl font-semibold leading-[1.05] tracking-tight sm:text-6xl">Don’t just hear it. Experience it.</h2><p className="mt-5 text-lg leading-8 text-white/70">Immersive sound all around your readers. Put on headphones, press play, and drag any sound around the room. Just don’t turn around.</p></header>
+      {!presentation && <div className="mt-8 flex flex-wrap justify-center gap-3">
+        <div role="group" aria-label="Scene" className="flex rounded-full bg-white/10 p-1">{(Object.keys(SCENES) as (keyof typeof SCENES)[]).map(key => <button key={key} type="button" aria-pressed={sceneName === key} onClick={() => switchScene(key)} className={pill(sceneName === key)}>{SCENES[key].label}</button>)}</div>
+        {!demo && <div role="group" aria-label="How to hear the scene" className="flex rounded-full bg-white/10 p-1">{(Object.keys(scene.cuts) as (keyof Scene["cuts"])[]).map(key => <button key={key} type="button" aria-pressed={cutName === key} onClick={() => { if (cutName !== key) { stop(true); setCutName(key); } }} className={pill(cutName === key)}>{scene.cuts[key].label}</button>)}</div>}
+      </div>}
+      <div className="mx-auto mt-6 flex max-w-xl items-center gap-4">
+        <button type="button" onClick={() => void play()} aria-label={loading ? "Loading the scene" : playing ? "Pause the scene" : "Play the scene"} aria-busy={loading} className="grid size-14 shrink-0 cursor-pointer place-items-center rounded-full bg-white text-[#202020] transition-transform hover:scale-105">{loading ? <i className="size-5 animate-spin rounded-full border-2 border-[#202020] border-t-transparent" /> : playing ? <Pause className="size-5 fill-current" /> : <Play className="ml-0.5 size-5 fill-current" />}</button>
+        <div className="min-w-0 flex-1 text-left"><p className="text-sm font-medium">{scene.heading}</p><div role="slider" aria-label="Scene position" aria-valuemin={0} aria-valuemax={Math.round(cut.length)} aria-valuenow={Math.round(progress * cut.length)} tabIndex={0} className="mt-1 flex cursor-pointer touch-none" onPointerDown={scrubStart} onPointerMove={event => { if (scrub.current) scrubTo(event); }} onPointerUp={scrubEnd} onPointerCancel={scrubEnd}><Wave peaks={SAMPLES[cut.peaks].peaks} progress={demo?.active && !playing ? (demo.time % cut.length) / cut.length : progress} dark /></div></div>
+      </div>
+    </div>
+    <div className="relative mx-auto mt-6 max-w-[1600px] px-2">
+      <div style={presentation ? { pointerEvents: "none" } : undefined}>
+      {(!demo || demo.visible) && <ImmersiveWorld key={sceneName} showControls={false} orbs={scene.orbs} where={where} level={level} onMove={(id, place) => setPlaces(current => ({ ...current, [id]: place }))}
+        onSelect={setSelected}
+        walker={{ id: selected, cells: squares, onTap: cell => setSquares(current => tapSquare(current, cell)),
+          onStroke: (cells, erase) => setSquares(current => erase ? current.filter(square => !cells.some(cell => cell.x === square.x && cell.z === square.z)) : cells.reduce((path, cell) => path.some(square => square.x === cell.x && square.z === cell.z) ? path : tapSquare(path, cell), current)) }}
+        note={JSON.stringify(trails) !== JSON.stringify(defaultTrails(scene)) ? <button type="button" onClick={() => { setTrails(defaultTrails(scene)); setSelected(scene.walker); }} className="cursor-pointer text-white/70 underline underline-offset-2">Reset sound positions</button> : undefined} label={presentation ? `${scene.heading}. Animated spatial audio table read.` : `${scene.heading} on the ScriptFX sound stage. Drag any sound to move it, drag the floor to turn the room, and pinch to zoom.`} />}
+      </div>
+      <p className="spatial-audio-credit"><span>Spatial audio</span><span>·</span><span>Powered by</span>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/brand/ScriptFXLogo.svg" alt="ScriptFX" /></p>
     </div>
     <div className="relative mx-auto max-w-[1200px] px-6 text-white">
       <div className="mt-5 text-center"><Link href="/products/audio-drama" className="inline-flex rounded-full bg-white px-5 py-2.5 text-sm font-medium text-[#202020] transition-colors hover:bg-white/85">Learn more</Link></div>
@@ -419,37 +413,46 @@ export function ToolsStory() {
 
 /** One clip playing at a time across the page: starting another stops this one. */
 let playingClip: HTMLAudioElement | null = null;
-function useClip(src: string) {
+function useClip(src: string, autoAt = 0) {
+  const landingSound = useLandingSound();
+  const demo = useProductDemo();
+  const data = SAMPLES[src.replace("/audio/examples/", "").replace(".mp3", "")];
+  const duration = data?.duration || 10;
+  const preview = demo ? Math.max(0, Math.min(duration, demo.time - autoAt)) : 0;
+  const shouldPlay = !!demo?.active && !!demo.sound && demo.time >= autoAt && demo.time < autoAt + duration;
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [time, setTime] = useState(0);
   const audio = useRef<HTMLAudioElement | null>(null);
-  useEffect(() => () => audio.current?.pause(), []);
-  const toggle = () => {
+  const getClip = () => {
     if (!audio.current) {
       const clip = new Audio(src);
-      const tick = () => { setTime(clip.currentTime); setProgress(clip.duration ? clip.currentTime / clip.duration : 0); if (!clip.paused) requestAnimationFrame(tick); };
-      clip.addEventListener("play", () => requestAnimationFrame(tick));
+      clip.preload = "none";
       clip.onplay = () => setPlaying(true);
       clip.onpause = () => setPlaying(false);
+      clip.ontimeupdate = () => { setTime(clip.currentTime); setProgress(clip.duration ? clip.currentTime / clip.duration : 0); };
       clip.onended = () => { setPlaying(false); setProgress(0); setTime(0); };
       audio.current = clip;
     }
-    const clip = audio.current;
-    if (!clip.paused) { clip.pause(); return; }
+    return audio.current;
+  };
+  const start = () => {
+    if (landingSound && !landingSound.sound) landingSound.setSound(true);
+    const clip = getClip();
     if (playingClip && playingClip !== clip) playingClip.pause();
     playingClip = clip;
     if (clip.ended) clip.currentTime = 0;
-    void clip.play();
+    void clip.play().catch(() => setPlaying(false));
   };
-  /** Jump to a moment and play from there, the way tapping a word works in the app. */
-  const seek = (at: number) => {
-    if (!audio.current || audio.current.paused) toggle();
-    const clip = audio.current!;
-    clip.currentTime = Math.max(0, at - .05);
-    if (clip.paused) void clip.play();
-  };
-  return { playing, progress, time, toggle, seek };
+  useEffect(() => () => audio.current?.pause(), []);
+  const syncDemoClip = useEffectEvent((play: boolean) => { if (play) start(); else audio.current?.pause(); });
+  const embedded = demo !== null;
+  useEffect(() => {
+    if (embedded) syncDemoClip(shouldPlay);
+  }, [embedded, shouldPlay, demo?.active, demo?.sound]);
+  const toggle = () => { if (audio.current && !audio.current.paused) audio.current.pause(); else start(); };
+  const seek = (at: number) => { start(); getClip().currentTime = Math.max(0, at - .05); };
+  return { playing, progress: demo?.active && !playing ? preview / duration : progress, time: demo?.active && !playing ? preview : time, toggle, seek };
 }
 
 const PlayButton = ({ playing, onClick, label, dark = true }: { playing: boolean; onClick: () => void; label: string; dark?: boolean }) =>
@@ -457,7 +460,13 @@ const PlayButton = ({ playing, onClick, label, dark = true }: { playing: boolean
 
 /** A waveform that fills with gold as the clip plays. */
 /** The clip's real waveform, from its measured peaks, filling with gold as it plays. */
-const Wave = ({ peaks, progress, every = 1, dark = false }: { peaks: number[]; progress: number; every?: number; dark?: boolean }) => { const bars = peaks.filter((_, i) => i % every === 0); return <span className="flex h-8 min-w-0 flex-1 items-center justify-between" aria-hidden="true">{bars.map((peak, i) => <i key={i} className={`w-[3px] rounded-full transition-colors ${i / bars.length < progress ? "bg-[#c79a3c]" : dark ? "bg-white/20" : "bg-[#d6d6d6]"}`} style={{ height: `${Math.max(8, peak * 100)}%` }} />)}</span>; };
+const Wave = ({ peaks, progress, every = 1, dark = false }: { peaks: number[]; progress: number; every?: number; dark?: boolean }) => {
+  const bars = peaks.filter((_, i) => i % every === 0);
+  return <svg className="demo-wave" viewBox={`0 0 ${bars.length} 100`} preserveAspectRatio="none" aria-hidden="true">{bars.map((peak, i) => {
+    const height = Math.max(8, peak * 100);
+    return <rect key={i} x={i + .15} y={(100 - height) / 2} width={.7} height={height} rx={.35} fill={i / bars.length < progress ? "#c79a3c" : dark ? "#ffffff33" : "#d6d6d6"} />;
+  })}</svg>;
+};
 
 /** A line with its tags drawn as the editor draws them: [emotion] tags as italic purple pills and {sound} tags as plain ones, brackets kept. */
 /** Sound tags by kind, as the editor marks them: an icon for each, and here a color for each too. */
@@ -482,8 +491,8 @@ const Tagged = ({ line, words, time = -1, cues, onSeek }: { line: string; words?
 
 /** A draft of a line you can play. */
 function DraftLine({ label, line, sample, note }: { label: string; line: string; sample: string; note: string }) {
-  const clip = useClip(`/audio/examples/${sample}.mp3`), data = SAMPLES[sample];
-  return <div className="grid gap-4 rounded-3xl bg-white p-6 text-left shadow-[0_8px_30px_#0000000d]">
+  const clip = useClip(`/audio/examples/${sample}.mp3`, sample === "draft-2" ? SAMPLES["draft-1"].duration + 1 : 0), data = SAMPLES[sample];
+  return <div className="draft-line grid min-w-0 gap-4 rounded-3xl bg-white p-6 text-left shadow-[0_8px_30px_#0000000d]">
     <p className="flex items-center justify-between text-xs font-medium uppercase tracking-wider text-[#8a8a8a]"><span>{label}</span><span className="normal-case tracking-normal">{note}</span></p>
     <div className="font-mono text-[14px] leading-relaxed"><p className="ml-[30%]">MARA</p><p className="ml-[12%] mr-[8%]"><Tagged line={line} words={data.words} time={clip.time} onSeek={clip.seek} /></p></div>
     <div className="flex items-center gap-3"><PlayButton playing={clip.playing} onClick={clip.toggle} label={label} /><Wave peaks={data.peaks} progress={clip.progress} /></div>
@@ -547,6 +556,9 @@ const DRAMA_BLOCKS: { kind: "narration" | "dialogue" | "ambience" | "effect" | "
  * switch on while it plays.
  */
 export function SceneBuilder() {
+  const landingSound = useLandingSound();
+  const demo = useProductDemo();
+  const playRequest = useRef(0);
   const [mode, setMode] = useState<keyof typeof PLAYS>("drama");
   const [on, setOn] = useState<Record<string, boolean>>({ ambience: true, effects: true, score: true });
   const [playing, setPlaying] = useState(false);
@@ -554,7 +566,7 @@ export function SceneBuilder() {
   const play = PLAYS[mode], time = progress * play.length;
   const lines = SAMPLES[mode === "drama" ? "drama/voices" : "drama/table"].lines!;
   const audio = useRef<{ context: AudioContext; buffers: Record<string, AudioBuffer>; gains: Record<string, GainNode>; sources: AudioBufferSourceNode[]; startedAt: number } | null>(null);
-  const stop = () => { audio.current?.sources.forEach(source => { try { source.stop(); } catch {} }); if (audio.current) audio.current.sources = []; setPlaying(false); setProgress(0); };
+  const stop = () => { playRequest.current++; audio.current?.sources.forEach(source => { try { source.stop(); } catch {} }); if (audio.current) audio.current.sources = []; setPlaying(false); setProgress(0); };
   useEffect(() => {
     const live = audio.current;
     if (!live) return;
@@ -577,6 +589,7 @@ export function SceneBuilder() {
   useEffect(() => () => { audio.current?.sources.forEach(source => { try { source.stop(); } catch {} }); }, []);
   /** Play the scene from a moment: the stems pick up there, and each tagged sound still to come lands on its word. */
   async function startAt(offset: number) {
+    const request = ++playRequest.current;
     if (playingClip) playingClip.pause();
     audio.current?.sources.forEach(source => { try { source.stop(); } catch {} });
     if (!audio.current) audio.current = { context: new AudioContext(), buffers: {}, gains: {}, sources: [], startedAt: 0 };
@@ -587,6 +600,7 @@ export function SceneBuilder() {
     const foley = FOLEY.map(sound => `fx/${sound.id}-1`);
     await Promise.all([...layers.map(layer => stemFor(mode, layer)), ...foley].filter(stem => !live.buffers[stem]).map(async stem => { live.buffers[stem] = await live.context.decodeAudioData(await (await fetch(`/audio/examples/${stem}.mp3`)).arrayBuffer()); }));
     await live.context.resume();
+    if (request !== playRequest.current) return;
     const start = live.context.currentTime + .05;
     live.sources = layers.map(layer => { const source = live.context.createBufferSource(); source.buffer = live.buffers[stemFor(mode, layer)]; source.connect(live.gains[layer]); source.start(start, offset); return source; });
     FOLEY.forEach((sound, i) => { const at = TIMING[mode][sound.id] - offset; if (at < 0) return; const source = live.context.createBufferSource(); source.buffer = live.buffers[foley[i]]; source.connect(live.gains.effects); source.start(start + at); live.sources.push(source); });
@@ -596,12 +610,25 @@ export function SceneBuilder() {
   /** Pause where it is; play picks up from there. */
   async function toggle() {
     if (playing) { audio.current?.sources.forEach(source => { try { source.stop(); } catch {} }); if (audio.current) audio.current.sources = []; setPlaying(false); return; }
+    if (landingSound && !landingSound.sound) landingSound.setSound(true);
     await startAt(progress * play.length);
   }
   /** Tap a word: the scene jumps there and plays on, like scrubbing in the app. */
-  const seek = (time: number) => void startAt(Math.max(0, time - .05));
+  const seek = (time: number) => { if (landingSound && !landingSound.sound) landingSound.setSound(true); void startAt(Math.max(0, time - .05)); };
   const switchMode = (next: keyof typeof PLAYS) => { stop(); setMode(next); };
-  const at = playing ? time : -1;
+  const syncDemoScene = useEffectEvent((active: boolean, sound: boolean) => {
+    if (active && sound) void startAt(0).catch(stop);
+    else stop();
+  });
+  const stopDemoScene = useEffectEvent(() => stop());
+  const embedded = demo !== null;
+  useEffect(() => {
+    if (!embedded) return;
+    const frame = requestAnimationFrame(() => syncDemoScene(!!demo?.active, !!demo?.sound));
+    return () => { cancelAnimationFrame(frame); stopDemoScene(); };
+  }, [embedded, demo?.active, demo?.sound, mode]);
+  const previewTime = demo?.active ? demo.time % play.length : -1;
+  const at = playing ? time : previewTime;
   const t = TIMING[mode];
   const cues: Cues = {
     ...(on.ambience ? { "diner at night": [0, play.length] } : {}),
@@ -631,7 +658,7 @@ export function SceneBuilder() {
           <button type="button" role="switch" aria-checked={on[layer.id]} aria-label={layer.label} onClick={() => setOn(current => ({ ...current, [layer.id]: !current[layer.id] }))} className={`relative h-6 w-10 shrink-0 cursor-pointer rounded-full transition-colors ${on[layer.id] ? "bg-[#202020]" : "bg-[#e0e0e0]"}`}><i className={`absolute top-1 size-4 rounded-full bg-white transition-all ${on[layer.id] ? "left-5" : "left-1"}`} /></button>
           <span className="flex-1 text-sm font-medium">{layer.label}</span><span className="text-xs text-[#8a8a8a]">{layer.source}</span>
         </li>)}</ul>
-        <div className="mt-6 flex items-center gap-3"><PlayButton playing={playing} onClick={() => void toggle()} label={`the ${play.label.toLowerCase()}`} /><Wave peaks={wave} progress={progress} /></div>
+        <div className="mt-6 flex items-center gap-3"><PlayButton playing={playing} onClick={() => void toggle()} label={`the ${play.label.toLowerCase()}`} /><Wave peaks={wave} progress={demo?.active && !playing ? previewTime / play.length : progress} /></div>
         <p className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm font-medium"><a href="#immersive" className="underline underline-offset-4">🎧 Hear it in Immersive ↓</a><Link href={mode === "read" ? "/products/table-reads" : "/products/audio-drama"} className="underline underline-offset-4">{mode === "read" ? "Explore table reads" : "Explore audio drama"}</Link></p>
       </div>
     </div>
@@ -641,37 +668,35 @@ export function SceneBuilder() {
 
 /** A cast voice card you can play. */
 function VoiceCard({ name, hue, sample, line }: { name: string; hue: number; sample: string; line: string }) {
-  const clip = useClip(`/audio/examples/${sample}.mp3`), data = SAMPLES[sample];
-  return <div className={`rounded-xl p-3 text-left transition-colors ${clip.playing ? "bg-white shadow-sm" : "bg-white/60"}`}>
+  const clip = useClip(`/audio/examples/${sample}.mp3`, ["mara", "leo", "ruiz", "narrator"].slice(0, ["mara", "leo", "ruiz", "narrator"].indexOf(sample)).reduce((sum, key) => sum + SAMPLES[key].duration + .4, 0)), data = SAMPLES[sample];
+  return <div className={`voice-cast-card min-w-0 rounded-xl p-3 text-left transition-colors ${clip.playing ? "bg-white shadow-sm" : "bg-white/60"}`}>
     <p className="flex items-center gap-2 text-sm font-medium"><i className="size-5 rounded-full" style={{ background: `radial-gradient(circle at 30% 25%, hsl(${hue} 85% 72%), hsl(${hue + 70} 70% 46%))` }} />{name}<span className="ml-auto"><PlayButton playing={clip.playing} onClick={clip.toggle} label={name} dark={false} /></span></p>
     <p className="mt-1.5 truncate text-[12px] text-[#6b6b6b]"><Tagged line={line} words={data.words} time={clip.time} onSeek={clip.seek} /></p>
     <span className="flex w-full"><Wave peaks={data.peaks} progress={clip.progress} every={2} /></span>
   </div>;
 }
 
-/** The voice models a writer can pick, matched to the pricing page's voice tiers, and where their samples live. */
-const VOICE_MODELS = [
-  { id: "v4", label: "ElevenLabs v4", tier: "Premium+", folder: "" },
-  { id: "v4-turbo", label: "ElevenLabs v4 Turbo", tier: "Premium", folder: "turbo/" },
-];
+/** A voice model's maker, as its mark: ElevenLabs' logo, or ours. */
+function MakerMark({ maker }: { maker: "ElevenLabs" | "ScriptFX" }) {
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={maker === "ScriptFX" ? "/brand/scriptfx-logo-black.svg" : "/brand/partners/elevenlabs-logo-black.svg"} alt={maker} className={`w-auto ${maker === "ScriptFX" ? "h-[13px]" : "h-[10px]"}`} />;
+}
 const CAST = [["Mara", 20, "mara", "[quietly] I want the car, Leo."], ["Leo", 210, "leo", "[tired] You always did."], ["Ruiz", 140, "ruiz", "[angry] Who let him walk?"], ["Narrator", 280, "narrator", "Interior. Diner. Night. Rain streaks the diner glass. Mara slides into the booth across from Leo."]] as const;
 
-/** The cast's voices with a model picker: switch models and play the same lines again. */
-function VoiceCast() {
-  const [model, setModel] = useState(VOICE_MODELS[0].id);
-  const active = VOICE_MODELS.find(item => item.id === model)!;
-  return <div className="grid w-full max-w-md gap-3">
-    <div className="flex items-center justify-between gap-3 text-sm text-[#6b6b6b]"><span>Voice model</span><Select value={model} onValueChange={setModel}><SelectTrigger aria-label="Voice model" className="pill-select cursor-pointer border-0 px-4 font-medium text-[#202020] shadow-sm"><SelectValue /></SelectTrigger><SelectContent position="popper" align="end" className="border-0">{VOICE_MODELS.map(item => <SelectItem key={item.id} value={item.id}>{item.label} · {item.tier}</SelectItem>)}</SelectContent></Select></div>
-    <div className="grid grid-cols-2 gap-2.5">{CAST.map(([name, hue, file, line]) => <VoiceCard key={`${model}-${name}`} name={name} hue={hue} sample={`${active.folder}${file}`} line={line} />)}</div>
+/** The cast's voices, with the marks of who makes them. */
+export function VoiceCast() {
+  return <div className="voice-cast grid min-w-0 w-full max-w-md gap-3">
+    <p className="flex items-center gap-2 text-sm text-[#6b6b6b]">Voice model<span className="inline-flex items-center gap-1.5 opacity-70" aria-hidden="true"><MakerMark maker="ElevenLabs" /><span>·</span><MakerMark maker="ScriptFX" /></span></p>
+    <div className="grid grid-cols-2 gap-2.5">{CAST.map(([name, hue, file, line]) => <VoiceCard key={name} name={name} hue={hue} sample={file} line={line} />)}</div>
   </div>;
 }
 
 /** Listen back to a short scene, start to finish. */
-function ListenBack() {
+export function ListenBack() {
   const clip = useClip("/audio/examples/scene.mp3"), data = SAMPLES.scene;
   const script = [["narrator", "Narrator", "Interior. Diner. Night. Rain streaks the diner glass. Mara slides into the booth across from Leo."], ["mara", "Mara", "[quietly] I want the car, Leo."], ["leo", "Leo", "[tired] You always did."]] as const;
   const current = [...script].reverse().find(([id]) => clip.time >= (data.lines?.[id]?.[0]?.s ?? 0) - .1) ?? script[0];
-  return <div className="w-full max-w-md"><span className="mx-auto mb-2 block w-fit rounded-md bg-white px-2 py-1 font-mono text-[11px] shadow-sm">INT. DINER – NIGHT · Scene 12</span><span className="flex w-full"><Wave peaks={data.peaks} progress={clip.progress} /></span><p className="mt-3 flex items-center gap-3 text-left text-sm"><PlayButton playing={clip.playing} onClick={clip.toggle} label="the scene" /><span className="min-w-0 flex-1"><span className="block text-[11px] font-medium uppercase tracking-wider text-[#8a8a8a]">{current[1]}</span><Tagged line={current[2]} words={data.lines?.[current[0]]} time={clip.time} onSeek={clip.seek} /></span><span className="font-mono text-xs text-[#8a8a8a]">0:{String(Math.floor(clip.time)).padStart(2, "0")} / 0:10</span></p></div>;
+  return <div className="min-w-0 w-full max-w-md"><span className="mx-auto mb-2 block w-fit rounded-md bg-white px-2 py-1 font-mono text-[11px] shadow-sm">INT. DINER – NIGHT · Scene 12</span><span className="flex w-full"><Wave peaks={data.peaks} progress={clip.progress} /></span><p className="mt-3 flex items-center gap-3 text-left text-sm"><PlayButton playing={clip.playing} onClick={clip.toggle} label="the scene" /><span className="min-w-0 flex-1"><span className="block text-[11px] font-medium uppercase tracking-wider text-[#8a8a8a]">{current[1]}</span><Tagged line={current[2]} words={data.lines?.[current[0]]} time={clip.time} onSeek={clip.seek} /></span><span className="font-mono text-xs text-[#8a8a8a]">0:{String(Math.floor(clip.time)).padStart(2, "0")} / 0:10</span></p></div>;
 }
 
 /** One card in the grid below the tools: a title, a line, and a small piece of the app. */

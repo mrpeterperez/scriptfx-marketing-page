@@ -1,0 +1,23 @@
+@import "@/styles/tailwind.css";
+@import "@/styles/color-scales.css";
+@import "@/index.css";
+@import "@/styles/placeholder.css";
+@source "__APP_SOURCE__";
+html, body, #root { margin: 0; width: 100%; height: 100%; overflow: hidden; }
+[data-preview-typing]::after { content: ''; display: inline-block; width: 1px; height: 1em; margin-left: 2px; background: currentColor; vertical-align: -.1em; animation: preview-caret .85s steps(1) infinite; }
+@keyframes preview-caret { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { [data-preview-typing]::after { animation: none; } }
+html[data-preview-typing-pending] .lexical-content-editable { visibility: hidden; }
+#beats-view { animation: preview-beats-enter .65s cubic-bezier(.22,1,.36,1) both; }
+#beats-view section[aria-label^="Act "] { align-self: flex-start; height: max-content; min-height: 100%; }
+#beats-view section[aria-label^="Act "] > div:nth-child(2) { flex-shrink: 0; }
+@keyframes preview-beats-enter { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { #beats-view { animation: none; } }
+#presence-panels > [data-panel-id] { min-width: 0 !important; transition: flex-grow .75s cubic-bezier(.22,1,.36,1), opacity .4s, visibility 0s .75s; }
+#presence-panels > [data-panel-id="workspace"] { flex-grow: 100 !important; }
+#presence-panels > [data-panel-id="navigation"], #presence-panels > [data-panel-id="inspector"] { flex-grow: 0 !important; opacity: 0; visibility: hidden; }
+#presence-panels > [data-panel-resize-handle-id] { width: 0 !important; flex-basis: 0 !important; opacity: 0; transition: width .75s cubic-bezier(.22,1,.36,1), flex-basis .75s cubic-bezier(.22,1,.36,1), opacity .3s; }
+html[data-preview-mode="ai"] #presence-panels > [data-panel-id="workspace"] + [data-panel-resize-handle-id] { width: 8px !important; flex-basis: 8px !important; opacity: 1; }
+html[data-preview-mode="ai"] #presence-panels > [data-panel-id="inspector"] { flex-grow: 8 !important; opacity: 1; visibility: visible; transition-delay: 0s; }
+html[data-preview-mode="ai"] #presence-panels > [data-panel-id="workspace"] { flex-grow: 92 !important; }
+@media (prefers-reduced-motion: reduce) { #presence-panels > [data-panel-id], #presence-panels > [data-panel-resize-handle-id] { transition: none; } }
